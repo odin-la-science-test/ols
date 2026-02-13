@@ -48,6 +48,34 @@ const Messaging = () => {
         attachments: []
     });
 
+    // Formater la date ISO en format lisible
+    const formatDate = (dateString: string): string => {
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleString('fr-FR', { 
+                day: '2-digit', 
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        } catch (error) {
+            return dateString;
+        }
+    };
+
+    const formatDateShort = (dateString: string): string => {
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', { 
+                day: '2-digit', 
+                month: '2-digit'
+            });
+        } catch (error) {
+            return dateString.split(',')[0] || dateString;
+        }
+    };
+
     useEffect(() => {
         loadMessages();
         const interval = setInterval(loadMessages, 5000);
@@ -118,7 +146,7 @@ const Messaging = () => {
             recipient: composeData.to.trim(),
             subject: composeData.subject.trim(),
             preview: composeData.body.substring(0, 50) + '...',
-            date: new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }),
+            date: new Date().toISOString(), // Format ISO pour Supabase
             read: false,
             body: messageBody,
             folder: 'inbox',
@@ -311,7 +339,7 @@ const Messaging = () => {
                                     <span style={{ fontWeight: !msg.read ? 700 : 500, fontSize: '0.9rem', color: !msg.read ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                                         {activeFolder === 'sent' ? `À: ${msg.recipient}` : msg.sender}
                                     </span>
-                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{msg.date.split(',')[0]}</span>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{formatDateShort(msg.date)}</span>
                                 </div>
                                 <div style={{ fontWeight: !msg.read ? 700 : 500, fontSize: '0.85rem', marginBottom: '0.25rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {msg.subject}
@@ -433,7 +461,7 @@ const Messaging = () => {
                                     <div style={{ flex: 1 }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <strong style={{ fontSize: '1.1rem' }}>{selectedMessage.sender}</strong>
-                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{selectedMessage.date}</span>
+                                            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{formatDate(selectedMessage.date)}</span>
                                         </div>
                                         <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                                             À: {selectedMessage.recipient}
