@@ -6,7 +6,7 @@ import './App.css';
 import LandingPage from './pages/LandingPage';
 import MobileLandingPage from './pages/mobile/LandingPage';
 import Home from './pages/Home';
-import MobileHome from './pages/mobile/Home';
+import MobileHome from './pages/mobile/HomeNew';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ResponsiveRoute from './components/ResponsiveRoute';

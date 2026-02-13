@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Dna, Calculator } from 'lucide-react';
 import { useToast } from '../../../components/ToastContext';
+import MobileBottomNav from '../../../components/MobileBottomNav';
+import '../../../styles/mobile-app.css';
 
 const MobileBioAnalyzer = () => {
     const navigate = useNavigate();
@@ -70,92 +72,104 @@ const MobileBioAnalyzer = () => {
     };
 
     return (
-        <div className="app-viewport">
-            <div style={{
-                padding: '1rem 1.5rem',
-                borderBottom: '1px solid var(--border-color)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1rem',
-                background: 'var(--bg-secondary)'
-            }}>
-                <button onClick={() => navigate('/hugin')} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', padding: '0.5rem' }}>
-                    <ArrowLeft size={24} />
-                </button>
-                <Dna size={24} color="var(--accent-hugin)" />
-                <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>BioAnalyzer</h1>
+        <div className="mobile-app">
+            {/* Header */}
+            <div className="mobile-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <button 
+                        onClick={() => navigate('/hugin')} 
+                        className="mobile-btn-icon"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div>
+                        <h1 className="mobile-header-title" style={{ fontSize: '1.5rem' }}>BioAnalyzer</h1>
+                        <p className="mobile-header-subtitle">Analyse de séquences ADN/ARN</p>
+                    </div>
+                </div>
             </div>
 
-            <div className="app-scrollbox" style={{ padding: '1.5rem' }}>
-                <div style={{ marginBottom: '1.5rem' }}>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem' }}>
+            {/* Content */}
+            <div className="mobile-content">
+                <div className="mobile-card mobile-card-elevated">
+                    <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 600, fontSize: '1rem' }}>
                         Séquence ADN/ARN
                     </label>
                     <textarea
                         value={sequence}
                         onChange={(e) => setSequence(e.target.value)}
                         placeholder="Entrez votre séquence (ATCG ou AUCG)..."
+                        className="mobile-input"
                         style={{
-                            width: '100%',
                             height: '150px',
-                            padding: '1rem',
-                            border: '1px solid var(--border-color)',
-                            borderRadius: '0.75rem',
-                            background: 'var(--bg-secondary)',
-                            color: 'var(--text-primary)',
                             fontFamily: 'monospace',
-                            fontSize: '0.85rem',
+                            fontSize: '0.9rem',
                             resize: 'vertical'
                         }}
                     />
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--mobile-text-secondary)' }}>
                         Longueur: {sequence.replace(/[^ATCGUatcgu]/g, '').length} bp
                     </div>
                 </div>
 
                 <button 
                     onClick={analyzeSequence} 
-                    className="btn btn-primary"
-                    style={{ width: '100%', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                    className="mobile-btn mobile-btn-primary"
+                    style={{ width: '100%', marginBottom: '1.5rem' }}
                 >
                     <Calculator size={18} />
                     Analyser
                 </button>
 
-                {results && (
-                    <div>
-                        <div className="card-native" style={{ padding: '1.5rem', marginBottom: '1rem' }}>
-                            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem' }}>Résumé</h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span>Longueur:</span>
-                                    <strong>{results.length} bp</strong>
+                {results ? (
+                    <>
+                        {/* Summary Card */}
+                        <div className="mobile-card mobile-card-elevated" style={{ marginBottom: '1rem' }}>
+                            <h3 className="mobile-card-title">Résumé</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ color: 'var(--mobile-text-secondary)' }}>Longueur:</span>
+                                    <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--mobile-primary)' }}>
+                                        {results.length} bp
+                                    </span>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span>Contenu GC:</span>
-                                    <strong>{results.gcContent}%</strong>
+                                <div className="mobile-divider" />
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ color: 'var(--mobile-text-secondary)' }}>Contenu GC:</span>
+                                    <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--mobile-success)' }}>
+                                        {results.gcContent}%
+                                    </span>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                    <span>Protéine:</span>
-                                    <strong>{results.protein.length} aa</strong>
+                                <div className="mobile-divider" />
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ color: 'var(--mobile-text-secondary)' }}>Protéine:</span>
+                                    <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--mobile-info)' }}>
+                                        {results.protein.length} aa
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="card-native" style={{ padding: '1.5rem', marginBottom: '1rem' }}>
-                            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem' }}>Composition</h3>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+                        {/* Composition Card */}
+                        <div className="mobile-card mobile-card-elevated" style={{ marginBottom: '1rem' }}>
+                            <h3 className="mobile-card-title">Composition</h3>
+                            <div style={{ 
+                                display: 'grid', 
+                                gridTemplateColumns: 'repeat(2, 1fr)', 
+                                gap: '0.75rem',
+                                marginTop: '1rem'
+                            }}>
                                 {Object.entries(results.composition).filter(([_, v]) => (v as number) > 0).map(([base, count]: any) => (
                                     <div key={base} style={{
-                                        padding: '1rem',
-                                        background: 'rgba(99, 102, 241, 0.1)',
-                                        borderRadius: '0.5rem',
+                                        padding: '1.25rem',
+                                        background: 'rgba(102, 126, 234, 0.1)',
+                                        borderRadius: 'var(--mobile-radius-md)',
                                         textAlign: 'center'
                                     }}>
-                                        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent-hugin)' }}>
+                                        <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--mobile-primary)', marginBottom: '0.25rem' }}>
                                             {count}
                                         </div>
-                                        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                        <div style={{ fontSize: '0.9rem', color: 'var(--mobile-text-secondary)', fontWeight: 600 }}>
                                             {base}
                                         </div>
                                     </div>
@@ -163,32 +177,39 @@ const MobileBioAnalyzer = () => {
                             </div>
                         </div>
 
-                        <div className="card-native" style={{ padding: '1.5rem' }}>
-                            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem' }}>Protéine Traduite</h3>
+                        {/* Protein Card */}
+                        <div className="mobile-card mobile-card-elevated">
+                            <h3 className="mobile-card-title">Protéine Traduite</h3>
                             <div style={{
+                                marginTop: '1rem',
                                 padding: '1rem',
-                                background: 'var(--bg-primary)',
-                                borderRadius: '0.5rem',
+                                background: 'var(--mobile-bg)',
+                                borderRadius: 'var(--mobile-radius-sm)',
                                 fontFamily: 'monospace',
-                                fontSize: '0.8rem',
-                                lineHeight: 1.6,
+                                fontSize: '0.85rem',
+                                lineHeight: 1.8,
                                 wordBreak: 'break-all',
                                 maxHeight: '200px',
-                                overflowY: 'auto'
+                                overflowY: 'auto',
+                                color: 'var(--mobile-text)'
                             }}>
                                 {results.protein}
                             </div>
                         </div>
-                    </div>
-                )}
-
-                {!results && (
-                    <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-secondary)' }}>
-                        <Dna size={60} style={{ opacity: 0.3, marginBottom: '1rem' }} />
-                        <p>Entrez une séquence pour commencer</p>
+                    </>
+                ) : (
+                    <div className="mobile-empty">
+                        <div className="mobile-empty-icon">
+                            <Dna size={64} />
+                        </div>
+                        <div className="mobile-empty-title">Prêt à analyser</div>
+                        <div className="mobile-empty-subtitle">Entrez une séquence pour commencer</div>
                     </div>
                 )}
             </div>
+
+            {/* Bottom Navigation */}
+            <MobileBottomNav />
         </div>
     );
 };

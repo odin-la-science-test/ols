@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Plus, Clock, MapPin, User } from 'lucide-react';
+import { ArrowLeft, Calendar, Plus, Clock, MapPin, User, Trash2 } from 'lucide-react';
 import { useToast } from '../../../components/ToastContext';
 import { fetchModuleData, saveModuleItem, deleteModuleItem } from '../../../utils/persistence';
+import MobileBottomNav from '../../../components/MobileBottomNav';
+import '../../../styles/mobile-app.css';
 
 const MobilePlanning = () => {
     const navigate = useNavigate();
@@ -74,229 +76,198 @@ const MobilePlanning = () => {
     };
 
     return (
-        <div className="app-viewport">
-            <div style={{
-                padding: '1rem 1.5rem',
-                borderBottom: '1px solid var(--border-color)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                background: 'var(--bg-secondary)'
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <button onClick={() => view === 'list' ? navigate('/hugin') : setView('list')} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', padding: '0.5rem' }}>
-                        <ArrowLeft size={24} />
-                    </button>
-                    <Calendar size={24} color="var(--accent-hugin)" />
-                    <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Planning</h1>
-                </div>
-                {view === 'list' && (
-                    <button onClick={() => setView('add')} style={{ background: 'var(--accent-hugin)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                        <Plus size={20} />
-                    </button>
-                )}
-            </div>
-
-            <div className="app-scrollbox">
-                {view === 'list' && (
-                    <div>
-                        <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border-color)', overflowX: 'auto' }}>
-                            <div style={{ display: 'flex', gap: '0.75rem', minWidth: 'max-content' }}>
-                                {getNextDays().map(day => (
-                                    <button
-                                        key={day.date}
-                                        onClick={() => setSelectedDate(day.date)}
-                                        style={{
-                                            padding: '0.75rem 1rem',
-                                            borderRadius: '1rem',
-                                            border: selectedDate === day.date ? '2px solid var(--accent-hugin)' : '1px solid var(--border-color)',
-                                            background: selectedDate === day.date ? 'rgba(99, 102, 241, 0.1)' : 'var(--bg-secondary)',
-                                            color: selectedDate === day.date ? 'var(--accent-hugin)' : 'var(--text-primary)',
-                                            cursor: 'pointer',
-                                            minWidth: '70px',
-                                            textAlign: 'center'
-                                        }}
-                                    >
-                                        <div style={{ fontSize: '0.75rem', marginBottom: '0.25rem', textTransform: 'uppercase' }}>
-                                            {day.dayName}
-                                        </div>
-                                        <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>
-                                            {day.day}
-                                        </div>
-                                        {day.isToday && (
-                                            <div style={{ fontSize: '0.65rem', marginTop: '0.25rem', opacity: 0.7 }}>
-                                                Aujourd'hui
-                                            </div>
-                                        )}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div style={{ padding: '1.5rem' }}>
-                            {todayEvents.length === 0 ? (
-                                <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-secondary)' }}>
-                                    <Calendar size={60} style={{ opacity: 0.3, marginBottom: '1rem' }} />
-                                    <p>Aucun événement ce jour</p>
-                                </div>
-                            ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    {todayEvents.map(event => (
-                                        <div key={event.id} className="card-native" style={{ padding: '1.25rem' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                                                <div style={{ flex: 1 }}>
-                                                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-                                                        {event.title}
-                                                    </h3>
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                            <Clock size={14} />
-                                                            {event.time}
-                                                        </div>
-                                                        {event.resource && (
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                                <MapPin size={14} />
-                                                                {event.resource}
-                                                            </div>
-                                                        )}
-                                                        {event.createdBy && (
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                                <User size={14} />
-                                                                {event.createdBy.split('@')[0]}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    {event.description && (
-                                                        <p style={{ marginTop: '0.75rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
-                                                            {event.description}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                <button
-                                                    onClick={() => deleteEvent(event.id)}
-                                                    style={{
-                                                        background: 'rgba(239, 68, 68, 0.1)',
-                                                        border: 'none',
-                                                        borderRadius: '0.5rem',
-                                                        padding: '0.5rem',
-                                                        color: '#ef4444',
-                                                        cursor: 'pointer',
-                                                        marginLeft: '1rem'
-                                                    }}
-                                                >
-                                                    ×
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+        <div className="mobile-app">
+            {/* Header */}
+            <div className="mobile-header">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <button 
+                            onClick={() => view === 'list' ? navigate('/hugin') : setView('list')} 
+                            className="mobile-btn-icon"
+                        >
+                            <ArrowLeft size={20} />
+                        </button>
+                        <div>
+                            <h1 className="mobile-header-title" style={{ fontSize: '1.5rem' }}>Planning</h1>
+                            <p className="mobile-header-subtitle">{events.length} événements</p>
                         </div>
                     </div>
+                    {view === 'list' && (
+                        <button 
+                            onClick={() => setView('add')} 
+                            className="mobile-btn-icon"
+                        >
+                            <Plus size={20} />
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="mobile-content">
+                {view === 'list' && (
+                    <>
+                        {/* Date Selector */}
+                        <div style={{ 
+                            display: 'flex', 
+                            gap: '0.75rem', 
+                            overflowX: 'auto', 
+                            paddingBottom: '0.5rem',
+                            marginBottom: '1rem'
+                        }}>
+                            {getNextDays().map(day => (
+                                <button
+                                    key={day.date}
+                                    onClick={() => setSelectedDate(day.date)}
+                                    className="mobile-card"
+                                    style={{
+                                        minWidth: '70px',
+                                        padding: '1rem',
+                                        textAlign: 'center',
+                                        border: selectedDate === day.date ? '2px solid var(--mobile-primary)' : '1px solid var(--mobile-border)',
+                                        background: selectedDate === day.date ? 'rgba(102, 126, 234, 0.1)' : 'var(--mobile-card)',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <div style={{ fontSize: '0.75rem', marginBottom: '0.25rem', textTransform: 'uppercase', color: 'var(--mobile-text-secondary)' }}>
+                                        {day.dayName}
+                                    </div>
+                                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: selectedDate === day.date ? 'var(--mobile-primary)' : 'var(--mobile-text)' }}>
+                                        {day.day}
+                                    </div>
+                                    {day.isToday && (
+                                        <div className="mobile-badge mobile-badge-primary" style={{ marginTop: '0.25rem', fontSize: '0.65rem' }}>
+                                            Aujourd'hui
+                                        </div>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Events List */}
+                        {todayEvents.length === 0 ? (
+                            <div className="mobile-empty">
+                                <div className="mobile-empty-icon">
+                                    <Calendar size={64} />
+                                </div>
+                                <div className="mobile-empty-title">Aucun événement</div>
+                                <div className="mobile-empty-subtitle">Aucun événement prévu ce jour</div>
+                            </div>
+                        ) : (
+                            <div className="mobile-list">
+                                {todayEvents.map(event => (
+                                    <div key={event.id} className="mobile-card mobile-card-elevated">
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                            <h3 className="mobile-card-title" style={{ flex: 1 }}>
+                                                {event.title}
+                                            </h3>
+                                            <button
+                                                onClick={() => deleteEvent(event.id)}
+                                                style={{
+                                                    background: 'rgba(248, 113, 113, 0.1)',
+                                                    border: 'none',
+                                                    borderRadius: 'var(--mobile-radius-md)',
+                                                    padding: '0.5rem',
+                                                    color: 'var(--mobile-error)',
+                                                    cursor: 'pointer',
+                                                    marginLeft: '1rem'
+                                                }}
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--mobile-text-secondary)' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <Clock size={16} />
+                                                {event.time}
+                                            </div>
+                                            {event.resource && (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <MapPin size={16} />
+                                                    {event.resource}
+                                                </div>
+                                            )}
+                                            {event.createdBy && (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <User size={16} />
+                                                    {event.createdBy.split('@')[0]}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {event.description && (
+                                            <p style={{ marginTop: '1rem', fontSize: '0.9rem', lineHeight: 1.5, color: 'var(--mobile-text)' }}>
+                                                {event.description}
+                                            </p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {view === 'add' && (
-                    <div style={{ padding: '1.5rem' }}>
-                        <div className="card-native" style={{ padding: '1.5rem' }}>
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>Titre *</label>
+                    <div className="mobile-card mobile-card-elevated">
+                        <h2 className="mobile-card-title" style={{ marginBottom: '1.5rem' }}>Nouvel Événement</h2>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>Titre *</label>
                                 <input
                                     type="text"
                                     value={newEvent.title}
                                     onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                                     placeholder="Réunion, Analyse, etc."
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.75rem',
-                                        background: 'var(--bg-primary)',
-                                        border: '1px solid var(--border-color)',
-                                        borderRadius: '0.5rem',
-                                        color: 'var(--text-primary)',
-                                        fontSize: '0.9rem'
-                                    }}
+                                    className="mobile-input"
                                 />
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>Date *</label>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>Date *</label>
                                     <input
                                         type="date"
                                         value={newEvent.date}
                                         onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            background: 'var(--bg-primary)',
-                                            border: '1px solid var(--border-color)',
-                                            borderRadius: '0.5rem',
-                                            color: 'var(--text-primary)',
-                                            fontSize: '0.9rem'
-                                        }}
+                                        className="mobile-input"
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>Heure</label>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>Heure</label>
                                     <input
                                         type="time"
                                         value={newEvent.time}
                                         onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
-                                        style={{
-                                            width: '100%',
-                                            padding: '0.75rem',
-                                            background: 'var(--bg-primary)',
-                                            border: '1px solid var(--border-color)',
-                                            borderRadius: '0.5rem',
-                                            color: 'var(--text-primary)',
-                                            fontSize: '0.9rem'
-                                        }}
+                                        className="mobile-input"
                                     />
                                 </div>
                             </div>
 
-                            <div style={{ marginBottom: '1rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>Lieu/Ressource</label>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>Lieu/Ressource</label>
                                 <input
                                     type="text"
                                     value={newEvent.resource}
                                     onChange={(e) => setNewEvent({ ...newEvent, resource: e.target.value })}
                                     placeholder="Salle A, Équipement X, etc."
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.75rem',
-                                        background: 'var(--bg-primary)',
-                                        border: '1px solid var(--border-color)',
-                                        borderRadius: '0.5rem',
-                                        color: 'var(--text-primary)',
-                                        fontSize: '0.9rem'
-                                    }}
+                                    className="mobile-input"
                                 />
                             </div>
 
-                            <div style={{ marginBottom: '1.5rem' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>Description</label>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 600 }}>Description</label>
                                 <textarea
                                     value={newEvent.description}
                                     onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
                                     placeholder="Détails de l'événement..."
-                                    style={{
-                                        width: '100%',
-                                        height: '100px',
-                                        padding: '0.75rem',
-                                        background: 'var(--bg-primary)',
-                                        border: '1px solid var(--border-color)',
-                                        borderRadius: '0.5rem',
-                                        color: 'var(--text-primary)',
-                                        fontSize: '0.9rem',
-                                        resize: 'vertical'
-                                    }}
+                                    className="mobile-input"
+                                    style={{ height: '100px', resize: 'vertical' }}
                                 />
                             </div>
 
                             <button 
                                 onClick={addEvent}
-                                className="btn btn-primary"
-                                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                                className="mobile-btn mobile-btn-primary"
+                                style={{ width: '100%' }}
                             >
                                 <Plus size={18} />
                                 Ajouter l'événement
@@ -305,6 +276,19 @@ const MobilePlanning = () => {
                     </div>
                 )}
             </div>
+
+            {/* Bottom Navigation */}
+            <MobileBottomNav />
+
+            {/* FAB for quick add */}
+            {view === 'list' && (
+                <button 
+                    onClick={() => setView('add')}
+                    className="mobile-fab"
+                >
+                    <Plus size={24} />
+                </button>
+            )}
         </div>
     );
 };

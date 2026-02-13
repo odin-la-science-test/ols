@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, BookOpen, Grid, Activity, Dna, FlaskConical, Calculator, Users, Settings } from 'lucide-react';
+import { Search, BookOpen, Grid, Activity, Dna, FlaskConical, Calculator, Users, Settings } from 'lucide-react';
+import MobileBottomNav from '../../components/MobileBottomNav';
 import disciplinesArray from '../../data/disciplines.json';
+import '../../styles/mobile-app.css';
 
 const MobileMunin = () => {
     const navigate = useNavigate();
@@ -45,185 +47,135 @@ const MobileMunin = () => {
     );
 
     return (
-        <div className="app-viewport">
-            <div style={{
-                padding: '1rem 1.5rem',
-                borderBottom: '1px solid var(--border-color)',
-                background: 'var(--bg-secondary)'
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                    <button onClick={() => navigate('/home')} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', padding: '0.5rem' }}>
-                        <ArrowLeft size={24} />
-                    </button>
+        <div className="mobile-app">
+            {/* Header avec gradient */}
+            <div className="mobile-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <img 
                         src="/logo2.png" 
                         alt="Munin" 
-                        style={{ width: '40px', height: '40px', objectFit: 'contain' }} 
+                        style={{ width: '48px', height: '48px', objectFit: 'contain' }} 
                     />
-                    <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: 'var(--accent-munin)' }}>
-                        Munin Atlas
-                    </h1>
+                    <div>
+                        <h1 className="mobile-header-title">Munin Atlas</h1>
+                        <p className="mobile-header-subtitle">
+                            {categorizedDisciplines.length} disciplines scientifiques
+                        </p>
+                    </div>
                 </div>
+            </div>
 
-                <div style={{ position: 'relative', marginBottom: '1rem' }}>
-                    <Search
-                        size={18}
-                        style={{ 
-                            position: 'absolute', 
-                            left: '1rem', 
-                            top: '50%', 
-                            transform: 'translateY(-50%)', 
-                            color: 'var(--accent-munin)' 
-                        }}
-                    />
+            {/* Contenu */}
+            <div className="mobile-content">
+                {/* Barre de recherche */}
+                <div className="mobile-search">
+                    <Search size={18} className="mobile-search-icon" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Rechercher une discipline..."
-                        style={{
-                            width: '100%',
-                            paddingLeft: '3rem',
-                            padding: '0.75rem',
-                            background: 'var(--bg-primary)',
-                            border: '1px solid var(--border-color)',
-                            borderRadius: '0.75rem',
-                            color: 'var(--text-primary)',
-                            fontSize: '0.9rem'
-                        }}
+                        className="mobile-input"
                     />
                 </div>
 
-                <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    style={{
-                        width: '100%',
-                        padding: '0.75rem',
-                        background: 'var(--bg-primary)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '0.75rem',
-                        color: 'var(--text-primary)',
-                        fontSize: '0.9rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        cursor: 'pointer'
-                    }}
-                >
-                    <span>Catégories</span>
-                    <span style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', background: 'var(--accent-munin)', borderRadius: '0.5rem' }}>
-                        {activeCategory === 'All' ? 'Toutes' : categories.find(c => c.name === activeCategory)?.label}
-                    </span>
-                </button>
+                {/* Filtres de catégories */}
+                <div className="mobile-section">
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="mobile-btn mobile-btn-secondary"
+                        style={{ width: '100%', justifyContent: 'space-between' }}
+                    >
+                        <span>Catégories</span>
+                        <span className="mobile-badge mobile-badge-primary">
+                            {activeCategory === 'All' ? 'Toutes' : categories.find(c => c.name === activeCategory)?.label}
+                        </span>
+                    </button>
 
-                {showFilters && (
-                    <div style={{ 
-                        marginTop: '1rem', 
-                        display: 'grid', 
-                        gridTemplateColumns: 'repeat(2, 1fr)', 
-                        gap: '0.75rem' 
-                    }}>
-                        {categories.map(cat => (
-                            <button
-                                key={cat.name}
-                                onClick={() => {
-                                    setActiveCategory(cat.name);
-                                    setShowFilters(false);
-                                }}
-                                style={{
-                                    padding: '0.75rem',
-                                    borderRadius: '0.75rem',
-                                    border: activeCategory === cat.name ? `2px solid ${cat.color}` : '1px solid var(--border-color)',
-                                    background: activeCategory === cat.name ? `${cat.color}15` : 'var(--bg-primary)',
-                                    color: activeCategory === cat.name ? cat.color : 'var(--text-primary)',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    fontSize: '0.85rem',
-                                    fontWeight: activeCategory === cat.name ? 600 : 400,
-                                    minHeight: '70px'
-                                }}
-                            >
-                                {cat.icon}
-                                <span style={{ textAlign: 'center', lineHeight: 1.2 }}>{cat.label}</span>
-                            </button>
-                        ))}
-                    </div>
-                )}
-            </div>
+                    {showFilters && (
+                        <div style={{ 
+                            marginTop: '1rem', 
+                            display: 'grid', 
+                            gridTemplateColumns: 'repeat(2, 1fr)', 
+                            gap: '0.75rem',
+                            animation: 'mobile-slide-up 0.3s ease-out'
+                        }}>
+                            {categories.map(cat => (
+                                <button
+                                    key={cat.name}
+                                    onClick={() => {
+                                        setActiveCategory(cat.name);
+                                        setShowFilters(false);
+                                    }}
+                                    className="mobile-card"
+                                    style={{
+                                        border: activeCategory === cat.name ? `2px solid ${cat.color}` : '1px solid var(--mobile-border)',
+                                        background: activeCategory === cat.name ? `${cat.color}15` : 'var(--mobile-card)',
+                                        color: activeCategory === cat.name ? cat.color : 'var(--mobile-text)',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        fontSize: '0.85rem',
+                                        fontWeight: activeCategory === cat.name ? 600 : 400,
+                                        minHeight: '80px',
+                                        padding: '1rem'
+                                    }}
+                                >
+                                    {cat.icon}
+                                    <span style={{ textAlign: 'center', lineHeight: 1.2 }}>{cat.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
-            <div className="app-scrollbox" style={{ padding: '1.5rem' }}>
+                {/* Liste des disciplines */}
                 {categorizedDisciplines.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-secondary)' }}>
-                        <Search size={60} style={{ opacity: 0.3, marginBottom: '1rem' }} />
-                        <p>Aucune discipline trouvée</p>
+                    <div className="mobile-empty">
+                        <div className="mobile-empty-icon">
+                            <Search size={64} />
+                        </div>
+                        <div className="mobile-empty-title">Aucune discipline trouvée</div>
+                        <div className="mobile-empty-subtitle">Essayez une autre recherche</div>
                     </div>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div className="mobile-list">
                         {categorizedDisciplines.map((d) => (
                             <div
                                 key={d.id}
-                                className="card-native"
-                                style={{ 
-                                    padding: '1.25rem',
-                                    cursor: 'pointer'
-                                }}
+                                className="mobile-list-item"
                                 onClick={() => navigate(`/munin/${d.id}`)}
                             >
-                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-                                    <div style={{ 
-                                        padding: '0.75rem', 
-                                        background: 'rgba(16, 185, 129, 0.1)', 
-                                        borderRadius: '0.75rem', 
-                                        color: 'var(--accent-munin)',
-                                        flexShrink: 0
-                                    }}>
-                                        <BookOpen size={20} />
+                                <div 
+                                    className="mobile-list-item-icon"
+                                    style={{ 
+                                        background: `${categories.find(c => c.name === d.category)?.color}15`,
+                                        color: categories.find(c => c.name === d.category)?.color
+                                    }}
+                                >
+                                    <BookOpen size={24} />
+                                </div>
+                                <div className="mobile-list-item-content">
+                                    <div className="mobile-list-item-title">
+                                        {d.label}
                                     </div>
-                                    <div style={{ flex: 1 }}>
-                                        <h3 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: '0.5rem' }}>
-                                            {d.label}
-                                        </h3>
-                                        <p style={{ 
-                                            color: 'var(--text-secondary)', 
-                                            fontSize: '0.85rem', 
-                                            lineHeight: 1.5,
-                                            marginBottom: '0.5rem'
-                                        }}>
-                                            Accédez aux protocoles et recherches concernant la {d.label.toLowerCase()}.
-                                        </p>
-                                        <div style={{ 
-                                            display: 'inline-block',
-                                            padding: '0.25rem 0.75rem',
-                                            background: `${categories.find(c => c.name === d.category)?.color}15`,
-                                            color: categories.find(c => c.name === d.category)?.color,
-                                            borderRadius: '0.5rem',
-                                            fontSize: '0.75rem',
-                                            fontWeight: 600
-                                        }}>
-                                            {categories.find(c => c.name === d.category)?.label}
-                                        </div>
+                                    <div className="mobile-list-item-subtitle">
+                                        {categories.find(c => c.name === d.category)?.label}
                                     </div>
                                 </div>
+                                <span className="mobile-badge mobile-badge-primary">
+                                    {categories.find(c => c.name === d.category)?.label}
+                                </span>
                             </div>
                         ))}
                     </div>
                 )}
-
-                <div style={{ 
-                    marginTop: '2rem', 
-                    padding: '1rem', 
-                    background: 'rgba(16, 185, 129, 0.05)', 
-                    borderRadius: '0.75rem',
-                    textAlign: 'center',
-                    fontSize: '0.85rem',
-                    color: 'var(--text-secondary)'
-                }}>
-                    {categorizedDisciplines.length} discipline{categorizedDisciplines.length > 1 ? 's' : ''} disponible{categorizedDisciplines.length > 1 ? 's' : ''}
-                </div>
             </div>
+
+            {/* Bottom Navigation */}
+            <MobileBottomNav />
         </div>
     );
 };
