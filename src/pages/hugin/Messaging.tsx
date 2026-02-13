@@ -78,7 +78,7 @@ const Messaging = () => {
 
     useEffect(() => {
         loadMessages();
-        const interval = setInterval(loadMessages, 5000);
+        const interval = setInterval(loadMessages, 30000); // 30 secondes au lieu de 5
         return () => clearInterval(interval);
     }, []);
 
