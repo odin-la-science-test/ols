@@ -5,9 +5,60 @@ const API_BASE_URL = isProduction
     ? 'https://odin-la-science.infinityfree.me'
     : 'http://localhost:3001';
 
+// Vérifier si le serveur backend est disponible
+let serverAvailable: boolean | null = null;
+
+const checkServerAvailability = async (): Promise<boolean> => {
+    if (serverAvailable !== null) return serverAvailable;
+    
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout
+        
+        const response = await fetch(`${API_BASE_URL}/api/health`, {
+            signal: controller.signal,
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        clearTimeout(timeoutId);
+        serverAvailable = response.ok;
+        return serverAvailable;
+    } catch (error) {
+        console.log('Backend server not available, using localStorage fallback');
+        serverAvailable = false;
+        return false;
+    }
+};
+
+// Fallback localStorage functions
+const getLocalStorageData = (moduleName: string): any[] => {
+    try {
+        const data = localStorage.getItem(`module_${moduleName}`);
+        return data ? JSON.parse(data) : [];
+    } catch (error) {
+        console.error(`Error reading localStorage for ${moduleName}:`, error);
+        return [];
+    }
+};
+
+const setLocalStorageData = (moduleName: string, data: any[]): void => {
+    try {
+        localStorage.setItem(`module_${moduleName}`, JSON.stringify(data));
+    } catch (error) {
+        console.error(`Error writing localStorage for ${moduleName}:`, error);
+    }
+};
+
 export const fetchModuleData = async (moduleName: string) => {
     try {
         console.log('fetchModuleData called for:', moduleName);
+        
+        const isServerAvailable = await checkServerAvailability();
+        
+        if (!isServerAvailable) {
+            console.log('Using localStorage fallback for:', moduleName);
+            return getLocalStorageData(moduleName);
+        }
         
         const response = await fetch(`${API_BASE_URL}/api/module/${moduleName}`, {
             headers: {
@@ -17,7 +68,8 @@ export const fetchModuleData = async (moduleName: string) => {
         
         if (!response.ok) {
             console.error('Fetch failed with status:', response.status);
-            throw new Error(`Failed to fetch data for ${moduleName}`);
+            console.log('Falling back to localStorage');
+            return getLocalStorageData(moduleName);
         }
         
         const data = await response.json();
@@ -25,13 +77,37 @@ export const fetchModuleData = async (moduleName: string) => {
         return data;
     } catch (error) {
         console.error(`Error fetching ${moduleName}:`, error);
-        return [];
+        console.log('Falling back to localStorage');
+        return getLocalStorageData(moduleName);
     }
 };
 
 export const saveModuleItem = async (moduleName: string, item: any) => {
     try {
         console.log('saveModuleItem called with:', moduleName, item);
+        
+        const isServerAvailable = await checkServerAvailability();
+        
+        if (!isServerAvailable) {
+            console.log('Using localStorage fallback for save:', moduleName);
+            const currentData = getLocalStorageData(moduleName);
+            
+            // Générer un ID si nécessaire
+            if (!item.id) {
+                item.id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+            }
+            
+            // Vérifier si l'item existe déjà (update)
+            const existingIndex = currentData.findIndex((d: any) => d.id === item.id);
+            if (existingIndex >= 0) {
+                currentData[existingIndex] = item;
+            } else {
+                currentData.push(item);
+            }
+            
+            setLocalStorageData(moduleName, currentData);
+            return { success: true, id: item.id };
+        }
         
         // Envoyer directement sans cryptage pour le développement
         const response = await fetch(`${API_BASE_URL}/api/module/${moduleName}`, {
@@ -47,7 +123,16 @@ export const saveModuleItem = async (moduleName: string, item: any) => {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('Response error:', errorText);
-            throw new Error(`Failed to save item for ${moduleName}: ${response.status}`);
+            console.log('Falling back to localStorage');
+            
+            // Fallback to localStorage on error
+            const currentData = getLocalStorageData(moduleName);
+            if (!item.id) {
+                item.id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+            }
+            currentData.push(item);
+            setLocalStorageData(moduleName, currentData);
+            return { success: true, id: item.id };
         }
         
         const result = await response.json();
@@ -55,13 +140,32 @@ export const saveModuleItem = async (moduleName: string, item: any) => {
         return result;
     } catch (error) {
         console.error(`Error saving to ${moduleName}:`, error);
-        throw error;
+        console.log('Falling back to localStorage');
+        
+        // Fallback to localStorage on error
+        const currentData = getLocalStorageData(moduleName);
+        if (!item.id) {
+            item.id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        }
+        currentData.push(item);
+        setLocalStorageData(moduleName, currentData);
+        return { success: true, id: item.id };
     }
 };
 
 export const deleteModuleItem = async (moduleName: string, id: string | number) => {
     try {
         console.log('deleteModuleItem called:', moduleName, id);
+        
+        const isServerAvailable = await checkServerAvailability();
+        
+        if (!isServerAvailable) {
+            console.log('Using localStorage fallback for delete:', moduleName);
+            const currentData = getLocalStorageData(moduleName);
+            const filteredData = currentData.filter((item: any) => item.id !== id);
+            setLocalStorageData(moduleName, filteredData);
+            return { success: true };
+        }
         
         const response = await fetch(`${API_BASE_URL}/api/module/${moduleName}/${id}`, {
             method: 'DELETE',
@@ -71,7 +175,11 @@ export const deleteModuleItem = async (moduleName: string, id: string | number) 
         });
         
         if (!response.ok) {
-            throw new Error(`Failed to delete item from ${moduleName}`);
+            console.log('Delete failed, falling back to localStorage');
+            const currentData = getLocalStorageData(moduleName);
+            const filteredData = currentData.filter((item: any) => item.id !== id);
+            setLocalStorageData(moduleName, filteredData);
+            return { success: true };
         }
         
         const result = await response.json();
@@ -79,7 +187,13 @@ export const deleteModuleItem = async (moduleName: string, id: string | number) 
         return result;
     } catch (error) {
         console.error(`Error deleting from ${moduleName}:`, error);
-        throw error;
+        console.log('Falling back to localStorage');
+        
+        // Fallback to localStorage on error
+        const currentData = getLocalStorageData(moduleName);
+        const filteredData = currentData.filter((item: any) => item.id !== id);
+        setLocalStorageData(moduleName, filteredData);
+        return { success: true };
     }
 };
 
