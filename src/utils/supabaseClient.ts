@@ -38,10 +38,21 @@ export const getCurrentUserEmail = (): string => {
         const userStr = localStorage.getItem('currentUser');
         if (!userStr) return 'anonymous@ols.com';
         
+        // Si c'est déjà un email (string simple), le retourner directement
+        if (userStr.includes('@') && !userStr.startsWith('{')) {
+            return userStr;
+        }
+        
+        // Sinon, parser le JSON
         const user = JSON.parse(userStr);
-        return user.email || 'anonymous@ols.com';
+        return user.email || user || 'anonymous@ols.com';
     } catch (error) {
         console.error('Error getting current user email:', error);
+        // En cas d'erreur, essayer de retourner la valeur brute si c'est un email
+        const userStr = localStorage.getItem('currentUser');
+        if (userStr && userStr.includes('@')) {
+            return userStr;
+        }
         return 'anonymous@ols.com';
     }
 };
