@@ -73,19 +73,16 @@ const transformPlanningForSupabase = (item: any): any => {
     if (!item.date || !item.time) return item;
     
     try {
-        // Parser la date française (format: "13/02/2024" ou "13/02")
-        const dateParts = item.date.split('/');
-        const day = dateParts[0].padStart(2, '0');
-        const month = dateParts[1].padStart(2, '0');
-        const year = dateParts[2] || new Date().getFullYear().toString();
+        // La date est déjà au format ISO (YYYY-MM-DD) depuis l'input type="date"
+        const date = item.date; // "2026-02-13"
         
-        // Parser l'heure (format: "14:30")
+        // Parser l'heure (format: "14:30" ou "14:00")
         const timeParts = item.time.split(':');
         const hour = timeParts[0].padStart(2, '0');
         const minute = timeParts[1]?.padStart(2, '0') || '00';
         
         // Créer le timestamp ISO
-        const dateStr = `${year}-${month}-${day}T${hour}:${minute}:00`;
+        const dateStr = `${date}T${hour}:${minute}:00`;
         
         return {
             title: item.title,

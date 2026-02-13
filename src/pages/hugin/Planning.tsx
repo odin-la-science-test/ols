@@ -90,7 +90,7 @@ const Planning = () => {
                     recipient: currentUser,
                     subject: `Rappel : ${eventData.title}`,
                     preview: `Rappel pour votre activité...`,
-                    date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    date: new Date().toISOString(), // Format ISO pour Supabase
                     read: false,
                     body: `Ceci est un rappel automatique pour votre session : \n\nÉvénement : ${eventData.title}\nLieu/Ressource : ${eventData.resource}\nHeure : ${eventData.time}\nDate : ${eventData.date}\n\nBon travail au laboratoire !`,
                     folder: 'inbox'
