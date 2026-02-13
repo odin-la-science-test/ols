@@ -39,11 +39,55 @@ const fetchFromSupabase = async (moduleName: string): Promise<any[]> => {
             return [];
         }
         
+        // Transformer les données du Planning si nécessaire
+        if (moduleName === 'planning' && data) {
+            return data.map(transformPlanningFromSupabase);
+        }
+        
         return data || [];
     } catch (error) {
         console.error('Error fetching from Supabase:', error);
         return [];
     }
+};
+
+// Transformer les données du Planning pour Supabase
+const transformPlanningForSupabase = (item: any): any => {
+    if (!item.date || !item.time) return item;
+    
+    // Combiner date et time en timestamp ISO
+    const [day, month, year] = item.date.split('/');
+    const dateStr = `${year || new Date().getFullYear()}-${month}-${day}T${item.time}:00`;
+    
+    return {
+        title: item.title,
+        description: item.module || '',
+        start_date: dateStr,
+        end_date: dateStr, // Même heure pour début et fin
+        location: item.resource || '',
+        attendees: item.user ? [item.user] : [],
+        reminder: item.reminder || false
+    };
+};
+
+// Transformer les données Supabase pour le Planning
+const transformPlanningFromSupabase = (item: any): any => {
+    if (!item.start_date) return item;
+    
+    const startDate = new Date(item.start_date);
+    const date = startDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const time = startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    
+    return {
+        id: item.id,
+        title: item.title,
+        resource: item.location || '',
+        time: time,
+        date: date,
+        user: item.attendees?.[0] || '',
+        module: item.description || '',
+        reminder: item.reminder || false
+    };
 };
 
 const saveToSupabase = async (moduleName: string, item: any): Promise<any> => {
@@ -53,9 +97,15 @@ const saveToSupabase = async (moduleName: string, item: any): Promise<any> => {
         const tableName = getTableName(moduleName);
         const userEmail = getCurrentUserEmail();
         
+        // Transformer les données du Planning si nécessaire
+        let itemToSave = { ...item };
+        if (moduleName === 'planning') {
+            itemToSave = transformPlanningForSupabase(item);
+        }
+        
         // Préparer l'item pour Supabase
         const itemWithUser = {
-            ...item,
+            ...itemToSave,
             user_email: userEmail
         };
         
