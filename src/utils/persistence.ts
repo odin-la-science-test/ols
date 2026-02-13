@@ -28,6 +28,23 @@ const fetchFromSupabase = async (moduleName: string): Promise<any[]> => {
         const tableName = getTableName(moduleName);
         const userEmail = getCurrentUserEmail();
         
+        // Pour les messages, récupérer ceux où l'utilisateur est expéditeur OU destinataire
+        if (moduleName === 'messaging') {
+            const { data, error } = await supabase
+                .from(tableName)
+                .select('*')
+                .or(`sender.eq.${userEmail},recipient.eq.${userEmail}`)
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error('Supabase fetch error:', error);
+                return [];
+            }
+            
+            return data || [];
+        }
+        
+        // Pour les autres modules, filtrer par user_email
         const { data, error } = await supabase
             .from(tableName)
             .select('*')
