@@ -23,9 +23,13 @@ import BackToTop from './components/BackToTop';
 const Munin = lazy(() => import('./pages/Munin'));
 const MobileMunin = lazy(() => import('./pages/mobile/Munin'));
 const Discipline = lazy(() => import('./pages/Discipline'));
+const MobileDiscipline = lazy(() => import('./pages/mobile/Discipline'));
 const EntityDetail = lazy(() => import('./pages/EntityDetail'));
+const MobileEntityDetail = lazy(() => import('./pages/mobile/EntityDetail'));
 const PropertyDetail = lazy(() => import('./pages/PropertyDetail'));
+const MobilePropertyDetail = lazy(() => import('./pages/mobile/PropertyDetail'));
 const CompareEntities = lazy(() => import('./pages/CompareEntities'));
+const MobileCompareEntities = lazy(() => import('./pages/mobile/CompareEntities'));
 const Hugin = lazy(() => import('./pages/Hugin'));
 const MobileHugin = lazy(() => import('./pages/mobile/Hugin'));
 const Messaging = lazy(() => import('./pages/hugin/Messaging'));
@@ -272,37 +276,58 @@ function App() {
             } />
             <Route path="/munin/:id" element={
               <ProtectedRoute module="munin">
-                <Discipline />
+                <ResponsiveRoute 
+                  desktopComponent={Discipline} 
+                  mobileComponent={MobileDiscipline} 
+                />
               </ProtectedRoute>
             } />
             <Route path="/munin/:disciplineId/:entityId" element={
               <ProtectedRoute module="munin">
-                <EntityDetail />
+                <ResponsiveRoute 
+                  desktopComponent={EntityDetail} 
+                  mobileComponent={MobileEntityDetail} 
+                />
               </ProtectedRoute>
             } />
             <Route path="/munin/:id/compare" element={
               <ProtectedRoute module="munin">
-                <CompareEntities />
+                <ResponsiveRoute 
+                  desktopComponent={CompareEntities} 
+                  mobileComponent={MobileCompareEntities} 
+                />
               </ProtectedRoute>
             } />
             <Route path="/discipline/:id" element={
               <ProtectedRoute module="munin">
-                <Discipline />
+                <ResponsiveRoute 
+                  desktopComponent={Discipline} 
+                  mobileComponent={MobileDiscipline} 
+                />
               </ProtectedRoute>
             } />
             <Route path="/entity/:id" element={
               <ProtectedRoute module="munin">
-                <EntityDetail />
+                <ResponsiveRoute 
+                  desktopComponent={EntityDetail} 
+                  mobileComponent={MobileEntityDetail} 
+                />
               </ProtectedRoute>
             } />
             <Route path="/property/:id" element={
               <ProtectedRoute module="munin">
-                <PropertyDetail />
+                <ResponsiveRoute 
+                  desktopComponent={PropertyDetail} 
+                  mobileComponent={MobilePropertyDetail} 
+                />
               </ProtectedRoute>
             } />
             <Route path="/compare" element={
               <ProtectedRoute module="munin">
-                <CompareEntities />
+                <ResponsiveRoute 
+                  desktopComponent={CompareEntities} 
+                  mobileComponent={MobileCompareEntities} 
+                />
               </ProtectedRoute>
             } />
             <Route path="/hugin" element={
