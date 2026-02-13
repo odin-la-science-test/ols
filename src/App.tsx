@@ -47,7 +47,6 @@ import PlateMapper from './pages/hugin/PlateMapper';
 import SolutionMixer from './pages/hugin/SolutionMixer';
 import PrimerStep from './pages/hugin/PrimerStep';
 import CellTracker from './pages/hugin/CellTracker';
-import AdvancedModule from './pages/hugin/AdvancedModule';
 import BlastNCBI from './pages/hugin/BlastNCBI';
 import PhyloMega from './pages/hugin/PhyloMega';
 import BioNumerics from './pages/hugin/BioNumerics';
@@ -442,11 +441,6 @@ function App() {
             <Route path="/hugin/cells" element={
               <ProtectedRoute module="hugin_analysis">
                 <CellTracker />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/advanced/:moduleId" element={
-              <ProtectedRoute module="hugin_lab">
-                <AdvancedModule />
               </ProtectedRoute>
             } />
             <Route path="/hugin/blast" element={

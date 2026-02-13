@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronRight, Search, AlertTriangle, Beaker, Box, Microscope, Archive, Plus } from 'lucide-react';
+import { ChevronRight, Search, AlertTriangle, Beaker, Box, Microscope, Archive } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../components/ToastContext';
 import { fetchModuleData, saveModuleItem, deleteModuleItem } from '../../utils/persistence';

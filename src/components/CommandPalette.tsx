@@ -7,7 +7,6 @@ import {
     TrendingUp, UserCheck, ShieldAlert, Package,
     HardDrive, Snowflake, Wallet, Share2, Star
 } from 'lucide-react';
-import { advancedModules } from '../data/modulesConfig';
 import { checkHasAccess, getAccessData } from '../utils/ShieldUtils';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 
@@ -93,17 +92,8 @@ const CommandPalette = () => {
         { id: 'mixer', label: 'Solution Mixer', category: 'Analysis', path: '/hugin/mixer', icon: <Package size={18} />, moduleId: 'mixer' },
         { id: 'primers', label: 'Primer Step', category: 'Analysis', path: '/hugin/primers', icon: <Dna size={18} />, moduleId: 'primers' },
         { id: 'cells', label: 'Cell Tracker', category: 'Analysis', path: '/hugin/cells', icon: <UserCheck size={18} />, moduleId: 'cells' },
-        { id: 'colony', label: 'Colony Vision', category: 'Analysis', path: '/hugin/colony', icon: <Activity size={18} />, moduleId: 'colony' },
-
-        // Advanced
-        ...advancedModules.map(m => ({
-            id: m.id,
-            label: (m as any).name || m.id,
-            category: m.category,
-            path: `/hugin/advanced/${m.id}`,
-            icon: <Beaker size={18} />,
-            moduleId: m.id
-        })),
+        { id: 'colony', label: 'Colony Vision', category: 'Analysis', path: '/hugin/colony', icon: <Activity size={18} />, moduleId: 'colony' }
+    ];
 
         // General
         { id: 'home', label: 'Dashboard Home', category: 'General', path: '/home', icon: <Grid size={18} />, moduleId: 'any' },

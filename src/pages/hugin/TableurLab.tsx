@@ -133,7 +133,7 @@ const TableurLab = () => {
         containerRef.current.innerHTML = '';
 
         const options = {
-            mode: 'edit',
+            mode: 'edit' as const,
             showToolbar: true,
             showGrid: true,
             showContextmenu: true,
@@ -153,7 +153,7 @@ const TableurLab = () => {
             },
             style: {
                 bgcolor: '#ffffff',
-                align: 'left',
+                align: 'left' as const,
                 valign: 'middle',
                 textwrap: false,
                 strike: false,

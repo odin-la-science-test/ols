@@ -81,7 +81,7 @@ const ScientificResearch = () => {
 
     const saveArchives = async (data: Article[]) => {
         setArchives(data);
-
+        await saveModuleItem('research_archives', { id: 'archives', data });
     };
 
     const isArchived = (article: Article) => {

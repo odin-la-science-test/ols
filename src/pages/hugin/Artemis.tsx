@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import {
     Layout, ZoomIn, ZoomOut, Save,
-    ArrowLeft, Download, RefreshCw, Info,
+    ArrowLeft,
     ChevronRight, ChevronLeft, Database
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

@@ -1,32 +1,9 @@
-import { encryptData, decryptData, SessionManager, CSRFProtection, sanitizeInput } from './encryption';
+import { SessionManager, CSRFProtection } from './encryption';
 
-// Détection automatique de l'environnement
 const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
 const API_BASE_URL = isProduction 
     ? 'https://odin-la-science.infinityfree.me'
     : 'http://localhost:3001';
-
-// Clé de cryptage dérivée de la session utilisateur
-const getEncryptionKey = (): string => {
-    const sessionData = SessionManager.getSessionData();
-    if (!sessionData) {
-        throw new Error('No active session');
-    }
-    return sessionData.token;
-};
-
-// Headers sécurisés pour toutes les requêtes
-const getSecureHeaders = (): HeadersInit => {
-    const csrfToken = CSRFProtection.getToken() || CSRFProtection.generateToken();
-    const sessionData = SessionManager.getSessionData();
-    
-    return {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': csrfToken,
-        'Authorization': sessionData ? `Bearer ${sessionData.token}` : '',
-        'X-Requested-With': 'XMLHttpRequest'
-    };
-};
 
 export const fetchModuleData = async (moduleName: string) => {
     try {

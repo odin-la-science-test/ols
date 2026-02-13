@@ -10,8 +10,6 @@ import { useLanguage } from '../components/LanguageContext';
 import { useToast } from '../components/ToastContext';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import Navbar from '../components/Navbar';
-
-import { advancedModules } from '../data/modulesConfig';
 import { checkHasAccess, getAccessData } from '../utils/ShieldUtils';
 
 const Hugin = () => {
@@ -80,17 +78,7 @@ const Hugin = () => {
         { id: 'primers', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/primers' },
         { id: 'cells', icon: <UserCheck size={24} />, category: 'Analysis', path: '/hugin/cells' },
         { id: 'colony', icon: <Camera size={24} />, category: 'Analysis', path: '/hugin/colony' },
-        { id: 'culture', icon: <Beaker size={24} />, category: 'Analysis', path: '/hugin/culture' },
-
-        // Advanced Modules
-        ...advancedModules.map(m => ({
-            id: m.id,
-            icon: <Activity size={24} />,
-            category: m.category,
-            path: `/hugin/advanced/${m.id}`,
-            name: m.name,
-            desc: m.description
-        }))
+        { id: 'culture', icon: <Beaker size={24} />, category: 'Analysis', path: '/hugin/culture' }
     ];
 
     const categories = ['All', 'Management', 'Communication', 'Research', 'Analysis', 'Bacteriology', 'Cell Culture', 'Hematology', 'Bio Production', 'Biochemistry'];
