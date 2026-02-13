@@ -2,6 +2,7 @@ import { useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './App.css';
 import LandingPage from './pages/LandingPage';
+import MobileLandingPage from './pages/mobile/LandingPage';
 import Home from './pages/Home';
 import MobileHome from './pages/mobile/Home';
 import Login from './pages/Login';
@@ -199,7 +200,12 @@ function App() {
             </div>
           )}
           <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={
+              <ResponsiveRoute 
+                desktopComponent={LandingPage} 
+                mobileComponent={MobileLandingPage} 
+              />
+            } />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/why-odin" element={<WhyOdin />} />
