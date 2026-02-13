@@ -53,41 +53,31 @@ const saveToSupabase = async (moduleName: string, item: any): Promise<any> => {
         const tableName = getTableName(moduleName);
         const userEmail = getCurrentUserEmail();
         
-        // Ajouter l'email de l'utilisateur
+        // Préparer l'item pour Supabase
         const itemWithUser = {
             ...item,
             user_email: userEmail
         };
         
-        // Si l'item a un ID, c'est une mise à jour
-        if (item.id) {
-            const { data, error } = await supabase
-                .from(tableName)
-                .upsert(itemWithUser)
-                .select()
-                .single();
-            
-            if (error) {
-                console.error('Supabase upsert error:', error);
-                return null;
-            }
-            
-            return data;
-        } else {
-            // Sinon, c'est une insertion
-            const { data, error } = await supabase
-                .from(tableName)
-                .insert(itemWithUser)
-                .select()
-                .single();
-            
-            if (error) {
-                console.error('Supabase insert error:', error);
-                return null;
-            }
-            
-            return data;
+        // Supprimer l'ID si c'est une string générée localement (pas un UUID)
+        // Supabase générera automatiquement un UUID
+        if (itemWithUser.id && typeof itemWithUser.id === 'string' && !itemWithUser.id.includes('-')) {
+            delete itemWithUser.id;
         }
+        
+        // Insertion (Supabase génère l'ID)
+        const { data, error } = await supabase
+            .from(tableName)
+            .insert(itemWithUser)
+            .select()
+            .single();
+        
+        if (error) {
+            console.error('Supabase insert error:', error);
+            return null;
+        }
+        
+        return data;
     } catch (error) {
         console.error('Error saving to Supabase:', error);
         return null;
