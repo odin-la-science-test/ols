@@ -2,6 +2,7 @@ import { useNavigate, Routes, Route, Navigate, useLocation } from 'react-router-
 import { useState, useEffect, lazy, Suspense } from 'react';
 import './App.css';
 import { initAutoWatchService } from './services/autoWatchService';
+import { useDeviceDetection } from './hooks/useDeviceDetection';
 
 // Composants critiques chargés immédiatement
 import LandingPage from './pages/LandingPage';
@@ -155,6 +156,7 @@ const ProtectedRoute = ({ children, module }: { children: ReactNode, module?: st
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isMobile } = useDeviceDetection();
   const [tempSessionActive, setTempSessionActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
 
@@ -243,7 +245,7 @@ function App() {
           <ShortcutManager />
           <KeyboardShortcuts />
           <CommandPalette />
-          {location.pathname !== '/' && <QuickNotes showFloatingButton={location.pathname === '/home'} />}
+          {location.pathname !== '/' && <QuickNotes showFloatingButton={location.pathname === '/home' && !isMobile} />}
           <ScrollToTop />
           <BackToTop />
           <VersionBadge position="bottom-right" />
