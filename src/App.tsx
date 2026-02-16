@@ -48,11 +48,6 @@ const BioToolBox = lazy(() => import('./pages/hugin/BioToolBox'));
 const SequenceLens = lazy(() => import('./pages/hugin/SequenceLens'));
 const ColonyVision = lazy(() => import('./pages/hugin/ColonyVision'));
 const ProjectMind = lazy(() => import('./pages/hugin/ProjectMind'));
-const UnitConverter = lazy(() => import('./pages/hugin/UnitConverter'));
-const DilutionCalc = lazy(() => import('./pages/hugin/DilutionCalc'));
-const PHCalculator = lazy(() => import('./pages/hugin/PHCalculator'));
-const MolarityCalc = lazy(() => import('./pages/hugin/MolarityCalc'));
-const LabNotes = lazy(() => import('./pages/hugin/LabNotes'));
 const SafetyHub = lazy(() => import('./pages/hugin/SafetyHub'));
 const FlowAnalyzer = lazy(() => import('./pages/hugin/FlowAnalyzer'));
 const SpectrumViewer = lazy(() => import('./pages/hugin/SpectrumViewer'));
@@ -79,6 +74,11 @@ const WordProcessor = lazy(() => import('./pages/hugin/WordProcessor'));
 const ProteinFold = lazy(() => import('./pages/hugin/ProteinFold'));
 const LabTimer = lazy(() => import('./pages/hugin/LabTimer'));
 const BufferCalc = lazy(() => import('./pages/hugin/BufferCalc'));
+const PCRDesigner = lazy(() => import('./pages/hugin/PCRDesigner'));
+const GelSimulator = lazy(() => import('./pages/hugin/GelSimulator'));
+const ProteinCalculator = lazy(() => import('./pages/hugin/ProteinCalculator'));
+const RestrictionMapper = lazy(() => import('./pages/hugin/RestrictionMapper'));
+const CloningAssistant = lazy(() => import('./pages/hugin/CloningAssistant'));
 const WhyOdin = lazy(() => import('./pages/WhyOdin'));
 const Enterprise = lazy(() => import('./pages/Enterprise'));
 const Pricing = lazy(() => import('./pages/Pricing'));
@@ -468,31 +468,6 @@ function App() {
                 <ProjectMind />
               </ProtectedRoute>
             } />
-            <Route path="/hugin/unitconverter" element={
-              <ProtectedRoute module="any">
-                <UnitConverter />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/dilution" element={
-              <ProtectedRoute module="any">
-                <DilutionCalc />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/phcalc" element={
-              <ProtectedRoute module="any">
-                <PHCalculator />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/molarity" element={
-              <ProtectedRoute module="any">
-                <MolarityCalc />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/labnotes" element={
-              <ProtectedRoute module="any">
-                <LabNotes />
-              </ProtectedRoute>
-            } />
             <Route path="/hugin/safety" element={
               <ProtectedRoute module="hugin_lab">
                 <SafetyHub />
@@ -616,6 +591,31 @@ function App() {
             <Route path="/hugin/buffer-calc" element={
               <ProtectedRoute module="hugin_core">
                 <BufferCalc />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/pcr-designer" element={
+              <ProtectedRoute module="hugin_analysis">
+                <PCRDesigner />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/gel-simulator" element={
+              <ProtectedRoute module="hugin_analysis">
+                <GelSimulator />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/protein-calculator" element={
+              <ProtectedRoute module="hugin_analysis">
+                <ProteinCalculator />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/restriction-mapper" element={
+              <ProtectedRoute module="hugin_analysis">
+                <RestrictionMapper />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/cloning-assistant" element={
+              <ProtectedRoute module="hugin_analysis">
+                <CloningAssistant />
               </ProtectedRoute>
             } />
             <Route path="/account" element={

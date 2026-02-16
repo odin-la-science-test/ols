@@ -3,7 +3,7 @@ import {
     Beaker, Calendar, Mail, HardDrive, Video, Brain, Quote, Book,
     Package, Snowflake, Activity, Wallet, BookOpen, Calculator,
     Dna, Camera, Layers, ShieldAlert, Zap, Share2, Box,
-    TrendingUp, Grid, UserCheck, Search, FileText, Clock
+    TrendingUp, Grid, UserCheck, Search, FileText, Clock, GitBranch
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../components/LanguageContext';
@@ -84,11 +84,11 @@ const Hugin = () => {
         { id: 'proteinfold', name: 'ProteinFold', desc: 'Structures protéiques 3D', icon: <Layers size={24} />, category: 'Analysis', path: '/hugin/protein-fold' },
         { id: 'labtimer', name: 'LabTimer', desc: 'Timers multiples pour expériences', icon: <Clock size={24} />, category: 'Core', path: '/hugin/lab-timer' },
         { id: 'buffercalc', name: 'BufferCalc', desc: 'Calculateur de tampons', icon: <Beaker size={24} />, category: 'Analysis', path: '/hugin/buffer-calc' },
-        { id: 'unitconverter', name: 'Convertisseur', desc: 'Conversion d\'unités', icon: <Calculator size={24} />, category: 'Core', path: '/hugin/unitconverter' },
-        { id: 'dilution', name: 'Dilution', desc: 'Calculateur de dilution', icon: <Beaker size={24} />, category: 'Core', path: '/hugin/dilution' },
-        { id: 'phcalc', name: 'pH', desc: 'Calculateur de pH', icon: <Beaker size={24} />, category: 'Core', path: '/hugin/phcalc' },
-        { id: 'molarity', name: 'Molarité', desc: 'Calculateur de molarité', icon: <Calculator size={24} />, category: 'Core', path: '/hugin/molarity' },
-        { id: 'labnotes', name: 'Notes', desc: 'Notes rapides de labo', icon: <FileText size={24} />, category: 'Core', path: '/hugin/labnotes' }
+        { id: 'pcrdesigner', name: 'PCR Designer', desc: 'Design de primers PCR', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/pcr-designer' },
+        { id: 'gelsimulator', name: 'Gel Simulator', desc: 'Simulation de gels d\'agarose', icon: <Layers size={24} />, category: 'Analysis', path: '/hugin/gel-simulator' },
+        { id: 'proteincalc', name: 'Protein Calculator', desc: 'Propriétés des protéines', icon: <Calculator size={24} />, category: 'Analysis', path: '/hugin/protein-calculator' },
+        { id: 'restrictionmap', name: 'Restriction Mapper', desc: 'Carte de restriction', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/restriction-mapper' },
+        { id: 'cloningassist', name: 'Cloning Assistant', desc: 'Assistant de clonage', icon: <GitBranch size={24} />, category: 'Analysis', path: '/hugin/cloning-assistant' }
     ];
 
     const categories = ['All', 'Core', 'Lab', 'Research', 'Analysis'];

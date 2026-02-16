@@ -1,4 +1,6 @@
-export const specialAdmins = ['ethan@OLS.com', 'bastien@OLS.com', 'issam@OLS.com', 'admin', 'trinity.banos@gmail.com'];
+export const specialAdmins = ['ethan@OLS.com', 'bastien@OLS.com', 'issam@OLS.com', 'admin'];
+
+export const studentAccounts = ['trinity.banos@gmail.com'];
 
 export interface UserSubscription {
     status: string;
@@ -30,6 +32,12 @@ export const getAccessData = (currentUser: string | null) => {
 export const checkHasAccess = (moduleId: string, currentUser: string | null, sub: UserSubscription | undefined, hiddenTools: string[]) => {
     // Special Admins have access to everything
     if (currentUser && specialAdmins.includes(currentUser)) return true;
+
+    // Students have access to everything except budget and admin
+    if (currentUser && studentAccounts.includes(currentUser)) {
+        if (moduleId === 'budget' || moduleId === 'admin') return false;
+        return true;
+    }
 
     // 'any' modules are always accessible
     if (moduleId === 'any') return true;
