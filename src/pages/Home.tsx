@@ -7,7 +7,6 @@ import OnboardingMissions from '../components/OnboardingMissions';
 import { useTheme } from '../components/ThemeContext';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import GlobalSearch from '../components/GlobalSearch';
-import QuickNotes from '../components/QuickNotes';
 import UsageStats from '../components/UsageStats';
 import FavoritesPanel from '../components/FavoritesPanel';
 import ProgressTracker from '../components/ProgressTracker';
@@ -567,7 +566,6 @@ const Home = () => {
         <div style={{ minHeight: '100vh', position: 'relative' }}>
             <Navbar />
             <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-            <QuickNotes />
             {/* <ThemeSelector /> */}
             <div style={{ padding: '2rem', position: 'relative' }}>
                 {content}

@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ShortcutManager from './components/ShortcutManager';
 import KeyboardShortcuts from './components/KeyboardShortcuts';
+import QuickNotes from './components/QuickNotes';
 import { ToastProvider } from './components/ToastContext';
 import { LanguageProvider } from './components/LanguageContext';
 import { ThemeProvider } from './components/ThemeContext';
@@ -240,6 +241,7 @@ function App() {
           <ShortcutManager />
           <KeyboardShortcuts />
           <CommandPalette />
+          <QuickNotes />
           <ScrollToTop />
           <BackToTop />
           <VersionBadge position="bottom-right" />
