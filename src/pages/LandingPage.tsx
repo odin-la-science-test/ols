@@ -4,7 +4,7 @@ import {
     Beaker, BookOpen, Activity, Database,
     ChevronRight, Sparkles, ArrowRight,
     Play, Zap, Shield, Users, TrendingUp,
-    CheckCircle, Star, Award,
+    CheckCircle, Award,
     Microscope, FlaskConical, Dna, Brain, Menu, X
 } from 'lucide-react';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
@@ -99,27 +99,6 @@ const LandingPage = () => {
             title: 'Excel Lab',
             description: 'Tableur scientifique avec graphiques avancés',
             features: ['Formules scientifiques', 'Graphiques interactifs', 'Multi-sélection']
-        }
-    ];
-
-    const testimonials = [
-        {
-            name: 'Dr. Marie Dubois',
-            role: 'Directrice de recherche, BioEcoAgro',
-            content: 'Odin a transformé notre façon de travailler. Nous avons gagné 40% de temps sur la gestion administrative.',
-            rating: 5
-        },
-        {
-            name: 'Prof. Jean Martin',
-            role: 'Chef de laboratoire, INRAE',
-            content: 'La meilleure plateforme pour la recherche scientifique. Interface intuitive et fonctionnalités puissantes.',
-            rating: 5
-        },
-        {
-            name: 'Dr. Sophie Laurent',
-            role: 'Chercheuse, UGSF',
-            content: 'Indispensable pour notre équipe. Le suivi des cultures et l\'analyse de données sont remarquables.',
-            rating: 5
         }
     ];
 
@@ -787,90 +766,6 @@ const LandingPage = () => {
                                             {feat}
                                         </div>
                                     ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <section style={{
-                padding: '8rem 2rem',
-                background: 'rgba(255, 255, 255, 0.02)',
-                borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
-            }}>
-                <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-                    <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-                        <h2 style={{
-                            fontSize: '3rem',
-                            fontWeight: 900,
-                            marginBottom: '1rem',
-                            background: 'linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
-                        }}>
-                            Ils nous font confiance
-                        </h2>
-                        <p style={{ fontSize: '1.25rem', color: '#94a3b8' }}>
-                            Découvrez ce que nos utilisateurs disent d'Odin
-                        </p>
-                    </div>
-
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: '2rem'
-                    }}>
-                        {testimonials.map((testimonial, i) => (
-                            <div key={i} style={{
-                                background: 'rgba(255, 255, 255, 0.02)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '1.5rem',
-                                padding: '2rem',
-                                transition: 'all 0.3s'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-4px)';
-                                e.currentTarget.style.borderColor = '#3b82f6';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                            }}>
-                                <div style={{
-                                    display: 'flex',
-                                    gap: '0.25rem',
-                                    marginBottom: '1.5rem'
-                                }}>
-                                    {[...Array(testimonial.rating)].map((_, j) => (
-                                        <Star key={j} size={20} fill="#f59e0b" color="#f59e0b" />
-                                    ))}
-                                </div>
-                                <p style={{
-                                    color: '#cbd5e1',
-                                    lineHeight: 1.7,
-                                    marginBottom: '1.5rem',
-                                    fontSize: '1.05rem'
-                                }}>
-                                    "{testimonial.content}"
-                                </p>
-                                <div style={{
-                                    paddingTop: '1rem',
-                                    borderTop: '1px solid rgba(255, 255, 255, 0.1)'
-                                }}>
-                                    <div style={{
-                                        fontWeight: 700,
-                                        marginBottom: '0.25rem'
-                                    }}>
-                                        {testimonial.name}
-                                    </div>
-                                    <div style={{
-                                        color: '#64748b',
-                                        fontSize: '0.9rem'
-                                    }}>
-                                        {testimonial.role}
-                                    </div>
                                 </div>
                             </div>
                         ))}

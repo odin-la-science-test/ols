@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import MobileBottomNav from '../../components/MobileBottomNav';
 import OfflineIndicator from '../../components/OfflineIndicator';
 import GlobalSearch from '../../components/GlobalSearch';
+import QuickNotes from '../../components/QuickNotes';
 import '../../styles/mobile-app.css';
 
 const MobileHome = () => {
@@ -12,6 +13,7 @@ const MobileHome = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [todayEvents, setTodayEvents] = useState<any[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isNotesOpen, setIsNotesOpen] = useState(false);
 
   const username = localStorage.getItem('currentUser')?.split('@')[0] || 'User';
 
@@ -99,6 +101,7 @@ const MobileHome = () => {
     <div className="mobile-container">
       <OfflineIndicator />
       <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <QuickNotes isOpen={isNotesOpen} onClose={() => setIsNotesOpen(false)} showFloatingButton={false} />
       
       <div className="mobile-header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -109,6 +112,19 @@ const MobileHome = () => {
             <h1 className="mobile-title" style={{ marginBottom: 0 }}>{username}</h1>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={() => setIsNotesOpen(true)}
+              style={{
+                background: 'rgba(139, 92, 246, 0.1)',
+                border: '1px solid rgba(139, 92, 246, 0.3)',
+                borderRadius: '0.75rem',
+                padding: '0.75rem',
+                cursor: 'pointer',
+                color: '#8b5cf6'
+              }}
+            >
+              <StickyNote size={20} />
+            </button>
             <button
               onClick={() => setIsSearchOpen(true)}
               style={{
