@@ -50,13 +50,6 @@ const MobileHugin = () => {
       description: 'Procédures opératoires',
       path: '/hugin/sop',
       color: 'var(--mobile-hugin)'
-    },
-    {
-      icon: Brain,
-      title: 'Mimir',
-      description: 'Assistant IA',
-      path: '/hugin/mimir',
-      color: '#10b981'
     }
   ];
 
