@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Brain, Send, Sparkles, User, Loader2 } from 'lucide-react';
+import { 
+  ArrowLeft, Brain, Send, Sparkles, User, Loader2, 
+  Zap, Settings, Trash2, Copy, Check 
+} from 'lucide-react';
 import MobileBottomNav from '../../../components/MobileBottomNav';
 import '../../../styles/mobile-app.css';
 
@@ -19,11 +22,14 @@ const MobileMimir = () => {
     {
       id: 1,
       role: 'assistant',
-      content: "Bonjour ! Je suis Mimir, votre assistant IA scientifique. Je peux vous aider avec vos questions de recherche, expliquer des concepts biologiques, analyser des protocoles, et bien plus encore. Comment puis-je vous aider aujourd'hui ?",
+      content: "Bonjour ! Je suis Mimir, propulsé par Qwen2.5-7B. Je suis votre assistant IA scientifique spécialisé en biologie, chimie et recherche. Posez-moi vos questions sur les protocoles, techniques, analyses ou concepts scientifiques !",
       timestamp: new Date()
     }
   ]);
   const [isThinking, setIsThinking] = useState(false);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [apiKey, setApiKey] = useState(localStorage.getItem('hf_api_key') || '');
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -31,66 +37,83 @@ const MobileMimir = () => {
     }
   }, [messages, isThinking]);
 
-  const generateAIResponse = async (userQuery: string): Promise<string> => {
-    const query = userQuery.toLowerCase();
+  const callQwenAPI = async (userQuery: string): Promise<string> => {
+    const HF_API_KEY = apiKey || 'hf_placeholder';
+    
+    const conversationHistory = messages.slice(-6).map(m => ({
+      role: m.role,
+      content: m.content
+    }));
 
-    if (query.includes('pcr') || query.includes('polymerase')) {
-      return "La PCR (Polymerase Chain Reaction) est une technique d'amplification d'ADN qui permet de créer des millions de copies d'une séquence spécifique. Elle se déroule en 3 étapes cycliques : dénaturation (95°C), hybridation des amorces (50-65°C), et élongation (72°C). Pour optimiser votre PCR, assurez-vous d'utiliser des amorces de 18-25 nucléotides avec un Tm similaire et évitez les structures secondaires.";
+    const systemPrompt = {
+      role: 'system',
+      content: 'Tu es Mimir, un assistant IA scientifique expert en biologie moléculaire, biochimie, microbiologie et recherche scientifique. Tu fournis des réponses précises, détaillées et pratiques. Tu expliques les protocoles, techniques et concepts avec clarté. Réponds toujours en français.'
+    };
+
+    try {
+      const response = await fetch(
+        'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-7B-Instruct',
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${HF_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            inputs: `<|im_start|>system\n${systemPrompt.content}<|im_end|>\n${conversationHistory.map(m => `<|im_start|>${m.role}\n${m.content}<|im_end|>`).join('\n')}\n<|im_start|>user\n${userQuery}<|im_end|>\n<|im_start|>assistant\n`,
+            parameters: {
+              max_new_tokens: 800,
+              temperature: 0.7,
+              top_p: 0.9,
+              return_full_text: false,
+              do_sample: true
+            }
+          })
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 503) {
+          return "Le modèle Qwen2.5-7B est en cours de chargement. Veuillez réessayer dans quelques secondes...";
+        }
+        throw new Error(`API Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (Array.isArray(data) && data[0]?.generated_text) {
+        return data[0].generated_text.trim();
+      } else if (data.generated_text) {
+        return data.generated_text.trim();
+      } else {
+        throw new Error('Format de réponse inattendu');
+      }
+    } catch (error) {
+      console.error('Erreur API Qwen:', error);
+      return getFallbackResponse(userQuery);
     }
+  };
 
-    if (query.includes('crispr') || query.includes('édition génomique')) {
-      return "CRISPR-Cas9 est un système d'édition génomique révolutionnaire qui permet de modifier précisément l'ADN. Il utilise un ARN guide (gRNA) pour diriger la nucléase Cas9 vers une séquence cible spécifique. Le système crée une coupure double-brin qui peut être réparée par NHEJ (jonction non-homologue) ou HDR (réparation dirigée par homologie). Les applications incluent la thérapie génique, la création de modèles animaux, et l'amélioration des cultures.";
+  const getFallbackResponse = (query: string): string => {
+    const q = query.toLowerCase();
+    
+    if (q.includes('pcr')) {
+      return "🧬 **PCR (Polymerase Chain Reaction)**\n\nLa PCR amplifie l'ADN en 3 étapes cycliques :\n\n1. **Dénaturation** (95°C, 30s) : séparation des brins\n2. **Hybridation** (50-65°C, 30s) : fixation des amorces\n3. **Élongation** (72°C, 1min/kb) : synthèse par Taq polymérase\n\n**Optimisation** :\n- Amorces 18-25 nt, Tm similaire (±2°C)\n- MgCl₂ : 1.5-2.5 mM\n- 25-35 cycles\n- Contrôles positif/négatif obligatoires";
     }
-
-    if (query.includes('western blot') || query.includes('immunoblot')) {
-      return "Le Western Blot est une technique d'immunodétection des protéines. Protocole : 1) Électrophorèse SDS-PAGE pour séparer les protéines, 2) Transfert sur membrane PVDF ou nitrocellulose, 3) Blocage avec du lait ou BSA 5%, 4) Incubation avec anticorps primaire (4°C overnight), 5) Lavages TBST, 6) Anticorps secondaire conjugué (1h RT), 7) Révélation par chimioluminescence. Conseil : utilisez toujours des contrôles de charge (β-actine, GAPDH).";
+    
+    if (q.includes('crispr')) {
+      return "✂️ **CRISPR-Cas9**\n\nSystème d'édition génomique révolutionnaire :\n\n**Composants** :\n- Cas9 : nucléase (ciseaux moléculaires)\n- gRNA : guide ARN (20 nt + scaffold)\n- PAM : séquence NGG requise\n\n**Mécanisme** :\n1. gRNA guide Cas9 vers la cible\n2. Coupure double-brin\n3. Réparation : NHEJ (insertion/délétion) ou HDR (correction précise)\n\n**Applications** : thérapie génique, modèles animaux, amélioration cultures";
     }
-
-    if (query.includes('culture cellulaire') || query.includes('cellules')) {
-      return "Pour une culture cellulaire optimale : 1) Travaillez en conditions stériles sous PSM, 2) Utilisez un milieu adapté (DMEM, RPMI) avec 10% FBS et antibiotiques, 3) Maintenez à 37°C avec 5% CO2, 4) Passez les cellules à 80-90% confluence (trypsine 0.25%), 5) Vérifiez régulièrement la contamination mycoplasme. Pour la cryoconservation, utilisez 10% DMSO dans du FBS et congelez progressivement (-1°C/min).";
+    
+    if (q.includes('western') || q.includes('blot')) {
+      return "🔬 **Western Blot**\n\n**Protocole** :\n1. SDS-PAGE (séparation protéines)\n2. Transfert membrane (PVDF/nitrocellulose)\n3. Blocage (lait 5% ou BSA, 1h)\n4. Anticorps 1° (4°C overnight, dilution 1:1000)\n5. Lavages TBST (3×10min)\n6. Anticorps 2° conjugué (1h RT, 1:5000)\n7. Révélation ECL\n\n**Contrôles** : β-actine, GAPDH, Tubuline\n**Astuce** : saturer la membrane pour éviter le bruit de fond";
     }
-
-    if (query.includes('elisa') || query.includes('immunoessai')) {
-      return "L'ELISA (Enzyme-Linked Immunosorbent Assay) permet de quantifier des protéines. Types : 1) Direct (antigène fixé, anticorps marqué), 2) Indirect (anticorps primaire + secondaire marqué), 3) Sandwich (capture + détection). Protocole : coating overnight 4°C, blocage 1h, incubations anticorps, substrat TMB, lecture à 450nm. Optimisez les dilutions d'anticorps et incluez une gamme standard pour la quantification.";
+    
+    if (q.includes('culture') || q.includes('cellule')) {
+      return "🧫 **Culture Cellulaire**\n\n**Conditions optimales** :\n- Milieu : DMEM/RPMI + 10% FBS + antibiotiques\n- Incubateur : 37°C, 5% CO₂, humidité 95%\n- Passage : confluence 80-90%, trypsine 0.25%\n- Ratio split : 1:3 à 1:10\n\n**Cryoconservation** :\n- Milieu : 90% FBS + 10% DMSO\n- Congélation : -1°C/min (Mr. Frosty)\n- Stockage : azote liquide (-196°C)\n\n**Contamination** : test mycoplasme mensuel !";
     }
-
-    if (query.includes('clonage') || query.includes('plasmide')) {
-      return "Le clonage moléculaire permet d'insérer un gène dans un vecteur. Étapes : 1) Digestion enzymatique de l'insert et du vecteur avec les mêmes enzymes de restriction, 2) Purification sur gel, 3) Ligation (ratio insert:vecteur 3:1), 4) Transformation dans E. coli compétentes, 5) Sélection sur milieu avec antibiotique, 6) Vérification par PCR de colonie et séquençage. Alternative moderne : clonage par Gibson Assembly ou Golden Gate.";
-    }
-
-    if (query.includes('qpcr') || query.includes('rt-pcr') || query.includes('quantitative')) {
-      return "La qPCR (PCR quantitative en temps réel) mesure l'amplification d'ADN en temps réel. Utilisez SYBR Green (économique) ou sondes TaqMan (spécifique). Calcul : méthode ΔΔCt pour quantification relative. Points clés : 1) Efficacité PCR 90-110%, 2) Courbe de fusion unique, 3) Gènes de référence stables (GAPDH, β-actine), 4) Triplicats techniques, 5) Contrôles négatifs. Pour l'ARN, faites une RT-qPCR avec transcription inverse préalable.";
-    }
-
-    if (query.includes('séquençage') || query.includes('ngs') || query.includes('illumina')) {
-      return "Le séquençage NGS (Next-Generation Sequencing) permet d'analyser des millions de séquences en parallèle. Technologies : Illumina (short reads, haute précision), PacBio/Nanopore (long reads). Workflow : 1) Préparation librairie (fragmentation, adaptateurs), 2) Amplification clonale, 3) Séquençage par synthèse, 4) Analyse bioinformatique (alignement, variant calling). Applications : RNA-seq, ChIP-seq, métagénomique, génomes complets. Profondeur recommandée : 30X pour génome humain.";
-    }
-
-    if (query.includes('microscop') || query.includes('imagerie')) {
-      return "Techniques de microscopie : 1) Optique (résolution ~200nm), 2) Fluorescence (marqueurs spécifiques), 3) Confocale (sections optiques, reconstruction 3D), 4) Super-résolution (STED, PALM, STORM <50nm), 5) Électronique (TEM/SEM, résolution atomique). Pour l'immunofluorescence : fixation (PFA 4%), perméabilisation (Triton 0.1%), blocage, anticorps primaire/secondaire fluorescent, montage avec DAPI. Évitez le photoblanchiment avec des antifades.";
-    }
-
-    if (query.includes('protéine') || query.includes('purification')) {
-      return "Purification de protéines recombinantes : 1) Expression dans E. coli (IPTG induction), 2) Lyse cellulaire (sonication ou lysozyme), 3) Clarification (centrifugation 15000g), 4) Chromatographie d'affinité (His-tag sur colonne Ni-NTA), 5) Dialyse pour éliminer l'imidazole, 6) Concentration (Amicon). Vérifiez la pureté par SDS-PAGE et l'activité par test fonctionnel. Stockez à -80°C avec glycérol 10% ou lyophilisez.";
-    }
-
-    if (query.includes('statistique') || query.includes('analyse') || query.includes('significatif')) {
-      return "Analyses statistiques en biologie : 1) Test t de Student (comparaison 2 groupes), 2) ANOVA (>2 groupes), 3) Test de Mann-Whitney (non-paramétrique), 4) Chi-carré (données catégorielles). Significativité : p<0.05 (*), p<0.01 (**), p<0.001 (***). Calculez la taille d'effet et la puissance statistique. Utilisez R, GraphPad Prism ou Python (scipy, statsmodels). N'oubliez pas : corrélation ≠ causalité. Vérifiez toujours la normalité des données (test de Shapiro-Wilk).";
-    }
-
-    if (query.includes('tampon') || query.includes('buffer') || query.includes('solution')) {
-      return "Tampons courants en biologie : 1) PBS (phosphate buffered saline, pH 7.4), 2) Tris-HCl (pH 7-9, attention à la température), 3) HEPES (pH 7.2-7.6, stable), 4) TAE/TBE (électrophorèse ADN). Pour préparer un tampon : calculez avec Henderson-Hasselbalch, ajustez le pH avec HCl/NaOH, autoclavez si nécessaire. Ajoutez EDTA pour chélater les métaux, DTT/β-mercaptoéthanol pour réduire les ponts disulfures, protéase inhibitors pour protéger les protéines.";
-    }
-
-    if (query.includes('bonjour') || query.includes('salut') || query.includes('hello')) {
-      return "Bonjour ! Je suis ravi de vous aider avec vos questions scientifiques. Que souhaitez-vous savoir aujourd'hui ? Je peux vous expliquer des techniques de biologie moléculaire, des protocoles expérimentaux, des concepts théoriques, ou vous aider à résoudre des problèmes de laboratoire.";
-    }
-
-    if (query.includes('merci') || query.includes('thank')) {
-      return "Je vous en prie ! N'hésitez pas si vous avez d'autres questions. Je suis là pour vous aider dans vos recherches scientifiques. 🧬";
-    }
-
-    return "Je comprends votre question. Pouvez-vous me donner plus de détails ? Je peux vous aider avec des techniques comme la PCR, le clonage, la culture cellulaire, le Western Blot, CRISPR, le séquençage NGS, la microscopie, la purification de protéines, les analyses statistiques, et bien d'autres sujets en biologie moléculaire et cellulaire.";
+    
+    return "Je suis Mimir, propulsé par Qwen2.5-7B. Pour utiliser toutes mes capacités, configurez votre clé API Hugging Face dans les paramètres ⚙️. Je peux vous aider avec : PCR, CRISPR, Western Blot, culture cellulaire, clonage, séquençage NGS, microscopie, statistiques, et bien plus !";
   };
 
   const handleSend = async () => {
@@ -104,11 +127,12 @@ const MobileMimir = () => {
     };
 
     setMessages(prev => [...prev, userMsg]);
+    const currentInput = input;
     setInput('');
     setIsThinking(true);
 
-    setTimeout(async () => {
-      const aiResponse = await generateAIResponse(input);
+    try {
+      const aiResponse = await callQwenAPI(currentInput);
       const assistantMsg: Message = {
         id: Date.now() + 1,
         role: 'assistant',
@@ -116,20 +140,55 @@ const MobileMimir = () => {
         timestamp: new Date()
       };
       setMessages(prev => [...prev, assistantMsg]);
+    } catch (error) {
+      const errorMsg: Message = {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: "Désolé, une erreur s'est produite. Vérifiez votre clé API dans les paramètres.",
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
       setIsThinking(false);
-    }, 1000);
+    }
+  };
+
+  const copyToClipboard = (text: string, id: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const clearConversation = () => {
+    if (confirm('Effacer toute la conversation ?')) {
+      setMessages([{
+        id: 1,
+        role: 'assistant',
+        content: "Conversation effacée. Comment puis-je vous aider ?",
+        timestamp: new Date()
+      }]);
+    }
+  };
+
+  const saveApiKey = () => {
+    localStorage.setItem('hf_api_key', apiKey);
+    setShowSettings(false);
+    alert('✅ Clé API enregistrée');
   };
 
   const quickQuestions = [
-    "Comment faire une PCR ?",
-    "Explique CRISPR-Cas9",
-    "Protocole Western Blot",
-    "Culture cellulaire optimale"
+    { icon: '🧬', text: 'PCR : protocole complet', query: 'Explique-moi le protocole PCR complet avec les températures et durées optimales' },
+    { icon: '✂️', text: 'CRISPR-Cas9', query: 'Comment fonctionne CRISPR-Cas9 et quelles sont ses applications ?' },
+    { icon: '🔬', text: 'Western Blot', query: 'Donne-moi le protocole détaillé du Western Blot' },
+    { icon: '🧫', text: 'Culture cellulaire', query: 'Quelles sont les bonnes pratiques pour la culture cellulaire ?' }
   ];
 
   return (
-    <div className="mobile-container">
-      <div className="mobile-header">
+    <div className="mobile-container" style={{ background: 'linear-gradient(180deg, #0a0e1a 0%, #1a1f2e 100%)' }}>
+      <div className="mobile-header" style={{ 
+        background: 'rgba(16, 185, 129, 0.05)',
+        borderBottom: '1px solid rgba(16, 185, 129, 0.2)'
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <button
@@ -139,30 +198,117 @@ const MobileMimir = () => {
                 border: 'none',
                 color: 'var(--mobile-text)',
                 padding: '0.5rem',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center'
+                cursor: 'pointer'
               }}
             >
               <ArrowLeft size={24} />
             </button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div className="mobile-icon" style={{
-                background: 'rgba(16, 185, 129, 0.1)',
-                color: '#10b981'
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #10b981, #059669)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
               }}>
-                <Brain size={24} />
+                <Brain size={28} color="white" />
               </div>
               <div>
-                <h1 className="mobile-title" style={{ marginBottom: 0 }}>Mimir</h1>
-                <p style={{ fontSize: '0.75rem', color: 'var(--mobile-text-secondary)', margin: 0 }}>
-                  Assistant IA
+                <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: 'white' }}>
+                  Mimir AI
+                </h1>
+                <p style={{ 
+                  fontSize: '0.7rem', 
+                  color: '#10b981', 
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
+                }}>
+                  <Zap size={12} /> Qwen2.5-7B
                 </p>
               </div>
             </div>
           </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              style={{
+                background: 'rgba(99, 102, 241, 0.1)',
+                border: '1px solid rgba(99, 102, 241, 0.3)',
+                borderRadius: '0.75rem',
+                padding: '0.75rem',
+                cursor: 'pointer',
+                color: '#6366f1'
+              }}
+            >
+              <Settings size={20} />
+            </button>
+            <button
+              onClick={clearConversation}
+              style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '0.75rem',
+                padding: '0.75rem',
+                cursor: 'pointer',
+                color: '#ef4444'
+              }}
+            >
+              <Trash2 size={20} />
+            </button>
+          </div>
         </div>
       </div>
+
+      {showSettings && (
+        <div style={{
+          padding: '1rem',
+          background: 'rgba(99, 102, 241, 0.05)',
+          borderBottom: '1px solid rgba(99, 102, 241, 0.2)'
+        }}>
+          <p style={{ fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--mobile-text-secondary)' }}>
+            Clé API Hugging Face (optionnelle)
+          </p>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="hf_..."
+              style={{
+                flex: 1,
+                padding: '0.75rem',
+                background: 'var(--mobile-card-bg)',
+                border: '1px solid var(--mobile-border)',
+                borderRadius: '0.75rem',
+                color: 'var(--mobile-text)',
+                fontSize: '0.85rem'
+              }}
+            />
+            <button
+              onClick={saveApiKey}
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                border: 'none',
+                borderRadius: '0.75rem',
+                color: 'white',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Sauver
+            </button>
+          </div>
+          <p style={{ fontSize: '0.7rem', marginTop: '0.5rem', color: 'var(--mobile-text-secondary)' }}>
+            Obtenez votre clé sur huggingface.co/settings/tokens
+          </p>
+        </div>
+      )}
 
       <div 
         ref={scrollRef}
@@ -170,7 +316,8 @@ const MobileMimir = () => {
         style={{ 
           flex: 1, 
           overflowY: 'auto',
-          paddingBottom: '140px'
+          paddingBottom: '160px',
+          background: 'transparent'
         }}
       >
         {messages.map((msg) => (
@@ -179,63 +326,119 @@ const MobileMimir = () => {
             style={{
               display: 'flex',
               gap: '0.75rem',
-              marginBottom: '1rem',
+              marginBottom: '1.5rem',
               flexDirection: msg.role === 'user' ? 'row-reverse' : 'row'
             }}
           >
-            <div className="mobile-icon" style={{
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
               background: msg.role === 'user' 
-                ? 'rgba(99, 102, 241, 0.1)' 
-                : 'rgba(16, 185, 129, 0.1)',
-              color: msg.role === 'user' ? 'var(--mobile-primary)' : '#10b981',
+                ? 'linear-gradient(135deg, #6366f1, #4f46e5)' 
+                : 'linear-gradient(135deg, #10b981, #059669)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               flexShrink: 0,
-              alignSelf: 'flex-start'
+              boxShadow: msg.role === 'user'
+                ? '0 4px 12px rgba(99, 102, 241, 0.3)'
+                : '0 4px 12px rgba(16, 185, 129, 0.3)'
             }}>
-              {msg.role === 'user' ? <User size={20} /> : <Sparkles size={20} />}
+              {msg.role === 'user' ? <User size={20} color="white" /> : <Sparkles size={20} color="white" />}
             </div>
-            <div
-              className="mobile-card"
-              style={{
-                flex: 1,
-                background: msg.role === 'user'
-                  ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1))'
-                  : 'var(--mobile-card-bg)',
-                borderLeft: msg.role === 'assistant' ? '3px solid #10b981' : 'none'
-              }}
-            >
-              <p style={{ 
-                fontSize: '0.9rem', 
-                lineHeight: 1.6,
-                whiteSpace: 'pre-wrap',
-                margin: 0
-              }}>
-                {msg.content}
-              </p>
-              <p style={{ 
-                fontSize: '0.7rem', 
-                color: 'var(--mobile-text-secondary)', 
-                marginTop: '0.5rem',
-                marginBottom: 0,
-                textAlign: msg.role === 'user' ? 'right' : 'left'
-              }}>
-                {msg.timestamp.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-              </p>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  padding: '1rem',
+                  background: msg.role === 'user'
+                    ? 'rgba(99, 102, 241, 0.1)'
+                    : 'rgba(16, 185, 129, 0.05)',
+                  border: `1px solid ${msg.role === 'user' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(16, 185, 129, 0.2)'}`,
+                  borderRadius: msg.role === 'user' ? '1rem 1rem 0.25rem 1rem' : '1rem 1rem 1rem 0.25rem',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+              >
+                <p style={{ 
+                  fontSize: '0.9rem', 
+                  lineHeight: 1.7,
+                  whiteSpace: 'pre-wrap',
+                  margin: 0,
+                  color: 'white'
+                }}>
+                  {msg.content}
+                </p>
+                <div style={{ 
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: '0.75rem',
+                  paddingTop: '0.75rem',
+                  borderTop: '1px solid rgba(255,255,255,0.05)'
+                }}>
+                  <p style={{ 
+                    fontSize: '0.7rem', 
+                    color: 'var(--mobile-text-secondary)',
+                    margin: 0
+                  }}>
+                    {msg.timestamp.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                  {msg.role === 'assistant' && (
+                    <button
+                      onClick={() => copyToClipboard(msg.content, msg.id)}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: copiedId === msg.id ? '#10b981' : 'var(--mobile-text-secondary)',
+                        cursor: 'pointer',
+                        padding: '0.25rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        fontSize: '0.7rem'
+                      }}
+                    >
+                      {copiedId === msg.id ? <Check size={14} /> : <Copy size={14} />}
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         ))}
 
         {isThinking && (
-          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
-            <div className="mobile-icon" style={{
-              background: 'rgba(16, 185, 129, 0.1)',
-              color: '#10b981'
+          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
             }}>
-              <Loader2 size={20} className="animate-spin" />
+              <Loader2 size={20} color="white" className="animate-spin" />
             </div>
-            <div className="mobile-card">
-              <p style={{ fontSize: '0.9rem', margin: 0, color: 'var(--mobile-text-secondary)' }}>
-                Mimir réfléchit...
-              </p>
+            <div style={{
+              flex: 1,
+              padding: '1rem',
+              background: 'rgba(16, 185, 129, 0.05)',
+              border: '1px solid rgba(16, 185, 129, 0.2)',
+              borderRadius: '1rem 1rem 1rem 0.25rem'
+            }}>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <div className="dot-pulse" style={{ 
+                  width: '8px', 
+                  height: '8px', 
+                  borderRadius: '50%', 
+                  background: '#10b981' 
+                }} />
+                <p style={{ fontSize: '0.9rem', margin: 0, color: '#10b981' }}>
+                  Qwen2.5 analyse votre question...
+                </p>
+              </div>
             </div>
           </div>
         )}
@@ -245,24 +448,30 @@ const MobileMimir = () => {
             <p style={{ 
               fontSize: '0.85rem', 
               color: 'var(--mobile-text-secondary)', 
-              marginBottom: '0.75rem' 
+              marginBottom: '1rem',
+              fontWeight: 600
             }}>
-              Questions rapides :
+              💡 Questions rapides
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
               {quickQuestions.map((q, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setInput(q)}
-                  className="mobile-card"
+                  onClick={() => setInput(q.query)}
                   style={{
-                    textAlign: 'left',
-                    cursor: 'pointer',
+                    padding: '1rem',
+                    background: 'rgba(16, 185, 129, 0.05)',
                     border: '1px solid rgba(16, 185, 129, 0.2)',
-                    padding: '0.75rem'
+                    borderRadius: '1rem',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.2s'
                   }}
                 >
-                  <p style={{ fontSize: '0.85rem', margin: 0 }}>💡 {q}</p>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{q.icon}</div>
+                  <p style={{ fontSize: '0.8rem', margin: 0, color: 'white', fontWeight: 600 }}>
+                    {q.text}
+                  </p>
                 </button>
               ))}
             </div>
@@ -276,33 +485,44 @@ const MobileMimir = () => {
         left: 0,
         right: 0,
         padding: '1rem',
-        background: 'var(--mobile-bg)',
-        borderTop: '1px solid var(--mobile-border)'
+        background: 'linear-gradient(180deg, transparent 0%, rgba(10, 14, 26, 0.95) 20%, rgba(10, 14, 26, 1) 100%)',
+        borderTop: '1px solid rgba(16, 185, 129, 0.1)'
       }}>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Posez votre question..."
-            style={{
-              flex: 1,
-              padding: '0.75rem 1rem',
-              background: 'var(--mobile-card-bg)',
-              border: '1px solid var(--mobile-border)',
-              borderRadius: '1.5rem',
-              color: 'var(--mobile-text)',
-              fontSize: '0.9rem',
-              outline: 'none'
-            }}
-          />
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end' }}>
+          <div style={{ flex: 1 }}>
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Posez votre question scientifique..."
+              rows={1}
+              style={{
+                width: '100%',
+                padding: '1rem',
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(16, 185, 129, 0.2)',
+                borderRadius: '1.25rem',
+                color: 'white',
+                fontSize: '0.9rem',
+                outline: 'none',
+                resize: 'none',
+                fontFamily: 'inherit',
+                minHeight: '52px',
+                maxHeight: '120px'
+              }}
+            />
+          </div>
           <button
             onClick={handleSend}
             disabled={!input.trim() || isThinking}
             style={{
-              width: '48px',
-              height: '48px',
+              width: '52px',
+              height: '52px',
               borderRadius: '50%',
               background: input.trim() && !isThinking 
                 ? 'linear-gradient(135deg, #10b981, #059669)' 
@@ -313,10 +533,12 @@ const MobileMimir = () => {
               alignItems: 'center',
               justifyContent: 'center',
               cursor: input.trim() && !isThinking ? 'pointer' : 'not-allowed',
-              flexShrink: 0
+              flexShrink: 0,
+              boxShadow: input.trim() && !isThinking ? '0 4px 12px rgba(16, 185, 129, 0.4)' : 'none',
+              transition: 'all 0.2s'
             }}
           >
-            <Send size={20} />
+            <Send size={22} />
           </button>
         </div>
       </div>
@@ -330,6 +552,13 @@ const MobileMimir = () => {
         @keyframes spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
+        }
+        .dot-pulse {
+          animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.3; }
         }
       `}</style>
     </div>
