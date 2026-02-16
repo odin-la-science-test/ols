@@ -1,4 +1,4 @@
-import { useNavigate, Routes, Route, Navigate } from 'react-router-dom';
+import { useNavigate, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, lazy, Suspense } from 'react';
 import './App.css';
 import { initAutoWatchService } from './services/autoWatchService';
@@ -153,6 +153,7 @@ const ProtectedRoute = ({ children, module }: { children: ReactNode, module?: st
 
 function App() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [tempSessionActive, setTempSessionActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
 
@@ -241,7 +242,7 @@ function App() {
           <ShortcutManager />
           <KeyboardShortcuts />
           <CommandPalette />
-          <QuickNotes />
+          {location.pathname !== '/' && <QuickNotes showFloatingButton={location.pathname === '/home'} />}
           <ScrollToTop />
           <BackToTop />
           <VersionBadge position="bottom-right" />
