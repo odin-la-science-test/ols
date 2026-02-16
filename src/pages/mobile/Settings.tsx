@@ -1,14 +1,16 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Mail, Shield, Bell, Palette, Globe, LogOut, ChevronRight } from 'lucide-react';
+import { ArrowLeft, User, Mail, Shield, Bell, Palette, Globe, LogOut, ChevronRight, RefreshCw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import MobileBottomNav from '../../components/MobileBottomNav';
 import Avatar from '../../components/Avatar';
+import { refreshCache } from '../../utils/cacheRefresh';
 import '../../styles/mobile-app.css';
 
 const MobileSettings = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [refreshAvatar, setRefreshAvatar] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const userStr = localStorage.getItem('currentUser');
@@ -25,6 +27,21 @@ const MobileSettings = () => {
   const handleLogout = () => {
     localStorage.clear();
     navigate('/');
+  };
+
+  const handleClearCache = async () => {
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
+    try {
+      await refreshCache({
+        showConfirmation: true,
+        confirmationMessage: 'Vider le cache et recharger l\'application ?'
+      });
+    } catch (error) {
+      console.error('Erreur lors du vidage du cache:', error);
+      setIsRefreshing(false);
+    }
   };
 
   const accountItems = [
@@ -168,6 +185,30 @@ const MobileSettings = () => {
             </div>
           );
         })}
+
+        <div
+          className="mobile-list-item"
+          onClick={handleClearCache}
+          style={{ marginBottom: '0.75rem', opacity: isRefreshing ? 0.5 : 1 }}
+        >
+          <div className="mobile-icon" style={{ 
+            width: '40px', 
+            height: '40px',
+            background: 'rgba(59, 130, 246, 0.1)',
+            color: '#3b82f6'
+          }}>
+            <RefreshCw size={20} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--mobile-text-secondary)', marginBottom: '0.25rem' }}>
+              Cache
+            </p>
+            <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>
+              {isRefreshing ? 'Vidage en cours...' : 'Vider le cache'}
+            </p>
+          </div>
+          <ChevronRight size={20} style={{ color: 'var(--mobile-text-secondary)' }} />
+        </div>
 
         {/* Logout Button */}
         <button
