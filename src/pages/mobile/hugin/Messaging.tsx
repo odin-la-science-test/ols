@@ -115,58 +115,69 @@ const MobileMessaging = () => {
             <button
               style={{
                 flex: 1,
-                padding: '0.75rem',
+                padding: '0.65rem 0.5rem',
                 borderRadius: '0.75rem',
                 border: '1px solid var(--mobile-border)',
                 background: 'rgba(255, 255, 255, 0.05)',
                 color: 'var(--mobile-text)',
-                fontSize: '0.85rem',
+                fontSize: '0.75rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.5rem'
+                gap: '0.4rem',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap'
               }}
             >
-              <Send size={16} />
-              Répondre
+              <Send size={14} />
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Répondre</span>
             </button>
             <button
               style={{
-                padding: '0.75rem',
+                padding: '0.65rem',
                 borderRadius: '0.75rem',
                 border: '1px solid var(--mobile-border)',
                 background: 'rgba(255, 255, 255, 0.05)',
                 color: 'var(--mobile-text)',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
-              <Star size={18} />
+              <Star size={16} />
             </button>
             <button
               style={{
-                padding: '0.75rem',
+                padding: '0.65rem',
                 borderRadius: '0.75rem',
                 border: '1px solid var(--mobile-border)',
                 background: 'rgba(255, 255, 255, 0.05)',
                 color: 'var(--mobile-text)',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
-              <Archive size={18} />
+              <Archive size={16} />
             </button>
             <button
               style={{
-                padding: '0.75rem',
+                padding: '0.65rem',
                 borderRadius: '0.75rem',
                 border: '1px solid rgba(239, 68, 68, 0.3)',
                 background: 'rgba(239, 68, 68, 0.1)',
                 color: '#ef4444',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
-              <Trash2 size={18} />
+              <Trash2 size={16} />
             </button>
           </div>
 
@@ -258,7 +269,8 @@ const MobileMessaging = () => {
           gap: '0.5rem', 
           overflowX: 'auto', 
           marginBottom: '1rem',
-          paddingBottom: '0.5rem'
+          paddingBottom: '0.5rem',
+          WebkitOverflowScrolling: 'touch'
         }}>
           {folders.map(folder => {
             const Icon = folder.icon;
@@ -270,31 +282,36 @@ const MobileMessaging = () => {
                 key={folder.id}
                 onClick={() => setSelectedFolder(folder.id)}
                 style={{
-                  padding: '0.75rem 1rem',
+                  padding: '0.65rem 0.85rem',
                   borderRadius: '0.75rem',
                   border: 'none',
                   background: isActive ? 'var(--mobile-primary)' : 'rgba(255, 255, 255, 0.05)',
                   color: isActive ? 'white' : 'var(--mobile-text)',
-                  fontSize: '0.85rem',
+                  fontSize: '0.8rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.5rem',
+                  gap: '0.4rem',
                   whiteSpace: 'nowrap',
-                  position: 'relative'
+                  position: 'relative',
+                  flexShrink: 0
                 }}
               >
-                <Icon size={16} />
-                {folder.label}
+                <Icon size={14} />
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100px' }}>
+                  {folder.label}
+                </span>
                 {count > 0 && (
                   <span style={{
                     background: '#ef4444',
                     color: 'white',
                     borderRadius: '1rem',
-                    padding: '0.125rem 0.5rem',
-                    fontSize: '0.7rem',
-                    fontWeight: 700
+                    padding: '0.125rem 0.4rem',
+                    fontSize: '0.65rem',
+                    fontWeight: 700,
+                    minWidth: '18px',
+                    textAlign: 'center'
                   }}>
                     {count}
                   </span>
