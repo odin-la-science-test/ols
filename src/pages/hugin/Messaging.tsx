@@ -140,22 +140,42 @@ const Messaging = () => {
             }
         }
 
-        const newMessage: Message = {
-            id: Date.now().toString(),
+        const baseId = Date.now();
+        const preview = composeData.body.substring(0, 50) + '...';
+        const dateISO = new Date().toISOString();
+
+        // Message pour le destinataire (inbox, non lu)
+        const recipientMessage: Message = {
+            id: `${baseId}_recipient`,
             sender: currentUser.trim(),
             recipient: composeData.to.trim(),
             subject: composeData.subject.trim(),
-            preview: composeData.body.substring(0, 50) + '...',
-            date: new Date().toISOString(), // Format ISO pour Supabase
+            preview: preview,
+            date: dateISO,
             read: false,
             body: messageBody,
             folder: 'inbox',
             attachments: composeData.attachments
         };
 
+        // Message pour l'expéditeur (sent, déjà lu)
+        const senderMessage: Message = {
+            id: `${baseId}_sender`,
+            sender: currentUser.trim(),
+            recipient: composeData.to.trim(),
+            subject: composeData.subject.trim(),
+            preview: preview,
+            date: dateISO,
+            read: true,
+            body: messageBody,
+            folder: 'sent',
+            attachments: composeData.attachments
+        };
+
         try {
-            await saveModuleItem('messaging', newMessage);
-            setMessages([newMessage, ...messages]);
+            await saveModuleItem('messaging', recipientMessage);
+            await saveModuleItem('messaging', senderMessage);
+            setMessages([recipientMessage, senderMessage, ...messages]);
             setIsComposing(false);
             setComposeData({ to: '', subject: '', body: '', attachments: [] });
             showToast('Message envoyé', 'success');
@@ -190,13 +210,17 @@ const Messaging = () => {
 
     const markAsRead = async (id: string) => {
         const msg = messages.find(m => m.id === id);
-        if (!msg || msg.read) return;
+        if (!msg) return;
 
+        // Always update to read=true, even if already read (to fix sync issues)
         const updated = { ...msg, read: true };
         try {
             await saveModuleItem('messaging', updated);
-            setMessages(messages.map(m => m.id === id ? (updated as Message) : m));
-        } catch (e) { }
+            // Force state update
+            setMessages(prevMessages => prevMessages.map(m => m.id === id ? updated : m));
+        } catch (e) {
+            console.error('Error marking message as read:', e);
+        }
     };
 
     const archiveMessage = async (id: string) => {

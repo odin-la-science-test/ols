@@ -1,6 +1,7 @@
 import { useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect, lazy, Suspense } from 'react';
 import './App.css';
+import { initAutoWatchService } from './services/autoWatchService';
 
 // Composants critiques chargés immédiatement
 import LandingPage from './pages/LandingPage';
@@ -67,6 +68,8 @@ const ExcelTest = lazy(() => import('./pages/hugin/ExcelTest'));
 const BioAnalyzer = lazy(() => import('./pages/hugin/BioAnalyzer'));
 const ImageAnalyzer = lazy(() => import('./pages/hugin/ImageAnalyzer'));
 const StatisticsLab = lazy(() => import('./pages/hugin/StatisticsLab'));
+const PosterMaker = lazy(() => import('./pages/hugin/PosterMaker'));
+const WordProcessor = lazy(() => import('./pages/hugin/WordProcessor'));
 const WhyOdin = lazy(() => import('./pages/WhyOdin'));
 const Enterprise = lazy(() => import('./pages/Enterprise'));
 const Pricing = lazy(() => import('./pages/Pricing'));
@@ -148,6 +151,26 @@ function App() {
   const navigate = useNavigate();
   const [tempSessionActive, setTempSessionActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
+
+  // Initialize Auto-Watch Service
+  useEffect(() => {
+    // Désactivé temporairement pour éviter les erreurs
+    // L'auto-watch peut être lancé manuellement depuis l'interface
+    /*
+    const userStr = localStorage.getItem('currentUser');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.email) {
+          console.log('Initializing Auto-Watch Service for:', user.email);
+          initAutoWatchService(user.email);
+        }
+      } catch (e) {
+        console.error('Error initializing auto-watch:', e);
+      }
+    }
+    */
+  }, []);
 
   useEffect(() => {
     let keys: string[] = [];
@@ -530,6 +553,16 @@ function App() {
             <Route path="/hugin/statistics" element={
               <ProtectedRoute module="statistics">
                 <StatisticsLab />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/poster-maker" element={
+              <ProtectedRoute module="hugin_core">
+                <PosterMaker />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/word-processor" element={
+              <ProtectedRoute module="hugin_core">
+                <WordProcessor />
               </ProtectedRoute>
             } />
             <Route path="/account" element={

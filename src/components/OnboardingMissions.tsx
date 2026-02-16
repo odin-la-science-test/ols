@@ -13,8 +13,7 @@ const OnboardingMissions = ({ onComplete }: { onComplete: () => void }) => {
     const [missions, setMissions] = useState<Mission[]>([
         { id: 'home', title: 'Retour au bercail', desc: 'Utilisez Ctrl+H pour revenir à l\'accueil', completed: false },
         { id: 'settings', title: 'Maître des paramètres', desc: 'Accédez aux paramètres via Ctrl+S', completed: false },
-        { id: 'hugin', title: 'Explorateur Hugin', desc: 'Ouvrez le module Hugin (Ctrl+U)', completed: false },
-        { id: 'about', title: 'Curieux ?', desc: 'Visitez la page À propos (Ctrl+A)', completed: false }
+        { id: 'hugin', title: 'Explorateur Hugin', desc: 'Ouvrez le module Hugin (Ctrl+U)', completed: false }
     ]);
     const [showConfetti, setShowConfetti] = useState(false);
     const [isOpen, setIsOpen] = useState(true);
@@ -46,7 +45,6 @@ const OnboardingMissions = ({ onComplete }: { onComplete: () => void }) => {
                 if (key === 'h') markComplete('home');
                 if (key === 's') markComplete('settings');
                 if (key === 'u') markComplete('hugin');
-                if (key === 'a') markComplete('about');
             }
         };
 

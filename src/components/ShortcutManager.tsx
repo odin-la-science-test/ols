@@ -27,10 +27,6 @@ const ShortcutManager: React.FC = () => {
                 e.preventDefault();
                 navigate('/login');
             }
-            if (e.key.toLowerCase() === 'a' && (e.ctrlKey || e.altKey)) {
-                e.preventDefault();
-                navigate('/about');
-            }
         };
 
         window.addEventListener('keydown', handleKeyDown);
