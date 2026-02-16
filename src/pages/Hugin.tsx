@@ -3,7 +3,7 @@ import {
     Beaker, Calendar, Mail, HardDrive, Video, Brain, Quote, Book,
     Package, Snowflake, Activity, Wallet, BookOpen, Calculator,
     Dna, Camera, Layers, ShieldAlert, Zap, Share2, Box,
-    TrendingUp, Grid, UserCheck, Search
+    TrendingUp, Grid, UserCheck, Search, FileText
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../components/LanguageContext';
@@ -46,6 +46,8 @@ const Hugin = () => {
         { id: 'meetings', name: 'Réunions', desc: 'Gestion des réunions', icon: <Video size={24} />, category: 'Core', path: '/hugin/meetings' },
         { id: 'projects', name: 'Projets', desc: 'Gestion de projets', icon: <Layers size={24} />, category: 'Core', path: '/hugin/projects' },
         { id: 'tableur', name: 'Tableur', desc: 'Tableur de laboratoire', icon: <Grid size={24} />, category: 'Core', path: '/hugin/tableur' },
+        { id: 'word', name: 'Traitement de Texte', desc: 'Éditeur de documents Word', icon: <FileText size={24} />, category: 'Core', path: '/hugin/word-processor' },
+        { id: 'poster', name: 'Poster Maker', desc: 'Créer des posters scientifiques', icon: <FileText size={24} />, category: 'Core', path: '/hugin/poster-maker' },
         { id: 'it_archive', name: 'Archives IT', desc: 'Archives informatiques', icon: <HardDrive size={24} />, category: 'Core', path: '/hugin/it-archive' },
 
         // Lab Management

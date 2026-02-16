@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Download, Upload, Plus, FileSpreadsheet, Trash2, FileText, Beaker, Calculator, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Save, Download, Upload, Plus, FileSpreadsheet, Trash2, FileText, Beaker, Calculator, TrendingUp, BarChart3 } from 'lucide-react';
 import { useToast } from '../../components/ToastContext';
 import { fetchModuleData, saveModuleItem, deleteModuleItem } from '../../utils/persistence';
 import Spreadsheet from 'x-data-spreadsheet';
 import 'x-data-spreadsheet/dist/xspreadsheet.css';
+import SpreadsheetChart from '../../components/SpreadsheetChart';
 
 type SavedSheet = {
     id: string;
@@ -108,6 +109,7 @@ const TableurLab = () => {
     const [currentSheetId, setCurrentSheetId] = useState<string>('');
     const [sheetName, setSheetName] = useState<string>('Nouveau Tableur');
     const [showTemplates, setShowTemplates] = useState(false);
+    const [showChartModal, setShowChartModal] = useState(false);
 
     useEffect(() => {
         loadSavedSheets();
@@ -443,6 +445,15 @@ const TableurLab = () => {
                     </div>
 
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                            onClick={() => setShowChartModal(true)}
+                            className="btn"
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-hugin)' }}
+                        >
+                            <BarChart3 size={18} />
+                            Créer un graphique
+                        </button>
+
                         <label className="btn" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                             <Upload size={18} />
                             Importer
@@ -496,6 +507,13 @@ const TableurLab = () => {
                     <span>Formules Excel • Graphiques • Multi-feuilles</span>
                 </div>
             </main>
+
+            {showChartModal && (
+                <SpreadsheetChart
+                    data={spreadsheetRef.current?.getData()}
+                    onClose={() => setShowChartModal(false)}
+                />
+            )}
         </div>
     );
 };
