@@ -1,15 +1,13 @@
+// Mimir AI - Terminal Style Interface v2.0
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, Brain, Send, Sparkles, User, Loader2, 
-  Zap, Settings, Trash2, Copy, Check 
-} from 'lucide-react';
+import { ArrowLeft, Send, Settings, Trash2, Download } from 'lucide-react';
 import MobileBottomNav from '../../../components/MobileBottomNav';
 import '../../../styles/mobile-app.css';
 
 interface Message {
   id: number;
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: Date;
 }
@@ -17,17 +15,17 @@ interface Message {
 const MobileMimir = () => {
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      role: 'assistant',
-      content: "Bonjour ! Je suis Mimir, propulsé par Qwen2.5-7B. Je suis votre assistant IA scientifique spécialisé en biologie, chimie et recherche. Posez-moi vos questions sur les protocoles, techniques, analyses ou concepts scientifiques !",
+      role: 'system',
+      content: 'Mimir AI - Qwen2.5-7B Scientific Assistant',
       timestamp: new Date()
     }
   ]);
   const [isThinking, setIsThinking] = useState(false);
-  const [copiedId, setCopiedId] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [apiKey, setApiKey] = useState(localStorage.getItem('hf_api_key') || '');
 
@@ -37,20 +35,34 @@ const MobileMimir = () => {
     }
   }, [messages, isThinking]);
 
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [input]);
+
   const callQwenAPI = async (userQuery: string): Promise<string> => {
     const HF_API_KEY = apiKey || 'hf_placeholder';
     
-    const conversationHistory = messages.slice(-6).map(m => ({
-      role: m.role,
-      content: m.content
-    }));
+    const conversationHistory = messages
+      .filter(m => m.role !== 'system')
+      .slice(-6)
+      .map(m => ({ role: m.role, content: m.content }));
 
-    const systemPrompt = {
-      role: 'system',
-      content: 'Tu es Mimir, un assistant IA scientifique expert en biologie moléculaire, biochimie, microbiologie et recherche scientifique. Tu fournis des réponses précises, détaillées et pratiques. Tu expliques les protocoles, techniques et concepts avec clarté. Réponds toujours en français.'
-    };
+    const systemPrompt = 'Tu es Mimir, un assistant IA scientifique expert en biologie moléculaire, biochimie, microbiologie et recherche scientifique. Tu fournis des réponses précises, détaillées et pratiques. Réponds toujours en français.';
 
     try {
+      const messages_formatted = [
+        { role: 'system', content: systemPrompt },
+        ...conversationHistory,
+        { role: 'user', content: userQuery }
+      ];
+
+      const prompt = messages_formatted
+        .map(m => `<|im_start|>${m.role}\n${m.content}<|im_end|>`)
+        .join('\n') + '\n<|im_start|>assistant\n';
+
       const response = await fetch(
         'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-7B-Instruct',
         {
@@ -60,11 +72,12 @@ const MobileMimir = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            inputs: `<|im_start|>system\n${systemPrompt.content}<|im_end|>\n${conversationHistory.map(m => `<|im_start|>${m.role}\n${m.content}<|im_end|>`).join('\n')}\n<|im_start|>user\n${userQuery}<|im_end|>\n<|im_start|>assistant\n`,
+            inputs: prompt,
             parameters: {
-              max_new_tokens: 800,
+              max_new_tokens: 1000,
               temperature: 0.7,
               top_p: 0.9,
+              repetition_penalty: 1.1,
               return_full_text: false,
               do_sample: true
             }
@@ -74,22 +87,21 @@ const MobileMimir = () => {
 
       if (!response.ok) {
         if (response.status === 503) {
-          return "Le modèle Qwen2.5-7B est en cours de chargement. Veuillez réessayer dans quelques secondes...";
+          return "Model is loading, please retry in 20s...";
         }
         throw new Error(`API Error: ${response.status}`);
       }
 
       const data = await response.json();
-      
-      if (Array.isArray(data) && data[0]?.generated_text) {
-        return data[0].generated_text.trim();
-      } else if (data.generated_text) {
-        return data.generated_text.trim();
-      } else {
-        throw new Error('Format de réponse inattendu');
+      const generatedText = Array.isArray(data) ? data[0]?.generated_text : data.generated_text;
+
+      if (!generatedText) {
+        throw new Error('Unexpected response format');
       }
+
+      return generatedText.trim();
     } catch (error) {
-      console.error('Erreur API Qwen:', error);
+      console.error('Qwen API Error:', error);
       return getFallbackResponse(userQuery);
     }
   };
@@ -98,22 +110,41 @@ const MobileMimir = () => {
     const q = query.toLowerCase();
     
     if (q.includes('pcr')) {
-      return "🧬 **PCR (Polymerase Chain Reaction)**\n\nLa PCR amplifie l'ADN en 3 étapes cycliques :\n\n1. **Dénaturation** (95°C, 30s) : séparation des brins\n2. **Hybridation** (50-65°C, 30s) : fixation des amorces\n3. **Élongation** (72°C, 1min/kb) : synthèse par Taq polymérase\n\n**Optimisation** :\n- Amorces 18-25 nt, Tm similaire (±2°C)\n- MgCl₂ : 1.5-2.5 mM\n- 25-35 cycles\n- Contrôles positif/négatif obligatoires";
+      return `PCR (Polymerase Chain Reaction)
+
+Amplification d'ADN en 3 étapes cycliques:
+1. Dénaturation (95°C, 30s) - séparation des brins
+2. Hybridation (50-65°C, 30s) - fixation des amorces
+3. Élongation (72°C, 1min/kb) - synthèse par Taq polymérase
+
+Optimisation:
+- Amorces 18-25 nt, Tm similaire (±2°C)
+- MgCl₂: 1.5-2.5 mM
+- 25-35 cycles
+- Contrôles +/- obligatoires`;
     }
     
     if (q.includes('crispr')) {
-      return "✂️ **CRISPR-Cas9**\n\nSystème d'édition génomique révolutionnaire :\n\n**Composants** :\n- Cas9 : nucléase (ciseaux moléculaires)\n- gRNA : guide ARN (20 nt + scaffold)\n- PAM : séquence NGG requise\n\n**Mécanisme** :\n1. gRNA guide Cas9 vers la cible\n2. Coupure double-brin\n3. Réparation : NHEJ (insertion/délétion) ou HDR (correction précise)\n\n**Applications** : thérapie génique, modèles animaux, amélioration cultures";
+      return `CRISPR-Cas9 - Édition génomique
+
+Composants:
+- Cas9: nucléase (ciseaux moléculaires)
+- gRNA: guide ARN (20 nt + scaffold)
+- PAM: séquence NGG requise
+
+Mécanisme:
+1. gRNA guide Cas9 vers la cible
+2. Coupure double-brin
+3. Réparation: NHEJ (insertion/délétion) ou HDR (correction précise)
+
+Applications: thérapie génique, modèles animaux, amélioration cultures`;
     }
     
-    if (q.includes('western') || q.includes('blot')) {
-      return "🔬 **Western Blot**\n\n**Protocole** :\n1. SDS-PAGE (séparation protéines)\n2. Transfert membrane (PVDF/nitrocellulose)\n3. Blocage (lait 5% ou BSA, 1h)\n4. Anticorps 1° (4°C overnight, dilution 1:1000)\n5. Lavages TBST (3×10min)\n6. Anticorps 2° conjugué (1h RT, 1:5000)\n7. Révélation ECL\n\n**Contrôles** : β-actine, GAPDH, Tubuline\n**Astuce** : saturer la membrane pour éviter le bruit de fond";
-    }
-    
-    if (q.includes('culture') || q.includes('cellule')) {
-      return "🧫 **Culture Cellulaire**\n\n**Conditions optimales** :\n- Milieu : DMEM/RPMI + 10% FBS + antibiotiques\n- Incubateur : 37°C, 5% CO₂, humidité 95%\n- Passage : confluence 80-90%, trypsine 0.25%\n- Ratio split : 1:3 à 1:10\n\n**Cryoconservation** :\n- Milieu : 90% FBS + 10% DMSO\n- Congélation : -1°C/min (Mr. Frosty)\n- Stockage : azote liquide (-196°C)\n\n**Contamination** : test mycoplasme mensuel !";
-    }
-    
-    return "Je suis Mimir, propulsé par Qwen2.5-7B. Pour utiliser toutes mes capacités, configurez votre clé API Hugging Face dans les paramètres ⚙️. Je peux vous aider avec : PCR, CRISPR, Western Blot, culture cellulaire, clonage, séquençage NGS, microscopie, statistiques, et bien plus !";
+    return `Mimir AI - Qwen2.5-7B
+
+Configure your Hugging Face API key in settings to unlock full capabilities.
+
+I can help with: PCR, CRISPR, Western Blot, cell culture, cloning, NGS sequencing, microscopy, statistics, and more!`;
   };
 
   const handleSend = async () => {
@@ -144,7 +175,7 @@ const MobileMimir = () => {
       const errorMsg: Message = {
         id: Date.now() + 1,
         role: 'assistant',
-        content: "Désolé, une erreur s'est produite. Vérifiez votre clé API dans les paramètres.",
+        content: "Error occurred. Check your API key in settings.",
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMsg]);
@@ -153,126 +184,116 @@ const MobileMimir = () => {
     }
   };
 
-  const copyToClipboard = (text: string, id: number) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
-
   const clearConversation = () => {
-    if (confirm('Effacer toute la conversation ?')) {
-      setMessages([{
-        id: 1,
-        role: 'assistant',
-        content: "Conversation effacée. Comment puis-je vous aider ?",
-        timestamp: new Date()
-      }]);
-    }
+    setMessages([{
+      id: 1,
+      role: 'system',
+      content: 'Mimir AI - Qwen2.5-7B Scientific Assistant',
+      timestamp: new Date()
+    }]);
   };
 
   const saveApiKey = () => {
     localStorage.setItem('hf_api_key', apiKey);
     setShowSettings(false);
-    alert('✅ Clé API enregistrée');
+    alert('✓ API key saved');
   };
 
-  const quickQuestions = [
-    { icon: '🧬', text: 'PCR : protocole complet', query: 'Explique-moi le protocole PCR complet avec les températures et durées optimales' },
-    { icon: '✂️', text: 'CRISPR-Cas9', query: 'Comment fonctionne CRISPR-Cas9 et quelles sont ses applications ?' },
-    { icon: '🔬', text: 'Western Blot', query: 'Donne-moi le protocole détaillé du Western Blot' },
-    { icon: '🧫', text: 'Culture cellulaire', query: 'Quelles sont les bonnes pratiques pour la culture cellulaire ?' }
-  ];
+  const exportChat = () => {
+    const chatText = messages
+      .map(m => `[${m.role.toUpperCase()}] ${m.content}`)
+      .join('\n\n');
+    const blob = new Blob([chatText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mimir-chat-${Date.now()}.txt`;
+    a.click();
+  };
 
   return (
-    <div className="mobile-container" style={{ background: 'linear-gradient(180deg, #0a0e1a 0%, #1a1f2e 100%)' }}>
-      <div className="mobile-header" style={{ 
-        background: 'rgba(16, 185, 129, 0.05)',
-        borderBottom: '1px solid rgba(16, 185, 129, 0.2)'
+    <div style={{
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      background: '#0d1117',
+      color: '#c9d1d9',
+      fontFamily: 'Monaco, Consolas, "Courier New", monospace',
+      fontSize: '13px'
+    }}>
+      <div style={{
+        padding: '0.75rem 1rem',
+        background: '#161b22',
+        borderBottom: '1px solid #30363d',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button
-              onClick={() => navigate('/hugin')}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--mobile-text)',
-                padding: '0.5rem',
-                cursor: 'pointer'
-              }}
-            >
-              <ArrowLeft size={24} />
-            </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, #10b981, #059669)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-              }}>
-                <Brain size={28} color="white" />
-              </div>
-              <div>
-                <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: 'white' }}>
-                  Mimir AI
-                </h1>
-                <p style={{ 
-                  fontSize: '0.7rem', 
-                  color: '#10b981', 
-                  margin: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem'
-                }}>
-                  <Zap size={12} /> Qwen2.5-7B
-                </p>
-              </div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              style={{
-                background: 'rgba(99, 102, 241, 0.1)',
-                border: '1px solid rgba(99, 102, 241, 0.3)',
-                borderRadius: '0.75rem',
-                padding: '0.75rem',
-                cursor: 'pointer',
-                color: '#6366f1'
-              }}
-            >
-              <Settings size={20} />
-            </button>
-            <button
-              onClick={clearConversation}
-              style={{
-                background: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                borderRadius: '0.75rem',
-                padding: '0.75rem',
-                cursor: 'pointer',
-                color: '#ef4444'
-              }}
-            >
-              <Trash2 size={20} />
-            </button>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button
+            onClick={() => navigate('/hugin')}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              cursor: 'pointer',
+              padding: '0.25rem'
+            }}
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <span style={{ color: '#58a6ff', fontWeight: 600 }}>mimir</span>
+          <span style={{ color: '#8b949e', fontSize: '11px' }}>qwen2.5-7b</span>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              cursor: 'pointer',
+              padding: '0.25rem'
+            }}
+          >
+            <Settings size={18} />
+          </button>
+          <button
+            onClick={exportChat}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              cursor: 'pointer',
+              padding: '0.25rem'
+            }}
+          >
+            <Download size={18} />
+          </button>
+          <button
+            onClick={clearConversation}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              cursor: 'pointer',
+              padding: '0.25rem'
+            }}
+          >
+            <Trash2 size={18} />
+          </button>
         </div>
       </div>
 
       {showSettings && (
         <div style={{
           padding: '1rem',
-          background: 'rgba(99, 102, 241, 0.05)',
-          borderBottom: '1px solid rgba(99, 102, 241, 0.2)'
+          background: '#161b22',
+          borderBottom: '1px solid #30363d'
         }}>
-          <p style={{ fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--mobile-text-secondary)' }}>
-            Clé API Hugging Face (optionnelle)
-          </p>
+          <div style={{ marginBottom: '0.5rem', color: '#8b949e', fontSize: '11px' }}>
+            HUGGING FACE API KEY
+          </div>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <input
               type="password"
@@ -281,199 +302,90 @@ const MobileMimir = () => {
               placeholder="hf_..."
               style={{
                 flex: 1,
-                padding: '0.75rem',
-                background: 'var(--mobile-card-bg)',
-                border: '1px solid var(--mobile-border)',
-                borderRadius: '0.75rem',
-                color: 'var(--mobile-text)',
-                fontSize: '0.85rem'
+                padding: '0.5rem',
+                background: '#0d1117',
+                border: '1px solid #30363d',
+                borderRadius: '4px',
+                color: '#c9d1d9',
+                fontSize: '12px',
+                fontFamily: 'inherit'
               }}
             />
             <button
               onClick={saveApiKey}
               style={{
-                padding: '0.75rem 1.5rem',
-                background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                padding: '0.5rem 1rem',
+                background: '#238636',
                 border: 'none',
-                borderRadius: '0.75rem',
+                borderRadius: '4px',
                 color: 'white',
                 fontWeight: 600,
-                cursor: 'pointer'
+                cursor: 'pointer',
+                fontSize: '12px'
               }}
             >
-              Sauver
+              Save
             </button>
           </div>
-          <p style={{ fontSize: '0.7rem', marginTop: '0.5rem', color: 'var(--mobile-text-secondary)' }}>
-            Obtenez votre clé sur huggingface.co/settings/tokens
-          </p>
+          <div style={{ marginTop: '0.5rem', color: '#8b949e', fontSize: '10px' }}>
+            Get your key at huggingface.co/settings/tokens
+          </div>
         </div>
       )}
 
       <div 
         ref={scrollRef}
-        className="mobile-content" 
-        style={{ 
-          flex: 1, 
+        style={{
+          flex: 1,
           overflowY: 'auto',
-          paddingBottom: '160px',
-          background: 'transparent'
+          padding: '1rem',
+          paddingBottom: '100px'
         }}
       >
         {messages.map((msg) => (
           <div
             key={msg.id}
             style={{
-              display: 'flex',
-              gap: '0.75rem',
-              marginBottom: '1.5rem',
-              flexDirection: msg.role === 'user' ? 'row-reverse' : 'row'
+              marginBottom: '1rem',
+              lineHeight: 1.6
             }}
           >
             <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              background: msg.role === 'user' 
-                ? 'linear-gradient(135deg, #6366f1, #4f46e5)' 
-                : 'linear-gradient(135deg, #10b981, #059669)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              boxShadow: msg.role === 'user'
-                ? '0 4px 12px rgba(99, 102, 241, 0.3)'
-                : '0 4px 12px rgba(16, 185, 129, 0.3)'
+              color: msg.role === 'system' ? '#58a6ff' : msg.role === 'user' ? '#7ee787' : '#f0883e',
+              marginBottom: '0.25rem',
+              fontSize: '11px',
+              fontWeight: 600
             }}>
-              {msg.role === 'user' ? <User size={20} color="white" /> : <Sparkles size={20} color="white" />}
+              {msg.role === 'system' ? '# ' : msg.role === 'user' ? '> ' : '< '}
+              {msg.role.toUpperCase()}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  padding: '1rem',
-                  background: msg.role === 'user'
-                    ? 'rgba(99, 102, 241, 0.1)'
-                    : 'rgba(16, 185, 129, 0.05)',
-                  border: `1px solid ${msg.role === 'user' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(16, 185, 129, 0.2)'}`,
-                  borderRadius: msg.role === 'user' ? '1rem 1rem 0.25rem 1rem' : '1rem 1rem 1rem 0.25rem',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                }}
-              >
-                <p style={{ 
-                  fontSize: '0.9rem', 
-                  lineHeight: 1.7,
-                  whiteSpace: 'pre-wrap',
-                  margin: 0,
-                  color: 'white'
-                }}>
-                  {msg.content}
-                </p>
-                <div style={{ 
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginTop: '0.75rem',
-                  paddingTop: '0.75rem',
-                  borderTop: '1px solid rgba(255,255,255,0.05)'
-                }}>
-                  <p style={{ 
-                    fontSize: '0.7rem', 
-                    color: 'var(--mobile-text-secondary)',
-                    margin: 0
-                  }}>
-                    {msg.timestamp.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                  {msg.role === 'assistant' && (
-                    <button
-                      onClick={() => copyToClipboard(msg.content, msg.id)}
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: copiedId === msg.id ? '#10b981' : 'var(--mobile-text-secondary)',
-                        cursor: 'pointer',
-                        padding: '0.25rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.25rem',
-                        fontSize: '0.7rem'
-                      }}
-                    >
-                      {copiedId === msg.id ? <Check size={14} /> : <Copy size={14} />}
-                    </button>
-                  )}
-                </div>
-              </div>
+            <div style={{
+              color: '#c9d1d9',
+              whiteSpace: 'pre-wrap',
+              borderLeft: msg.role === 'assistant' ? '2px solid #30363d' : 'none',
+              paddingLeft: msg.role === 'system' ? 0 : '1rem'
+            }}>
+              {msg.content}
             </div>
           </div>
         ))}
 
         {isThinking && (
-          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem' }}>
+          <div style={{ marginBottom: '1rem' }}>
             <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #10b981, #059669)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-            }}>
-              <Loader2 size={20} color="white" className="animate-spin" />
-            </div>
-            <div style={{
-              flex: 1,
-              padding: '1rem',
-              background: 'rgba(16, 185, 129, 0.05)',
-              border: '1px solid rgba(16, 185, 129, 0.2)',
-              borderRadius: '1rem 1rem 1rem 0.25rem'
-            }}>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <div className="dot-pulse" style={{ 
-                  width: '8px', 
-                  height: '8px', 
-                  borderRadius: '50%', 
-                  background: '#10b981' 
-                }} />
-                <p style={{ fontSize: '0.9rem', margin: 0, color: '#10b981' }}>
-                  Qwen2.5 analyse votre question...
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {messages.length === 1 && (
-          <div style={{ marginTop: '1rem' }}>
-            <p style={{ 
-              fontSize: '0.85rem', 
-              color: 'var(--mobile-text-secondary)', 
-              marginBottom: '1rem',
+              color: '#f0883e',
+              marginBottom: '0.25rem',
+              fontSize: '11px',
               fontWeight: 600
             }}>
-              💡 Questions rapides
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              {quickQuestions.map((q, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setInput(q.query)}
-                  style={{
-                    padding: '1rem',
-                    background: 'rgba(16, 185, 129, 0.05)',
-                    border: '1px solid rgba(16, 185, 129, 0.2)',
-                    borderRadius: '1rem',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{q.icon}</div>
-                  <p style={{ fontSize: '0.8rem', margin: 0, color: 'white', fontWeight: 600 }}>
-                    {q.text}
-                  </p>
-                </button>
-              ))}
+              {'< ASSISTANT'}
+            </div>
+            <div style={{
+              color: '#8b949e',
+              paddingLeft: '1rem',
+              borderLeft: '2px solid #30363d'
+            }}>
+              <span className="blink">▊</span> generating...
             </div>
           </div>
         )}
@@ -485,60 +397,55 @@ const MobileMimir = () => {
         left: 0,
         right: 0,
         padding: '1rem',
-        background: 'linear-gradient(180deg, transparent 0%, rgba(10, 14, 26, 0.95) 20%, rgba(10, 14, 26, 1) 100%)',
-        borderTop: '1px solid rgba(16, 185, 129, 0.1)'
+        background: '#0d1117',
+        borderTop: '1px solid #30363d'
       }}>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end' }}>
-          <div style={{ flex: 1 }}>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder="Posez votre question scientifique..."
-              rows={1}
-              style={{
-                width: '100%',
-                padding: '1rem',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(16, 185, 129, 0.2)',
-                borderRadius: '1.25rem',
-                color: 'white',
-                fontSize: '0.9rem',
-                outline: 'none',
-                resize: 'none',
-                fontFamily: 'inherit',
-                minHeight: '52px',
-                maxHeight: '120px'
-              }}
-            />
-          </div>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end' }}>
+          <textarea
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
+            rows={1}
+            style={{
+              flex: 1,
+              padding: '0.75rem',
+              background: '#161b22',
+              border: '1px solid #30363d',
+              borderRadius: '4px',
+              color: '#c9d1d9',
+              fontSize: '13px',
+              fontFamily: 'inherit',
+              resize: 'none',
+              minHeight: '40px',
+              maxHeight: '120px',
+              outline: 'none'
+            }}
+          />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isThinking}
             style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '50%',
-              background: input.trim() && !isThinking 
-                ? 'linear-gradient(135deg, #10b981, #059669)' 
-                : 'rgba(100, 116, 139, 0.2)',
+              padding: '0.75rem 1rem',
+              background: input.trim() && !isThinking ? '#238636' : '#21262d',
               border: 'none',
-              color: 'white',
+              borderRadius: '4px',
+              color: input.trim() && !isThinking ? 'white' : '#8b949e',
+              cursor: input.trim() && !isThinking ? 'pointer' : 'not-allowed',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              cursor: input.trim() && !isThinking ? 'pointer' : 'not-allowed',
-              flexShrink: 0,
-              boxShadow: input.trim() && !isThinking ? '0 4px 12px rgba(16, 185, 129, 0.4)' : 'none',
-              transition: 'all 0.2s'
+              gap: '0.5rem',
+              fontSize: '12px',
+              fontWeight: 600
             }}
           >
-            <Send size={22} />
+            <Send size={16} />
           </button>
         </div>
       </div>
@@ -546,19 +453,12 @@ const MobileMimir = () => {
       <MobileBottomNav />
 
       <style>{`
-        .animate-spin {
-          animation: spin 1s linear infinite;
+        .blink {
+          animation: blink 1s step-end infinite;
         }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .dot-pulse {
-          animation: pulse 1.5s ease-in-out infinite;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.3; }
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
         }
       `}</style>
     </div>
