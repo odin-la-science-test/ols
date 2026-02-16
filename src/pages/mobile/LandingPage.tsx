@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { 
     Beaker, BookOpen, Zap, Shield, Users, TrendingUp, 
-    ArrowRight, CheckCircle, Star, Sparkles, ChevronRight,
+    ArrowRight, CheckCircle, Sparkles, ChevronRight,
     FlaskConical, Database, Activity, Award
 } from 'lucide-react';
 import { useState } from 'react';
@@ -46,27 +46,6 @@ const MobileLandingPage = () => {
         { value: '10K+', label: 'Chercheurs' },
         { value: '500+', label: 'Labos' },
         { value: '1M+', label: 'Expériences' }
-    ];
-
-    const testimonials = [
-        {
-            name: 'Dr. Marie Dubois',
-            role: 'BioEcoAgro',
-            content: 'Odin a transformé notre façon de travailler.',
-            rating: 5
-        },
-        {
-            name: 'Prof. Jean Martin',
-            role: 'INRAE',
-            content: 'La meilleure plateforme pour la recherche.',
-            rating: 5
-        },
-        {
-            name: 'Dr. Sophie Laurent',
-            role: 'UGSF',
-            content: 'Indispensable pour notre équipe.',
-            rating: 5
-        }
     ];
 
     return (
@@ -390,134 +369,276 @@ const MobileLandingPage = () => {
                 }}>
                     BioEcoAgro • INRAE • UGSF
                 </p>
-
-                <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '1rem'
-                }}>
-                    {testimonials.map((testimonial, i) => (
-                        <div key={i} style={{
-                            background: 'rgba(255, 255, 255, 0.05)',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                            borderRadius: '1rem',
-                            padding: '1.25rem'
-                        }}>
-                            <div style={{
-                                display: 'flex',
-                                gap: '0.25rem',
-                                marginBottom: '0.75rem'
-                            }}>
-                                {[...Array(testimonial.rating)].map((_, j) => (
-                                    <Star key={j} size={14} fill="#f59e0b" color="#f59e0b" />
-                                ))}
-                            </div>
-                            <p style={{
-                                color: '#cbd5e1',
-                                fontSize: '0.9rem',
-                                lineHeight: 1.5,
-                                marginBottom: '0.75rem'
-                            }}>
-                                "{testimonial.content}"
-                            </p>
-                            <div style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                paddingTop: '0.75rem',
-                                borderTop: '1px solid rgba(255, 255, 255, 0.1)'
-                            }}>
-                                <div>
-                                    <div style={{
-                                        fontWeight: 600,
-                                        fontSize: '0.85rem',
-                                        marginBottom: '0.125rem'
-                                    }}>
-                                        {testimonial.name}
-                                    </div>
-                                    <div style={{
-                                        color: '#64748b',
-                                        fontSize: '0.75rem'
-                                    }}>
-                                        {testimonial.role}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
             </section>
 
             <section style={{
-                padding: '2rem 1.5rem'
+                padding: '2rem 0 2rem 1.5rem'
             }}>
+                <h2 style={{
+                    fontSize: '1.75rem',
+                    fontWeight: 800,
+                    marginBottom: '1.5rem',
+                    paddingRight: '1.5rem'
+                }}>
+                    Nos tarifs
+                </h2>
+
                 <div style={{
-                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))',
-                    border: '1px solid rgba(59, 130, 246, 0.3)',
-                    borderRadius: '1.5rem',
-                    padding: '2rem',
-                    textAlign: 'center'
+                    display: 'flex',
+                    gap: '1rem',
+                    overflowX: 'auto',
+                    scrollSnapType: 'x mandatory',
+                    WebkitOverflowScrolling: 'touch',
+                    paddingBottom: '1rem',
+                    paddingRight: '1.5rem'
                 }}>
                     <div style={{
-                        width: '64px',
-                        height: '64px',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                        minWidth: '280px',
+                        scrollSnapAlign: 'start',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '1.5rem',
+                        padding: '2rem',
                         display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto 1rem',
-                        boxShadow: '0 8px 24px rgba(59, 130, 246, 0.4)'
+                        flexDirection: 'column'
                     }}>
-                        <Award size={32} color="#fff" />
-                    </div>
-                    <h2 style={{
-                        fontSize: '1.5rem',
-                        fontWeight: 800,
-                        marginBottom: '0.75rem'
-                    }}>
-                        Tarif académique
-                    </h2>
-                    <p style={{
-                        color: '#94a3b8',
-                        fontSize: '0.9rem',
-                        marginBottom: '1.5rem'
-                    }}>
-                        -30% pour les institutions académiques
-                    </p>
-                    <div style={{
-                        fontSize: '2.5rem',
-                        fontWeight: 900,
-                        color: '#3b82f6',
-                        marginBottom: '0.5rem'
-                    }}>
-                        2600€
-                    </div>
-                    <div style={{
-                        color: '#64748b',
-                        fontSize: '0.9rem',
-                        marginBottom: '1.5rem'
-                    }}>
-                        par mois
-                    </div>
-                    <button
-                        onClick={() => navigate('/register')}
-                        style={{
-                            width: '100%',
-                            padding: '1rem',
-                            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                            border: 'none',
-                            borderRadius: '0.75rem',
-                            color: '#fff',
-                            fontSize: '1rem',
+                        <h3 style={{
+                            fontSize: '1.25rem',
                             fontWeight: 700,
-                            cursor: 'pointer',
-                            boxShadow: '0 8px 16px rgba(59, 130, 246, 0.4)'
-                        }}
-                    >
-                        Essai gratuit 30 jours
-                    </button>
+                            marginBottom: '0.5rem',
+                            color: '#94a3b8'
+                        }}>
+                            Munin Atlas
+                        </h3>
+                        <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+                            Encyclopédie scientifique
+                        </p>
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                                <span style={{ fontSize: '2.5rem', fontWeight: 900, color: '#f8fafc' }}>
+                                    250€
+                                </span>
+                                <span style={{ color: '#64748b', fontSize: '0.9rem' }}>
+                                    /mois
+                                </span>
+                            </div>
+                        </div>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.75rem',
+                            marginBottom: '1.5rem',
+                            flex: 1
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <CheckCircle size={16} color="#10b981" />
+                                <span style={{ color: '#cbd5e1' }}>Encyclopédie complète</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <CheckCircle size={16} color="#10b981" />
+                                <span style={{ color: '#cbd5e1' }}>Gestion des entités</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <CheckCircle size={16} color="#10b981" />
+                                <span style={{ color: '#cbd5e1' }}>Base de connaissances</span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => navigate('/register')}
+                            style={{
+                                width: '100%',
+                                padding: '0.875rem',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                borderRadius: '0.75rem',
+                                color: '#f8fafc',
+                                fontSize: '0.9rem',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Commencer
+                        </button>
+                    </div>
+
+                    <div style={{
+                        minWidth: '280px',
+                        scrollSnapAlign: 'start',
+                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15))',
+                        border: '2px solid #3b82f6',
+                        borderRadius: '1.5rem',
+                        padding: '2rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        position: 'relative'
+                    }}>
+                        <div style={{
+                            position: 'absolute',
+                            top: '-12px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            padding: '0.375rem 1rem',
+                            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                            borderRadius: '2rem',
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            color: '#fff',
+                            boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
+                        }}>
+                            ⭐ POPULAIRE
+                        </div>
+                        <h3 style={{
+                            fontSize: '1.25rem',
+                            fontWeight: 700,
+                            marginBottom: '0.5rem',
+                            color: '#3b82f6'
+                        }}>
+                            Pack Complet
+                        </h3>
+                        <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+                            Tous les modules inclus
+                        </p>
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                                <span style={{ fontSize: '2.5rem', fontWeight: 900, color: '#f8fafc' }}>
+                                    2600€
+                                </span>
+                                <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
+                                    /mois
+                                </span>
+                            </div>
+                        </div>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.75rem',
+                            marginBottom: '1.5rem',
+                            flex: 1
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <CheckCircle size={16} color="#10b981" />
+                                <span style={{ color: '#cbd5e1', fontWeight: 600 }}>Munin Atlas</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <CheckCircle size={16} color="#10b981" />
+                                <span style={{ color: '#cbd5e1' }}>Hugin Core</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <CheckCircle size={16} color="#10b981" />
+                                <span style={{ color: '#cbd5e1' }}>Hugin Lab</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <CheckCircle size={16} color="#10b981" />
+                                <span style={{ color: '#cbd5e1' }}>Hugin Analysis</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <CheckCircle size={16} color="#10b981" />
+                                <span style={{ color: '#cbd5e1' }}>Support 24/7</span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => navigate('/register')}
+                            style={{
+                                width: '100%',
+                                padding: '0.875rem',
+                                background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                                border: 'none',
+                                borderRadius: '0.75rem',
+                                color: '#fff',
+                                fontSize: '0.9rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                boxShadow: '0 8px 16px rgba(59, 130, 246, 0.4)'
+                            }}
+                        >
+                            Essai gratuit
+                        </button>
+                    </div>
+
+                    <div style={{
+                        minWidth: '280px',
+                        scrollSnapAlign: 'start',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '1.5rem',
+                        padding: '2rem',
+                        display: 'flex',
+                        flexDirection: 'column'
+                    }}>
+                        <h3 style={{
+                            fontSize: '1.25rem',
+                            fontWeight: 700,
+                            marginBottom: '0.5rem',
+                            color: '#8b5cf6'
+                        }}>
+                            Enterprise
+                        </h3>
+                        <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+                            Pour grands laboratoires
+                        </p>
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                                <span style={{ fontSize: '1.75rem', fontWeight: 900, color: '#f8fafc' }}>
+                                    Sur mesure
+                                </span>
+                            </div>
+                        </div>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.75rem',
+                            marginBottom: '1.5rem',
+                            flex: 1
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <CheckCircle size={16} color="#10b981" />
+                                <span style={{ color: '#cbd5e1', fontWeight: 600 }}>Pack Complet</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <CheckCircle size={16} color="#10b981" />
+                                <span style={{ color: '#cbd5e1' }}>Utilisateurs illimités</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <CheckCircle size={16} color="#10b981" />
+                                <span style={{ color: '#cbd5e1' }}>Stockage illimité</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <CheckCircle size={16} color="#10b981" />
+                                <span style={{ color: '#cbd5e1' }}>Modules personnalisés</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                <CheckCircle size={16} color="#10b981" />
+                                <span style={{ color: '#cbd5e1' }}>Formation sur site</span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => navigate('/register')}
+                            style={{
+                                width: '100%',
+                                padding: '0.875rem',
+                                background: 'rgba(139, 92, 246, 0.1)',
+                                border: '1px solid #8b5cf6',
+                                borderRadius: '0.75rem',
+                                color: '#8b5cf6',
+                                fontSize: '0.9rem',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Nous contacter
+                        </button>
+                    </div>
                 </div>
+
+                <p style={{
+                    textAlign: 'center',
+                    color: '#94a3b8',
+                    fontSize: '0.85rem',
+                    marginTop: '1.5rem',
+                    padding: '0 1.5rem'
+                }}>
+                    💡 Swipez pour voir tous les tarifs
+                </p>
             </section>
 
             <section style={{
