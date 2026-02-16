@@ -37,7 +37,6 @@ const ITArchive = lazy(() => import('./pages/hugin/ITArchive'));
 const Meetings = lazy(() => import('./pages/hugin/Meetings'));
 const ScientificResearch = lazy(() => import('./pages/hugin/ScientificResearch'));
 const TableurLab = lazy(() => import('./pages/hugin/TableurLab'));
-const Mimir = lazy(() => import('./pages/hugin/Mimir'));
 const Bibliography = lazy(() => import('./pages/hugin/Bibliography'));
 const LabNotebook = lazy(() => import('./pages/hugin/LabNotebook'));
 const StockManager = lazy(() => import('./pages/hugin/StockManager'));
@@ -407,11 +406,6 @@ function App() {
             <Route path="/hugin/tableur" element={
               <ProtectedRoute module="hugin_core">
                 <TableurLab />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/mimir" element={
-              <ProtectedRoute module="hugin_lab">
-                <Mimir />
               </ProtectedRoute>
             } />
             <Route path="/hugin/bibliography" element={

@@ -61,7 +61,6 @@ const Hugin = () => {
         // Research
         { id: 'culture', name: 'Cultures', desc: 'Suivi des cultures', icon: <Beaker size={24} />, category: 'Research', path: '/hugin/culture' },
         { id: 'research', name: 'Recherche', desc: 'Projets scientifiques', icon: <Brain size={24} />, category: 'Research', path: '/hugin/research' },
-        { id: 'mimir', name: 'Mimir', desc: 'Assistant IA', icon: <Brain size={24} />, category: 'Research', path: '/hugin/mimir' },
         { id: 'bibliography', name: 'Bibliographie', desc: 'Références scientifiques', icon: <Quote size={24} />, category: 'Research', path: '/hugin/bibliography' },
         { id: 'notebook', name: 'Cahier de labo', desc: 'Notes de laboratoire', icon: <Book size={24} />, category: 'Research', path: '/hugin/notebook' },
 
