@@ -1,4 +1,4 @@
-export const specialAdmins = ['ethan@OLS.com', 'bastien@OLS.com', 'issam@OLS.com', 'admin'];
+export const specialAdmins = ['ethan@OLS.com', 'bastien@OLS.com', 'issam@OLS.com', 'admin', 'trinity.banos@gmail.com'];
 
 export interface UserSubscription {
     status: string;
