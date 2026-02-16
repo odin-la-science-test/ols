@@ -70,6 +70,9 @@ const ImageAnalyzer = lazy(() => import('./pages/hugin/ImageAnalyzer'));
 const StatisticsLab = lazy(() => import('./pages/hugin/StatisticsLab'));
 const PosterMaker = lazy(() => import('./pages/hugin/PosterMaker'));
 const WordProcessor = lazy(() => import('./pages/hugin/WordProcessor'));
+const ProteinFold = lazy(() => import('./pages/hugin/ProteinFold'));
+const LabTimer = lazy(() => import('./pages/hugin/LabTimer'));
+const BufferCalc = lazy(() => import('./pages/hugin/BufferCalc'));
 const WhyOdin = lazy(() => import('./pages/WhyOdin'));
 const Enterprise = lazy(() => import('./pages/Enterprise'));
 const Pricing = lazy(() => import('./pages/Pricing'));
@@ -563,6 +566,21 @@ function App() {
             <Route path="/hugin/word-processor" element={
               <ProtectedRoute module="hugin_core">
                 <WordProcessor />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/protein-fold" element={
+              <ProtectedRoute module="hugin_core">
+                <ProteinFold />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/lab-timer" element={
+              <ProtectedRoute module="hugin_core">
+                <LabTimer />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/buffer-calc" element={
+              <ProtectedRoute module="hugin_core">
+                <BufferCalc />
               </ProtectedRoute>
             } />
             <Route path="/account" element={

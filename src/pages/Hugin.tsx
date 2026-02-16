@@ -3,7 +3,7 @@ import {
     Beaker, Calendar, Mail, HardDrive, Video, Brain, Quote, Book,
     Package, Snowflake, Activity, Wallet, BookOpen, Calculator,
     Dna, Camera, Layers, ShieldAlert, Zap, Share2, Box,
-    TrendingUp, Grid, UserCheck, Search, FileText
+    TrendingUp, Grid, UserCheck, Search, FileText, Clock
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../components/LanguageContext';
@@ -81,7 +81,10 @@ const Hugin = () => {
         { id: 'mixer', name: 'Solutions', desc: 'Préparation solutions', icon: <Beaker size={24} />, category: 'Analysis', path: '/hugin/mixer' },
         { id: 'primers', name: 'Primers', desc: 'Design de primers', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/primers' },
         { id: 'cells', name: 'Cellules', desc: 'Suivi cellulaire', icon: <UserCheck size={24} />, category: 'Analysis', path: '/hugin/cells' },
-        { id: 'colony', name: 'Colonies', desc: 'Comptage colonies', icon: <Camera size={24} />, category: 'Analysis', path: '/hugin/colony' }
+        { id: 'colony', name: 'Colonies', desc: 'Comptage colonies', icon: <Camera size={24} />, category: 'Analysis', path: '/hugin/colony' },
+        { id: 'proteinfold', name: 'ProteinFold', desc: 'Structures protéiques 3D', icon: <Layers size={24} />, category: 'Analysis', path: '/hugin/protein-fold' },
+        { id: 'labtimer', name: 'LabTimer', desc: 'Timers multiples pour expériences', icon: <Clock size={24} />, category: 'Core', path: '/hugin/lab-timer' },
+        { id: 'buffercalc', name: 'BufferCalc', desc: 'Calculateur de tampons', icon: <Beaker size={24} />, category: 'Analysis', path: '/hugin/buffer-calc' }
     ];
 
     const categories = ['All', 'Core', 'Lab', 'Research', 'Analysis'];
