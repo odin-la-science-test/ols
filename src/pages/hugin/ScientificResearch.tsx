@@ -297,16 +297,56 @@ const ScientificResearch = () => {
             }
 
             setResults(merged);
-            if (merged.length === 0) {
-                notify('Aucun résultat trouvé', 'info');
+            
+            if (merged.length > 0) {
+                autoArchiveResults(merged);
+                notify(`${merged.length} résultats trouvés et archivés automatiquement`, 'success');
             } else {
-                notify(`${merged.length} résultats trouvés`, 'success');
+                notify('Aucun résultat trouvé', 'info');
             }
         } catch (e) {
             console.error('Search error:', e);
             notify('Erreur lors de la recherche', 'error');
         } finally {
             setIsSearching(false);
+        }
+    };
+
+    const autoArchiveResults = async (articles: Article[]) => {
+        const currentArchives = await fetchModuleData('research_archives') || [];
+        const newArticles: Article[] = [];
+
+        for (const article of articles) {
+            const alreadyExists = currentArchives.some((a: Article) => {
+                if (article.doi && a.doi) return article.doi === a.doi;
+                return article.title === a.title;
+            });
+
+            if (!alreadyExists) {
+                const newArchive = {
+                    ...article,
+                    id: article.doi || article.title,
+                    dateAdded: new Date().toISOString(),
+                    folderId: 'uncategorized',
+                    autoArchived: true
+                };
+                newArticles.push(newArchive);
+            }
+        }
+
+        if (newArticles.length > 0) {
+            try {
+                for (const article of newArticles) {
+                    await saveModuleItem('research_archives', article);
+                }
+                const updatedArchives = await fetchModuleData('research_archives');
+                if (updatedArchives && Array.isArray(updatedArchives)) {
+                    setArchives(updatedArchives);
+                }
+                console.log(`✓ ${newArticles.length} nouveaux articles archivés automatiquement`);
+            } catch (e) {
+                console.error('Erreur lors de l\'archivage automatique:', e);
+            }
         }
     };
 
