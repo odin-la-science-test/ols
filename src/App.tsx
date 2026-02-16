@@ -48,6 +48,11 @@ const BioToolBox = lazy(() => import('./pages/hugin/BioToolBox'));
 const SequenceLens = lazy(() => import('./pages/hugin/SequenceLens'));
 const ColonyVision = lazy(() => import('./pages/hugin/ColonyVision'));
 const ProjectMind = lazy(() => import('./pages/hugin/ProjectMind'));
+const UnitConverter = lazy(() => import('./pages/hugin/UnitConverter'));
+const DilutionCalc = lazy(() => import('./pages/hugin/DilutionCalc'));
+const PHCalculator = lazy(() => import('./pages/hugin/PHCalculator'));
+const MolarityCalc = lazy(() => import('./pages/hugin/MolarityCalc'));
+const LabNotes = lazy(() => import('./pages/hugin/LabNotes'));
 const SafetyHub = lazy(() => import('./pages/hugin/SafetyHub'));
 const FlowAnalyzer = lazy(() => import('./pages/hugin/FlowAnalyzer'));
 const SpectrumViewer = lazy(() => import('./pages/hugin/SpectrumViewer'));
@@ -461,6 +466,31 @@ function App() {
             <Route path="/hugin/projects" element={
               <ProtectedRoute module="hugin_core">
                 <ProjectMind />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/unitconverter" element={
+              <ProtectedRoute module="any">
+                <UnitConverter />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/dilution" element={
+              <ProtectedRoute module="any">
+                <DilutionCalc />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/phcalc" element={
+              <ProtectedRoute module="any">
+                <PHCalculator />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/molarity" element={
+              <ProtectedRoute module="any">
+                <MolarityCalc />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/labnotes" element={
+              <ProtectedRoute module="any">
+                <LabNotes />
               </ProtectedRoute>
             } />
             <Route path="/hugin/safety" element={

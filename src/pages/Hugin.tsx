@@ -83,7 +83,12 @@ const Hugin = () => {
         { id: 'colony', name: 'Colonies', desc: 'Comptage colonies', icon: <Camera size={24} />, category: 'Analysis', path: '/hugin/colony' },
         { id: 'proteinfold', name: 'ProteinFold', desc: 'Structures protéiques 3D', icon: <Layers size={24} />, category: 'Analysis', path: '/hugin/protein-fold' },
         { id: 'labtimer', name: 'LabTimer', desc: 'Timers multiples pour expériences', icon: <Clock size={24} />, category: 'Core', path: '/hugin/lab-timer' },
-        { id: 'buffercalc', name: 'BufferCalc', desc: 'Calculateur de tampons', icon: <Beaker size={24} />, category: 'Analysis', path: '/hugin/buffer-calc' }
+        { id: 'buffercalc', name: 'BufferCalc', desc: 'Calculateur de tampons', icon: <Beaker size={24} />, category: 'Analysis', path: '/hugin/buffer-calc' },
+        { id: 'unitconverter', name: 'Convertisseur', desc: 'Conversion d\'unités', icon: <Calculator size={24} />, category: 'Core', path: '/hugin/unitconverter' },
+        { id: 'dilution', name: 'Dilution', desc: 'Calculateur de dilution', icon: <Beaker size={24} />, category: 'Core', path: '/hugin/dilution' },
+        { id: 'phcalc', name: 'pH', desc: 'Calculateur de pH', icon: <Beaker size={24} />, category: 'Core', path: '/hugin/phcalc' },
+        { id: 'molarity', name: 'Molarité', desc: 'Calculateur de molarité', icon: <Calculator size={24} />, category: 'Core', path: '/hugin/molarity' },
+        { id: 'labnotes', name: 'Notes', desc: 'Notes rapides de labo', icon: <FileText size={24} />, category: 'Core', path: '/hugin/labnotes' }
     ];
 
     const categories = ['All', 'Core', 'Lab', 'Research', 'Analysis'];
