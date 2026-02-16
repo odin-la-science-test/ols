@@ -1,421 +1,464 @@
+// Mimir AI - Terminal Style Interface (Desktop)
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-    Brain, Search, Send, Calendar, Book, Globe,
-    ArrowLeft, Loader2, Sparkles, Plus, ExternalLink,
-    Info
-} from 'lucide-react';
-import { useToast } from '../../components/ToastContext';
-import { fetchModuleData, saveModuleItem } from '../../utils/persistence';
+import { ArrowLeft, Send, Settings, Trash2, Download } from 'lucide-react';
 
 interface Message {
-    id: number;
-    role: 'user' | 'assistant';
-    content: string;
-    results?: any[];
-    type?: 'planning' | 'library' | 'research' | 'general';
+  id: number;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: Date;
 }
 
 const Mimir = () => {
-    const navigate = useNavigate();
-    const { showToast } = useToast();
-    const scrollRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: 1,
+      role: 'system',
+      content: 'Mimir AI - Qwen2.5-7B Scientific Assistant',
+      timestamp: new Date()
+    }
+  ]);
+  const [isThinking, setIsThinking] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [apiKey, setApiKey] = useState(localStorage.getItem('hf_api_key') || '');
 
-    const [input, setInput] = useState('');
-    const [messages, setMessages] = useState<Message[]>([
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isThinking]);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [input]);
+
+  const callQwenAPI = async (userQuery: string): Promise<string> => {
+    const HF_API_KEY = apiKey || 'hf_placeholder';
+    
+    const conversationHistory = messages
+      .filter(m => m.role !== 'system')
+      .slice(-6)
+      .map(m => ({ role: m.role, content: m.content }));
+
+    const systemPrompt = 'Tu es Mimir, un assistant IA scientifique expert en biologie moléculaire, biochimie, microbiologie et recherche scientifique. Tu fournis des réponses précises, détaillées et pratiques. Réponds toujours en français.';
+
+    try {
+      const messages_formatted = [
+        { role: 'system', content: systemPrompt },
+        ...conversationHistory,
+        { role: 'user', content: userQuery }
+      ];
+
+      const prompt = messages_formatted
+        .map(m => `<|im_start|>${m.role}\n${m.content}<|im_end|>`)
+        .join('\n') + '\n<|im_start|>assistant\n';
+
+      const response = await fetch(
+        'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-7B-Instruct',
         {
-            id: 1,
-            role: 'assistant',
-            content: "Bonjour. Je suis Mimir, votre assistant de recherche. Je peux consulter votre planning, fouiller dans votre bibliothèque scientifique ou effectuer des recherches autonomes sur le web. Que puis-je faire pour vous aujourd'hui ?",
-            type: 'general'
-        }
-    ]);
-    const [isThinking, setIsThinking] = useState(false);
-
-    useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-    }, [messages, isThinking]);
-
-    const handleSend = async () => {
-        if (!input.trim() || isThinking) return;
-
-        const userMsg: Message = { id: Date.now(), role: 'user', content: input };
-        setMessages(prev => [...prev, userMsg]);
-        setInput('');
-        setIsThinking(true);
-
-        const query = input.toLowerCase();
-        let response: Message = { id: Date.now() + 1, role: 'assistant', content: '', results: [], type: 'general' };
-
-        try {
-
-            if (query.includes('ajoute') || query.includes('planifie') || query.includes('prévois') || query.includes('programme un')) {
-                response.type = 'planning';
-                const eventData = extractEventData(input);
-
-                try {
-                    const newItem = {
-                        id: Date.now().toString(),
-                        ...eventData,
-                        user: localStorage.getItem('currentUser') || 'Utilisateur',
-                        resource: 'Salle de réunion',
-                        reminder: true
-                    };
-                    await saveModuleItem('planning', newItem);
-                    response.content = `C'est noté. J'ai ajouté l'événement "${eventData.title}" le ${eventData.date} à ${eventData.time} dans votre planning.`;
-                    response.results = [{ ...eventData, resource: 'Salle de réunion' }];
-                } catch (e) {
-                    response.content = "Désolé, je n'ai pas pu ajouter cet événement à votre planning.";
-                }
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${HF_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            inputs: prompt,
+            parameters: {
+              max_new_tokens: 1000,
+              temperature: 0.7,
+              top_p: 0.9,
+              repetition_penalty: 1.1,
+              return_full_text: false,
+              do_sample: true
             }
-
-            else if (query.includes('qui est') || (query.includes('parle moi de') && isPersonQuery(query))) {
-                response.type = 'research';
-                const name = query.replace('qui est', '').replace('parle moi de', '').trim();
-                response.content = `Je recherche les contributions scientifiques de ${name}...`;
-
-                const researcherResults = await performExternalResearch(name, true);
-                if (researcherResults.length > 0) {
-                    response.content = `Voici les travaux de recherche associés à ${name} que j'ai identifiés :`;
-                    response.results = researcherResults;
-                } else {
-                    response.content = `Je n'ai pas trouvé de publications au nom de ${name}. S'agit-il d'un chercheur publié ?`;
-                }
-            }
-
-            else if (query.includes('planning') || query.includes('programme') || query.includes('aujourd\'hui') || query.includes('faire')) {
-                response.type = 'planning';
-                try {
-                    const planningData = await fetchModuleData('planning');
-                    const today = new Date().toISOString().split('T')[0];
-
-                    const matches = planningData.filter((e: any) =>
-                        e.title.toLowerCase().includes(query) ||
-                        e.date === today ||
-                        (query.includes('aujourd\'hui') && e.date === today)
-                    );
-
-                    if (matches.length > 0) {
-                        response.content = `J'ai trouvé ${matches.length} élément(s) dans votre planning correspondant à votre demande :`;
-                        response.results = matches;
-                    } else {
-                        response.content = "Je n'ai rien trouvé de particulier dans votre planning pour cette requête.";
-                    }
-                } catch (e) {
-                    response.content = "Désolé, j'ai rencontré une erreur en accédant au planning.";
-                }
-            } else if (query.includes('recherche') || query.includes('article') || query.includes('bibliothèque') || query.includes('parle moi de')) {
-                response.type = 'library';
-                try {
-                    const archives = await fetchModuleData('research_archives');
-
-                    const matches = archives.filter((a: any) =>
-                        a.title.toLowerCase().includes(query) ||
-                        (a.abstract && a.abstract.toLowerCase().includes(query)) ||
-                        (query.includes('parle moi de') && a.title.toLowerCase().includes(query.replace('parle moi de', '').trim()))
-                    );
-
-                    if (matches.length > 0) {
-                        response.content = `Basé sur votre bibliothèque locale, voici ce que j'ai trouvé sur ce sujet :`;
-                        response.results = matches;
-                    } else {
-                        response.type = 'research';
-                        response.content = "Ce sujet n'est pas dans votre bibliothèque locale. Je lance une recherche autonome sur PubMed et arXiv...";
-                        const externalResults = await performExternalResearch(query);
-                        if (externalResults.length > 0) {
-                            response.content = `Voici les derniers résultats scientifiques pertinents que j'ai trouvés à l'extérieur :`;
-                            response.results = externalResults;
-                        } else {
-                            response.content = "Je n'ai pas trouvé de résultats concluants, même à l'extérieur. Pouvez-vous préciser votre demande ?";
-                        }
-                    }
-                } catch (e) {
-                    response.content = "Désolé, j'ai rencontré une erreur en accédant à la bibliothèque.";
-                }
-            } else {
-                response.content = "Je peux vous aider spécifiquement avec votre planning (recherche et ajouts) ou vos recherches scientifiques. Essayez 'Ajoute une réunion demain à 10h' ou 'Qui est Djamel Drider ?'.";
-            }
-        } catch (error) {
-            response.content = "Désolé, j'ai rencontré une erreur technique lors de l'accès aux modules.";
-        } finally {
-            setMessages(prev => [...prev, response]);
-            setIsThinking(false);
+          })
         }
-    };
+      );
 
-    const isPersonQuery = (q: string) => {
-        return /parle moi de [A-Z]/i.test(q);
-    };
-
-    const extractEventData = (text: string) => {
-        const titleMatch = text.match(/(?:réunion|test|conférence|rdv|événement) (.+?)(?: pour| le| à|$)/i);
-        const dateMatch = text.match(/le (\d{4}-\d{2}-\d{2})/) || text.match(/demain/i);
-        const timeMatch = text.match(/à (\d{1,2}h\d{0,2})/i) || text.match(/(\d{1,2}:\d{2})/);
-
-        let date = new Date().toISOString().split('T')[0];
-        if (text.toLowerCase().includes('demain')) {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            date = tomorrow.toISOString().split('T')[0];
-        } else if (dateMatch && Array.isArray(dateMatch)) {
-            date = dateMatch[1];
+      if (!response.ok) {
+        if (response.status === 503) {
+          return "Model is loading, please retry in 20s...";
         }
+        throw new Error(`API Error: ${response.status}`);
+      }
 
-        return {
-            title: titleMatch ? titleMatch[1] : 'Nouvel événement',
-            date: date,
-            time: timeMatch ? timeMatch[1].replace('h', ':') : '09:00'
-        };
+      const data = await response.json();
+      const generatedText = Array.isArray(data) ? data[0]?.generated_text : data.generated_text;
+
+      if (!generatedText) {
+        throw new Error('Unexpected response format');
+      }
+
+      return generatedText.trim();
+    } catch (error) {
+      console.error('Qwen API Error:', error);
+      return getFallbackResponse(userQuery);
+    }
+  };
+
+  const getFallbackResponse = (query: string): string => {
+    const q = query.toLowerCase();
+    
+    if (q.includes('pcr')) {
+      return `PCR (Polymerase Chain Reaction)
+
+Amplification d'ADN en 3 étapes cycliques:
+1. Dénaturation (95°C, 30s) - séparation des brins
+2. Hybridation (50-65°C, 30s) - fixation des amorces
+3. Élongation (72°C, 1min/kb) - synthèse par Taq polymérase
+
+Optimisation:
+- Amorces 18-25 nt, Tm similaire (±2°C)
+- MgCl₂: 1.5-2.5 mM
+- 25-35 cycles
+- Contrôles +/- obligatoires`;
+    }
+    
+    if (q.includes('crispr')) {
+      return `CRISPR-Cas9 - Édition génomique
+
+Composants:
+- Cas9: nucléase (ciseaux moléculaires)
+- gRNA: guide ARN (20 nt + scaffold)
+- PAM: séquence NGG requise
+
+Mécanisme:
+1. gRNA guide Cas9 vers la cible
+2. Coupure double-brin
+3. Réparation: NHEJ (insertion/délétion) ou HDR (correction précise)
+
+Applications: thérapie génique, modèles animaux, amélioration cultures`;
+    }
+    
+    return `Mimir AI - Qwen2.5-7B
+
+Configure your Hugging Face API key in settings to unlock full capabilities.
+
+I can help with: PCR, CRISPR, Western Blot, cell culture, cloning, NGS sequencing, microscopy, statistics, and more!`;
+  };
+
+  const handleSend = async () => {
+    if (!input.trim() || isThinking) return;
+
+    const userMsg: Message = {
+      id: Date.now(),
+      role: 'user',
+      content: input,
+      timestamp: new Date()
     };
 
-    const performExternalResearch = async (query: string, isAuthor: boolean = false) => {
-        try {
-            const searchTerm = isAuthor ? `${query}[Author]` : query;
-            const pubRes = await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=${encodeURIComponent(searchTerm)}&retmax=5&retmode=json`);
-            const pubData = await pubRes.json();
-            const ids = pubData.esearchresult?.idlist || [];
+    setMessages(prev => [...prev, userMsg]);
+    const currentInput = input;
+    setInput('');
+    setIsThinking(true);
 
-            if (ids.length === 0) return [];
+    try {
+      const aiResponse = await callQwenAPI(currentInput);
+      const assistantMsg: Message = {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: aiResponse,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, assistantMsg]);
+    } catch (error) {
+      const errorMsg: Message = {
+        id: Date.now() + 1,
+        role: 'assistant',
+        content: "Error occurred. Check your API key in settings.",
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
+      setIsThinking(false);
+    }
+  };
 
-            const fetchRes = await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=${ids.join(',')}&retmode=xml`);
-            const xmlText = await fetchRes.text();
-            const parser = new DOMParser();
-            const xml = parser.parseFromString(xmlText, 'text/xml');
+  const clearConversation = () => {
+    setMessages([{
+      id: 1,
+      role: 'system',
+      content: 'Mimir AI - Qwen2.5-7B Scientific Assistant',
+      timestamp: new Date()
+    }]);
+  };
 
-            const results: any[] = [];
-            xml.querySelectorAll('PubmedArticle').forEach(art => {
-                results.push({
-                    id: art.querySelector('PMID')?.textContent || Date.now().toString(),
-                    title: art.querySelector('ArticleTitle')?.textContent || 'Untitled',
-                    abstract: (art.querySelector('AbstractText')?.textContent || '').substring(0, 300) + '...',
-                    source: 'PubMed',
-                    year: art.querySelector('PubDate Year')?.textContent || 'N/A',
-                    authors: 'Djamel Drider', // Simplified or extracted
-                    doi: art.querySelector('PMID')?.textContent || '', // Using PMID as DOI for simplicity here if DOI is missing
-                    url: `https://pubmed.ncbi.nlm.nih.gov/${art.querySelector('PMID')?.textContent}/`
-                });
-            });
-            return results;
-        } catch (e) {
-            return [];
-        }
-    };
+  const saveApiKey = () => {
+    localStorage.setItem('hf_api_key', apiKey);
+    setShowSettings(false);
+    alert('✓ API key saved');
+  };
 
-    const addToLibrary = async (article: any) => {
-        try {
-            const archives = await fetchModuleData('research_archives');
-            if (archives.some((a: any) => a.title === article.title)) {
-                showToast('Déjà dans la bibliothèque', 'info');
-                return;
-            }
-            const newItem = {
-                ...article,
-                id: article.doi || article.id || Date.now().toString(),
-                dateAdded: new Date().toISOString()
-            };
-            await saveModuleItem('research_archives', newItem);
-            showToast('Ajouté à la bibliothèque', 'success');
-        } catch (e) {
-            showToast('Erreur lors de l\'ajout', 'error');
-        }
-    };
+  const exportChat = () => {
+    const chatText = messages
+      .map(m => `[${m.role.toUpperCase()}] ${m.content}`)
+      .join('\n\n');
+    const blob = new Blob([chatText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `mimir-chat-${Date.now()}.txt`;
+    a.click();
+  };
 
-    return (
-        <div style={{ height: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column', color: 'white' }}>
-            {/* Header */}
-            <header className="glass-panel" style={{ padding: '1rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <button onClick={() => navigate('/hugin')} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div style={{ padding: '0.5rem', background: 'rgba(99, 102, 241, 0.2)', borderRadius: '0.75rem', color: 'var(--accent-hugin)' }}>
-                            <Brain size={24} />
-                        </div>
-                        <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Mimir Assistant</h1>
-                    </div>
-                </div>
-                <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Calendar size={14} /> Planning Sync</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Book size={14} /> Library Access</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Globe size={14} /> Web Research</span>
-                </div>
-            </header>
-
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '2rem' }}>
-                <img src="/logo4.png" alt="Mimir Search Logo" style={{ width: '600px', height: '600px', objectFit: 'contain', filter: 'drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(99, 102, 241, 0.3))' }} />
-            </div>
-
-            {/* Chat Area */}
-            <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {messages.map((m) => (
-                    <div key={m.id} style={{
-                        display: 'flex',
-                        flexDirection: m.role === 'user' ? 'row-reverse' : 'row',
-                        gap: '1rem',
-                        maxWidth: '90%',
-                        alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start'
-                    }}>
-                        <div style={{
-                            padding: '0.5rem',
-                            background: m.role === 'user' ? 'var(--accent-hugin)' : 'rgba(255,255,255,0.05)',
-                            borderRadius: '50%',
-                            height: 'fit-content',
-                            width: 'fit-content',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            {m.role === 'user' ? <Info size={16} /> : <Sparkles size={16} color="var(--accent-hugin)" />}
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                            <div className="glass-panel" style={{
-                                padding: '1rem 1.5rem',
-                                borderRadius: m.role === 'user' ? '1.5rem 0.25rem 1.5rem 1.5rem' : '0.25rem 1.5rem 1.5rem 1.5rem',
-                                border: m.role === 'user' ? 'none' : '1px solid rgba(255,255,255,0.05)',
-                                background: m.role === 'user' ? 'linear-gradient(135deg, #6366f1, #4f46e5)' : 'rgba(255,255,255,0.03)'
-                            }}>
-                                <p style={{ margin: 0, lineHeight: 1.5 }}>{m.content}</p>
-                            </div>
-
-                            {/* Result Cards */}
-                            {m.results && m.results.length > 0 && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.5rem' }}>
-                                    {m.results.map((res, idx) => (
-                                        <div key={idx} className="glass-panel" style={{ padding: '1rem', borderLeft: '3px solid var(--accent-hugin)', background: 'rgba(255,255,255,0.02)' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>{res.title || res.name}</h4>
-                                                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>{m.type}</span>
-                                            </div>
-
-                                            {m.type === 'planning' ? (
-                                                <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>
-                                                    <div>📅 {res.date} à {res.time}</div>
-                                                    <div>📍 {res.resource}</div>
-                                                </div>
-                                            ) : (
-                                                <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>
-                                                    <p style={{ margin: '0 0 0.75rem 0' }}>{res.abstract}</p>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <a href={res.url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-hugin)', display: 'flex', alignItems: 'center', gap: '0.25rem', textDecoration: 'none' }}>
-                                                            Source <ExternalLink size={12} />
-                                                        </a>
-                                                        {m.type === 'research' && (
-                                                            <button
-                                                                onClick={() => addToLibrary(res)}
-                                                                style={{ background: 'rgba(99, 102, 241, 0.1)', border: 'none', color: 'white', padding: '0.3rem 0.6rem', borderRadius: '0.4rem', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
-                                                            >
-                                                                <Plus size={14} /> Bibliothèque
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                ))}
-
-                {isThinking && (
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                        <div style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', height: 'fit-content' }}>
-                            <Loader2 size={16} className="animate-spin" />
-                        </div>
-                        <div className="glass-panel" style={{ padding: '0.75rem 1.5rem', borderRadius: '0.25rem 1.5rem 1.5rem 1.5rem', opacity: 0.6 }}>
-                            <span className="dot-pulse">Mimir analyse les données...</span>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Input Area */}
-            <div className="glass-panel" style={{ padding: '1.5rem 2rem', margin: '1rem 2rem 2rem', borderRadius: '1.5rem', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <div style={{ flex: 1, position: 'relative' }}>
-                        <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-                        <input
-                            type="text"
-                            className="input-field"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                            placeholder="Demandez n'importe quoi à Mimir..."
-                            style={{
-                                width: '100%',
-                                marginBottom: 0,
-                                paddingLeft: '3rem',
-                                height: '48px',
-                                background: 'rgba(255,255,255,0.05)',
-                                borderRadius: '1rem'
-                            }}
-                        />
-                    </div>
-                    <button
-                        onClick={handleSend}
-                        disabled={isThinking || !input.trim()}
-                        style={{
-                            width: '48px',
-                            height: '48px',
-                            borderRadius: '1rem',
-                            background: 'var(--accent-hugin)',
-                            border: 'none',
-                            color: 'white',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: (isThinking || !input.trim()) ? 'not-allowed' : 'pointer'
-                        }}
-                    >
-                        <Send size={18} />
-                    </button>
-                </div>
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                    <QuickChoice icon={<Plus size={12} />} text="Planifier une réunion" onClick={() => setInput("Planifie une réunion de crise demain à 10h")} />
-                    <QuickChoice icon={<Brain size={12} />} text="Qui est Djamel Drider ?" onClick={() => setInput("Qui est Djamel Drider ?")} />
-                    <QuickChoice icon={<Globe size={12} />} text="Nouveautés biologiques" onClick={() => setInput("Cherche les dernières nouveautés sur les CRISPR cas9")} />
-                </div>
-            </div>
-
-            <style>{`
-                .animate-spin { animation: spin 1s linear infinite; }
-                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-                .dot-pulse { display: inline-block; position: relative; }
-                .dot-pulse::after {
-                    content: '...';
-                    position: absolute;
-                    width: 0;
-                    overflow: hidden;
-                    animation: dots 1.5s steps(4, end) infinite;
-                }
-                @keyframes dots { 0%, 20% { width: 0; } 40% { width: 0.3em; } 60% { width: 0.6em; } 80%, 100% { width: 0.9em; } }
-            `}</style>
+  return (
+    <div style={{
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      background: '#0d1117',
+      color: '#c9d1d9',
+      fontFamily: 'Monaco, Consolas, "Courier New", monospace',
+      fontSize: '14px'
+    }}>
+      <div style={{
+        padding: '1rem 1.5rem',
+        background: '#161b22',
+        borderBottom: '1px solid #30363d',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <button
+            onClick={() => navigate('/hugin')}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              cursor: 'pointer',
+              padding: '0.25rem'
+            }}
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <span style={{ color: '#58a6ff', fontWeight: 600 }}>mimir</span>
+          <span style={{ color: '#8b949e', fontSize: '12px' }}>qwen2.5-7b</span>
         </div>
-    );
-};
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              cursor: 'pointer',
+              padding: '0.25rem'
+            }}
+          >
+            <Settings size={18} />
+          </button>
+          <button
+            onClick={exportChat}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              cursor: 'pointer',
+              padding: '0.25rem'
+            }}
+          >
+            <Download size={18} />
+          </button>
+          <button
+            onClick={clearConversation}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#8b949e',
+              cursor: 'pointer',
+              padding: '0.25rem'
+            }}
+          >
+            <Trash2 size={18} />
+          </button>
+        </div>
+      </div>
 
-const QuickChoice = ({ icon, text, onClick }: { icon: any, text: string, onClick: () => void }) => (
-    <button
-        onClick={onClick}
+      {showSettings && (
+        <div style={{
+          padding: '1.5rem',
+          background: '#161b22',
+          borderBottom: '1px solid #30363d'
+        }}>
+          <div style={{ marginBottom: '0.75rem', color: '#8b949e', fontSize: '12px' }}>
+            HUGGING FACE API KEY
+          </div>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="hf_..."
+              style={{
+                flex: 1,
+                padding: '0.75rem',
+                background: '#0d1117',
+                border: '1px solid #30363d',
+                borderRadius: '6px',
+                color: '#c9d1d9',
+                fontSize: '13px',
+                fontFamily: 'inherit'
+              }}
+            />
+            <button
+              onClick={saveApiKey}
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: '#238636',
+                border: 'none',
+                borderRadius: '6px',
+                color: 'white',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontSize: '13px'
+              }}
+            >
+              Save
+            </button>
+          </div>
+          <div style={{ marginTop: '0.75rem', color: '#8b949e', fontSize: '11px' }}>
+            Get your key at huggingface.co/settings/tokens
+          </div>
+        </div>
+      )}
+
+      <div 
+        ref={scrollRef}
         style={{
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            color: 'var(--text-secondary)',
-            fontSize: '0.75rem',
-            padding: '0.4rem 0.8rem',
-            borderRadius: '0.75rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            cursor: 'pointer'
+          flex: 1,
+          overflowY: 'auto',
+          padding: '1.5rem',
+          paddingBottom: '120px'
         }}
-    >
-        {icon} {text}
-    </button>
-);
+      >
+        {messages.map((msg) => (
+          <div
+            key={msg.id}
+            style={{
+              marginBottom: '1.5rem',
+              lineHeight: 1.7
+            }}
+          >
+            <div style={{
+              color: msg.role === 'system' ? '#58a6ff' : msg.role === 'user' ? '#7ee787' : '#f0883e',
+              marginBottom: '0.5rem',
+              fontSize: '12px',
+              fontWeight: 600
+            }}>
+              {msg.role === 'system' ? '# ' : msg.role === 'user' ? '> ' : '< '}
+              {msg.role.toUpperCase()}
+            </div>
+            <div style={{
+              color: '#c9d1d9',
+              whiteSpace: 'pre-wrap',
+              borderLeft: msg.role === 'assistant' ? '2px solid #30363d' : 'none',
+              paddingLeft: msg.role === 'system' ? 0 : '1.5rem'
+            }}>
+              {msg.content}
+            </div>
+          </div>
+        ))}
+
+        {isThinking && (
+          <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{
+              color: '#f0883e',
+              marginBottom: '0.5rem',
+              fontSize: '12px',
+              fontWeight: 600
+            }}>
+              {'< ASSISTANT'}
+            </div>
+            <div style={{
+              color: '#8b949e',
+              paddingLeft: '1.5rem',
+              borderLeft: '2px solid #30363d'
+            }}>
+              <span className="blink">▊</span> generating...
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: '1.5rem',
+        background: '#0d1117',
+        borderTop: '1px solid #30363d'
+      }}>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end' }}>
+          <textarea
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
+            rows={1}
+            style={{
+              flex: 1,
+              padding: '1rem',
+              background: '#161b22',
+              border: '1px solid #30363d',
+              borderRadius: '6px',
+              color: '#c9d1d9',
+              fontSize: '14px',
+              fontFamily: 'inherit',
+              resize: 'none',
+              minHeight: '48px',
+              maxHeight: '150px',
+              outline: 'none'
+            }}
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() || isThinking}
+            style={{
+              padding: '1rem 1.5rem',
+              background: input.trim() && !isThinking ? '#238636' : '#21262d',
+              border: 'none',
+              borderRadius: '6px',
+              color: input.trim() && !isThinking ? 'white' : '#8b949e',
+              cursor: input.trim() && !isThinking ? 'pointer' : 'not-allowed',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontSize: '13px',
+              fontWeight: 600
+            }}
+          >
+            <Send size={18} />
+          </button>
+        </div>
+      </div>
+
+      <style>{`
+        .blink {
+          animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+};
 
 export default Mimir;
