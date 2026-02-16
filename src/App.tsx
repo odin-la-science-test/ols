@@ -102,6 +102,7 @@ const MobileSettings = lazy(() => import('./pages/mobile/Settings'));
 const MobileDiscipline = lazy(() => import('./pages/mobile/Discipline'));
 const MobilePlanning = lazy(() => import('./pages/mobile/hugin/Planning'));
 const MobileMessaging = lazy(() => import('./pages/mobile/hugin/Messaging'));
+const MobileLandingPage = lazy(() => import('./pages/mobile/LandingPage'));
 
 // ResponsiveRoute component
 import ResponsiveRoute from './components/ResponsiveRoute';
@@ -266,7 +267,12 @@ function App() {
           )}
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={
+              <ResponsiveRoute 
+                desktop={<LandingPage />}
+                mobile={<MobileLandingPage />}
+              />
+            } />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/why-odin" element={<WhyOdin />} />

@@ -117,7 +117,7 @@ const LandingPage = () => {
         },
         {
             name: 'Dr. Sophie Laurent',
-            role: 'Chercheuse, C9',
+            role: 'Chercheuse, UGSF',
             content: 'Indispensable pour notre équipe. Le suivi des cultures et l\'analyse de données sont remarquables.',
             rating: 5
         }
@@ -126,7 +126,7 @@ const LandingPage = () => {
     const companies = [
         { name: 'BioEcoAgro', logo: '🌱' },
         { name: 'INRAE', logo: '🌾' },
-        { name: 'C9', logo: '🧪' }
+        { name: 'UGSF', logo: '🧪' }
     ];
 
     const stats = [

@@ -367,7 +367,7 @@ const Navbar = () => {
                         } else {
                             navigate(-1);
                         }
-                    }} style={{ color: 'var(--text-primary)', background: 'none' }}>
+                    }} style={{ color: 'var(--text-primary)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
                         <ChevronLeft size={24} />
                     </button>
                 ) : (
@@ -376,28 +376,56 @@ const Navbar = () => {
 
                 <h1 style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'white' }}>{pageTitle}</h1>
 
-                <button
-                    onClick={() => navigate(isLoggedIn ? '/account' : '/login')}
-                    style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: 'transparent',
-                        border: 'none',
-                        padding: 0,
-                        cursor: 'pointer'
-                    }}
-                >
-                    <Avatar 
-                        email={currentUserEmail || ''}
-                        name={username}
-                        size={32}
-                    />
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    {isLoggedIn && location.pathname !== '/' && (
+                        <button
+                            onClick={() => setIsNotesOpen(!isNotesOpen)}
+                            style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                background: isNotesOpen ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'rgba(255, 255, 255, 0.1)',
+                                border: 'none',
+                                padding: 0,
+                                cursor: 'pointer',
+                                color: isNotesOpen ? 'white' : 'var(--text-primary)',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            <StickyNote size={18} />
+                        </button>
+                    )}
+                    <button
+                        onClick={() => navigate(isLoggedIn ? '/account' : '/login')}
+                        style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'transparent',
+                            border: 'none',
+                            padding: 0,
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <Avatar 
+                            email={currentUserEmail || ''}
+                            name={username}
+                            size={32}
+                        />
+                    </button>
+                </div>
             </header>
+
+            {/* QuickNotes Modal pour Mobile */}
+            {isNotesOpen && isMobile && location.pathname !== '/' && (
+                <QuickNotes isOpen={isNotesOpen} onClose={() => setIsNotesOpen(false)} showFloatingButton={false} />
+            )}
 
             {/* Native Bottom Tab Bar */}
             <footer style={{
