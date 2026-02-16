@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { StickyNote, Plus, X, Save, Trash2 } from 'lucide-react';
+import { StickyNote, Plus, X, Trash2 } from 'lucide-react';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 
 interface Note {
@@ -12,9 +12,10 @@ interface Note {
 interface QuickNotesProps {
   isOpen?: boolean;
   onClose?: () => void;
+  showFloatingButton?: boolean;
 }
 
-const QuickNotes = ({ isOpen: isOpenProp, onClose: onCloseProp }: QuickNotesProps = {}) => {
+const QuickNotes = ({ isOpen: isOpenProp, onClose: onCloseProp, showFloatingButton = true }: QuickNotesProps = {}) => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [newNote, setNewNote] = useState('');
@@ -68,6 +69,11 @@ const QuickNotes = ({ isOpen: isOpenProp, onClose: onCloseProp }: QuickNotesProp
   };
 
   if (!isModalOpen) {
+    // Ne pas afficher le bouton flottant si showFloatingButton est false
+    if (!showFloatingButton) {
+      return null;
+    }
+    
     // Ne pas afficher le bouton flottant en mode mobile si contrôlé par props
     if (isMobile && isOpenProp !== undefined) {
       return null;
@@ -102,24 +108,48 @@ const QuickNotes = ({ isOpen: isOpenProp, onClose: onCloseProp }: QuickNotesProp
     );
   }
 
+  // Si ouvert depuis la Navbar (mode contrôlé), positionner différemment
+  const isNavbarMode = isOpenProp !== undefined;
+
   return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: isMobile ? '100px' : '2rem',
-        left: '2rem',
-        width: isMobile ? 'calc(100% - 2rem)' : '400px',
-        maxHeight: isMobile ? 'calc(100vh - 200px)' : '600px',
-        background: isMobile ? '#1e293b' : '#1e293b',
-        border: '1px solid var(--border-color)',
-        borderRadius: '1rem',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-        zIndex: 999,
-        display: 'flex',
-        flexDirection: 'column',
-        animation: 'slideUp 0.3s ease-out'
-      }}
-    >
+    <>
+      {/* Overlay pour le mode Navbar */}
+      {isNavbarMode && (
+        <div
+          onClick={handleClose}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 998,
+            animation: 'fadeIn 0.2s ease-out'
+          }}
+        />
+      )}
+      
+      <div
+        style={{
+          position: 'fixed',
+          top: isNavbarMode ? '80px' : 'auto',
+          bottom: isNavbarMode ? 'auto' : (isMobile ? '100px' : '2rem'),
+          right: isNavbarMode ? '2rem' : 'auto',
+          left: isNavbarMode ? 'auto' : '2rem',
+          width: isMobile ? 'calc(100% - 2rem)' : '400px',
+          maxHeight: isMobile ? 'calc(100vh - 200px)' : '600px',
+          background: '#1e293b',
+          border: '1px solid var(--border-color)',
+          borderRadius: '1rem',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+          zIndex: 999,
+          display: 'flex',
+          flexDirection: 'column',
+          animation: isNavbarMode ? 'slideDown 0.3s ease-out' : 'slideUp 0.3s ease-out'
+        }}
+      >
       {/* Header */}
       <div style={{
         padding: '1.5rem',
@@ -292,7 +322,23 @@ const QuickNotes = ({ isOpen: isOpenProp, onClose: onCloseProp }: QuickNotesProp
           ))
         )}
       </div>
+
+      <style>{`
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
     </div>
+    </>
   );
 };
 

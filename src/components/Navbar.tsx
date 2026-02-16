@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { User, LogOut, Globe, ChevronDown, ChevronLeft, Settings, LayoutDashboard } from 'lucide-react';
+import { User, LogOut, Globe, ChevronDown, ChevronLeft, Settings, LayoutDashboard, StickyNote } from 'lucide-react';
 import { useLanguage, type Language } from './LanguageContext';
 import { useToast } from './ToastContext';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import NotificationCenter from './NotificationCenter';
 import Avatar from './Avatar';
+import QuickNotes from './QuickNotes';
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -13,6 +14,7 @@ const Navbar = () => {
     const { t, language, setLanguage } = useLanguage();
     const { showToast } = useToast();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isNotesOpen, setIsNotesOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const { isMobile } = useDeviceDetection();
     const [refreshAvatar, setRefreshAvatar] = useState(0);
@@ -163,6 +165,27 @@ const Navbar = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }} ref={dropdownRef}>
                     {isLoggedIn ? (
                         <>
+                            {!isMobile && location.pathname !== '/home' && location.pathname !== '/' && (
+                                <button
+                                    onClick={() => setIsNotesOpen(!isNotesOpen)}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        background: isNotesOpen ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'var(--bg-secondary)',
+                                        border: '1px solid var(--border-color)',
+                                        color: isNotesOpen ? 'white' : 'var(--text-primary)',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s'
+                                    }}
+                                    title="Notes rapides"
+                                >
+                                    <StickyNote size={18} />
+                                </button>
+                            )}
                             <NotificationCenter />
                             <div style={{ position: 'relative' }}>
                                 <button
@@ -299,6 +322,10 @@ const Navbar = () => {
                         </div>
                     )}
                 </div>
+                {/* QuickNotes Modal pour Desktop (hors /home et /) */}
+                {isNotesOpen && location.pathname !== '/home' && location.pathname !== '/' && (
+                    <QuickNotes isOpen={isNotesOpen} onClose={() => setIsNotesOpen(false)} showFloatingButton={false} />
+                )}
             </nav>
         );
     }

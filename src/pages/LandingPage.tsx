@@ -4,13 +4,16 @@ import {
     Beaker, BookOpen, Activity, Database,
     ChevronRight, Sparkles, ArrowRight,
     Play, Zap, Shield, Users, TrendingUp,
-    CheckCircle, Star, Award, Target,
-    Microscope, FlaskConical, Dna, Brain
+    CheckCircle, Star, Award,
+    Microscope, FlaskConical, Dna, Brain, Menu, X
 } from 'lucide-react';
+import { useDeviceDetection } from '../hooks/useDeviceDetection';
 
 const LandingPage = () => {
     const navigate = useNavigate();
     const [scrollY, setScrollY] = useState(0);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { isMobile } = useDeviceDetection();
 
     useEffect(() => {
         const handleScroll = () => setScrollY(window.scrollY);
@@ -151,84 +154,123 @@ const LandingPage = () => {
                 backdropFilter: scrollY > 50 ? 'blur(20px)' : 'none',
                 borderBottom: scrollY > 50 ? '1px solid rgba(255,255,255,0.1)' : 'none',
                 transition: 'all 0.3s ease',
-                padding: '1rem 0'
+                padding: isMobile ? '0.75rem 0' : '1rem 0'
             }}>
                 <div style={{
                     maxWidth: '1400px',
                     margin: '0 auto',
-                    padding: '0 2rem',
+                    padding: isMobile ? '0 1rem' : '0 2rem',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between'
                 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '0.75rem', cursor: 'pointer' }}
                          onClick={() => navigate('/')}>
-                        <img src="/logo1.png" alt="Odin" style={{ height: '40px' }} />
-                        <span style={{
-                            fontSize: '1.5rem',
-                            fontWeight: 800,
-                            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
-                        }}>
-                            Odin la Science
-                        </span>
+                        <img src="/logo1.png" alt="Odin" style={{ height: isMobile ? '32px' : '40px' }} />
+                        {!isMobile && (
+                            <span style={{
+                                fontSize: '1.5rem',
+                                fontWeight: 800,
+                                background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent'
+                            }}>
+                                Odin la Science
+                            </span>
+                        )}
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                        <a href="#features" style={{ color: '#94a3b8', textDecoration: 'none', fontWeight: 500 }}>
-                            Fonctionnalités
-                        </a>
-                        <a href="#pricing" style={{ color: '#94a3b8', textDecoration: 'none', fontWeight: 500 }}>
-                            Tarifs
-                        </a>
-                        <button
-                            onClick={() => navigate('/login')}
-                            style={{
-                                padding: '0.5rem 1rem',
-                                background: 'transparent',
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                borderRadius: '0.5rem',
-                                color: '#f8fafc',
-                                cursor: 'pointer',
-                                fontWeight: 600
-                            }}
-                        >
-                            Connexion
-                        </button>
-                        <button
-                            onClick={() => navigate('/register')}
-                            style={{
-                                padding: '0.5rem 1.5rem',
-                                background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                                border: 'none',
-                                borderRadius: '0.5rem',
-                                color: '#fff',
-                                cursor: 'pointer',
-                                fontWeight: 700,
-                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
-                            }}
-                        >
-                            Inscription
-                        </button>
-                    </div>
+                    {isMobile ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <button
+                                onClick={() => navigate('/login')}
+                                style={{
+                                    padding: '0.5rem 0.75rem',
+                                    background: 'transparent',
+                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    borderRadius: '0.5rem',
+                                    color: '#f8fafc',
+                                    cursor: 'pointer',
+                                    fontWeight: 600,
+                                    fontSize: '0.85rem'
+                                }}
+                            >
+                                Connexion
+                            </button>
+                            <button
+                                onClick={() => navigate('/register')}
+                                style={{
+                                    padding: '0.5rem 0.75rem',
+                                    background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                                    border: 'none',
+                                    borderRadius: '0.5rem',
+                                    color: '#fff',
+                                    cursor: 'pointer',
+                                    fontWeight: 700,
+                                    fontSize: '0.85rem',
+                                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
+                                }}
+                            >
+                                Inscription
+                            </button>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                            <a href="#features" style={{ color: '#94a3b8', textDecoration: 'none', fontWeight: 500 }}>
+                                Fonctionnalités
+                            </a>
+                            <a href="#pricing" style={{ color: '#94a3b8', textDecoration: 'none', fontWeight: 500 }}>
+                                Tarifs
+                            </a>
+                            <button
+                                onClick={() => navigate('/login')}
+                                style={{
+                                    padding: '0.5rem 1rem',
+                                    background: 'transparent',
+                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    borderRadius: '0.5rem',
+                                    color: '#f8fafc',
+                                    cursor: 'pointer',
+                                    fontWeight: 600
+                                }}
+                            >
+                                Connexion
+                            </button>
+                            <button
+                                onClick={() => navigate('/register')}
+                                style={{
+                                    padding: '0.5rem 1.5rem',
+                                    background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                                    border: 'none',
+                                    borderRadius: '0.5rem',
+                                    color: '#fff',
+                                    cursor: 'pointer',
+                                    fontWeight: 700,
+                                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
+                                }}
+                            >
+                                Inscription
+                            </button>
+                        </div>
+                    )}
                 </div>
             </nav>
 
             <section style={{
-                minHeight: '100vh',
+                minHeight: isMobile ? 'auto' : '100vh',
                 display: 'flex',
                 alignItems: 'center',
                 position: 'relative',
                 overflow: 'hidden',
-                paddingTop: '80px'
+                paddingTop: isMobile ? '80px' : '80px',
+                paddingBottom: isMobile ? '3rem' : '0'
             }}>
                 <div style={{
                     position: 'absolute',
                     top: '10%',
                     left: '5%',
-                    width: '500px',
-                    height: '500px',
+                    width: isMobile ? '300px' : '500px',
+                    height: isMobile ? '300px' : '500px',
                     background: 'radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)',
                     filter: 'blur(80px)',
                     animation: 'float 8s ease-in-out infinite'
@@ -237,8 +279,8 @@ const LandingPage = () => {
                     position: 'absolute',
                     bottom: '10%',
                     right: '5%',
-                    width: '400px',
-                    height: '400px',
+                    width: isMobile ? '250px' : '400px',
+                    height: isMobile ? '250px' : '400px',
                     background: 'radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%)',
                     filter: 'blur(80px)',
                     animation: 'float 10s ease-in-out infinite reverse'
@@ -247,10 +289,10 @@ const LandingPage = () => {
                 <div style={{
                     maxWidth: '1400px',
                     margin: '0 auto',
-                    padding: '0 2rem',
+                    padding: isMobile ? '0 1.5rem' : '0 2rem',
                     display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '4rem',
+                    gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                    gap: isMobile ? '2rem' : '4rem',
                     alignItems: 'center',
                     position: 'relative',
                     zIndex: 1
@@ -264,19 +306,19 @@ const LandingPage = () => {
                             background: 'rgba(59, 130, 246, 0.1)',
                             border: '1px solid rgba(59, 130, 246, 0.3)',
                             borderRadius: '2rem',
-                            marginBottom: '2rem',
-                            fontSize: '0.9rem',
+                            marginBottom: isMobile ? '1.5rem' : '2rem',
+                            fontSize: isMobile ? '0.8rem' : '0.9rem',
                             fontWeight: 600
                         }}>
-                            <Sparkles size={16} color="#3b82f6" />
+                            <Sparkles size={isMobile ? 14 : 16} color="#3b82f6" />
                             Plateforme scientifique nouvelle génération
                         </div>
 
                         <h1 style={{
-                            fontSize: '4rem',
+                            fontSize: isMobile ? '2.5rem' : '4rem',
                             fontWeight: 900,
                             lineHeight: 1.1,
-                            marginBottom: '1.5rem',
+                            marginBottom: isMobile ? '1rem' : '1.5rem',
                             background: 'linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent'
@@ -285,32 +327,34 @@ const LandingPage = () => {
                         </h1>
 
                         <p style={{
-                            fontSize: '1.25rem',
+                            fontSize: isMobile ? '1rem' : '1.25rem',
                             color: '#94a3b8',
                             lineHeight: 1.6,
-                            marginBottom: '2.5rem'
+                            marginBottom: isMobile ? '2rem' : '2.5rem'
                         }}>
                             Odin révolutionne la recherche scientifique avec des outils puissants pour 
                             gérer vos expériences, analyser vos données et collaborer avec votre équipe.
                         </p>
 
-                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '3rem' }}>
+                        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '1rem', marginBottom: isMobile ? '2rem' : '3rem' }}>
                             <button
                                 onClick={() => navigate('/register')}
                                 style={{
-                                    padding: '1rem 2rem',
+                                    padding: isMobile ? '0.875rem 1.5rem' : '1rem 2rem',
                                     background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
                                     border: 'none',
                                     borderRadius: '0.75rem',
                                     color: '#fff',
-                                    fontSize: '1.1rem',
+                                    fontSize: isMobile ? '1rem' : '1.1rem',
                                     fontWeight: 700,
                                     cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
+                                    justifyContent: 'center',
                                     gap: '0.5rem',
                                     boxShadow: '0 8px 24px rgba(59, 130, 246, 0.4)',
-                                    transition: 'transform 0.2s'
+                                    transition: 'transform 0.2s',
+                                    width: isMobile ? '100%' : 'auto'
                                 }}
                                 onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                                 onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
@@ -318,44 +362,46 @@ const LandingPage = () => {
                                 S'inscrire
                                 <ArrowRight size={20} />
                             </button>
-                            <button
-                                style={{
-                                    padding: '1rem 2rem',
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    borderRadius: '0.75rem',
-                                    color: '#f8fafc',
-                                    fontSize: '1.1rem',
-                                    fontWeight: 600,
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem'
-                                }}
-                            >
-                                <Play size={20} />
-                                Voir la démo
-                            </button>
+                            {!isMobile && (
+                                <button
+                                    style={{
+                                        padding: '1rem 2rem',
+                                        background: 'rgba(255, 255, 255, 0.05)',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '0.75rem',
+                                        color: '#f8fafc',
+                                        fontSize: '1.1rem',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem'
+                                    }}
+                                >
+                                    <Play size={20} />
+                                    Voir la démo
+                                </button>
+                            )}
                         </div>
 
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(3, 1fr)',
-                            gap: '2rem',
-                            paddingTop: '2rem',
+                            gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)',
+                            gap: isMobile ? '1rem' : '2rem',
+                            paddingTop: isMobile ? '1.5rem' : '2rem',
                             borderTop: '1px solid rgba(255, 255, 255, 0.1)'
                         }}>
                             {stats.map((stat, i) => (
                                 <div key={i}>
                                     <div style={{
-                                        fontSize: '2rem',
+                                        fontSize: isMobile ? '1.5rem' : '2rem',
                                         fontWeight: 800,
                                         color: '#3b82f6',
                                         marginBottom: '0.25rem'
                                     }}>
                                         {stat.value}
                                     </div>
-                                    <div style={{ fontSize: '0.9rem', color: '#64748b' }}>
+                                    <div style={{ fontSize: isMobile ? '0.75rem' : '0.9rem', color: '#64748b' }}>
                                         {stat.label}
                                     </div>
                                 </div>
@@ -365,15 +411,15 @@ const LandingPage = () => {
 
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(2, 1fr)',
-                        gap: '1rem',
+                        gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(2, 1fr)',
+                        gap: isMobile ? '0.75rem' : '1rem',
                         position: 'relative'
                     }}>
                         <div style={{
                             background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05))',
                             border: '1px solid rgba(16, 185, 129, 0.2)',
-                            borderRadius: '1.5rem',
-                            padding: '2rem',
+                            borderRadius: isMobile ? '1rem' : '1.5rem',
+                            padding: isMobile ? '1.25rem' : '2rem',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
@@ -382,9 +428,9 @@ const LandingPage = () => {
                             aspectRatio: '1',
                             animation: 'fadeInUp 0.6s ease-out'
                         }}>
-                            <BookOpen size={48} color="#10b981" style={{ marginBottom: '1rem' }} />
-                            <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Munin</div>
-                            <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+                            <BookOpen size={isMobile ? 32 : 48} color="#10b981" style={{ marginBottom: isMobile ? '0.5rem' : '1rem' }} />
+                            <div style={{ fontWeight: 700, fontSize: isMobile ? '0.9rem' : '1.1rem' }}>Munin</div>
+                            <div style={{ fontSize: isMobile ? '0.7rem' : '0.85rem', color: '#94a3b8', marginTop: '0.5rem' }}>
                                 Atlas Scientifique
                             </div>
                         </div>
@@ -392,8 +438,8 @@ const LandingPage = () => {
                         <div style={{
                             background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.05))',
                             border: '1px solid rgba(99, 102, 241, 0.2)',
-                            borderRadius: '1.5rem',
-                            padding: '2rem',
+                            borderRadius: isMobile ? '1rem' : '1.5rem',
+                            padding: isMobile ? '1.25rem' : '2rem',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
@@ -403,9 +449,9 @@ const LandingPage = () => {
                             animation: 'fadeInUp 0.6s ease-out 0.1s',
                             animationFillMode: 'backwards'
                         }}>
-                            <Beaker size={48} color="#6366f1" style={{ marginBottom: '1rem' }} />
-                            <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Hugin</div>
-                            <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+                            <Beaker size={isMobile ? 32 : 48} color="#6366f1" style={{ marginBottom: isMobile ? '0.5rem' : '1rem' }} />
+                            <div style={{ fontWeight: 700, fontSize: isMobile ? '0.9rem' : '1.1rem' }}>Hugin</div>
+                            <div style={{ fontSize: isMobile ? '0.7rem' : '0.85rem', color: '#94a3b8', marginTop: '0.5rem' }}>
                                 Gestion Lab
                             </div>
                         </div>
@@ -413,8 +459,8 @@ const LandingPage = () => {
                         <div style={{
                             background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))',
                             border: '1px solid rgba(139, 92, 246, 0.2)',
-                            borderRadius: '1.5rem',
-                            padding: '2rem',
+                            borderRadius: isMobile ? '1rem' : '1.5rem',
+                            padding: isMobile ? '1.25rem' : '2rem',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
@@ -424,9 +470,9 @@ const LandingPage = () => {
                             animation: 'fadeInUp 0.6s ease-out 0.2s',
                             animationFillMode: 'backwards'
                         }}>
-                            <Activity size={48} color="#8b5cf6" style={{ marginBottom: '1rem' }} />
-                            <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Analyse</div>
-                            <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+                            <Activity size={isMobile ? 32 : 48} color="#8b5cf6" style={{ marginBottom: isMobile ? '0.5rem' : '1rem' }} />
+                            <div style={{ fontWeight: 700, fontSize: isMobile ? '0.9rem' : '1.1rem' }}>Analyse</div>
+                            <div style={{ fontSize: isMobile ? '0.7rem' : '0.85rem', color: '#94a3b8', marginTop: '0.5rem' }}>
                                 Données Avancées
                             </div>
                         </div>
@@ -434,8 +480,8 @@ const LandingPage = () => {
                         <div style={{
                             background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05))',
                             border: '1px solid rgba(59, 130, 246, 0.2)',
-                            borderRadius: '1.5rem',
-                            padding: '2rem',
+                            borderRadius: isMobile ? '1rem' : '1.5rem',
+                            padding: isMobile ? '1.25rem' : '2rem',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
@@ -445,9 +491,9 @@ const LandingPage = () => {
                             animation: 'fadeInUp 0.6s ease-out 0.3s',
                             animationFillMode: 'backwards'
                         }}>
-                            <Database size={48} color="#3b82f6" style={{ marginBottom: '1rem' }} />
-                            <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Stockage</div>
-                            <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+                            <Database size={isMobile ? 32 : 48} color="#3b82f6" style={{ marginBottom: isMobile ? '0.5rem' : '1rem' }} />
+                            <div style={{ fontWeight: 700, fontSize: isMobile ? '0.9rem' : '1.1rem' }}>Stockage</div>
+                            <div style={{ fontSize: isMobile ? '0.7rem' : '0.85rem', color: '#94a3b8', marginTop: '0.5rem' }}>
                                 Cloud Sécurisé
                             </div>
                         </div>
