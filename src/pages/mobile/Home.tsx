@@ -15,7 +15,7 @@ const MobileHome = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
 
-  const username = localStorage.getItem('currentUser')?.split('@')[0] || 'User';
+  const username = localStorage.getItem('currentUser')?.split('@')[0] || 'Utilisateur';
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -254,7 +254,7 @@ const MobileHome = () => {
           <div className="mobile-card" style={{ textAlign: 'center', padding: '2rem', marginBottom: '1.5rem' }}>
             <Calendar size={32} style={{ margin: '0 auto 0.75rem', color: 'var(--mobile-text-secondary)' }} />
             <p style={{ color: 'var(--mobile-text-secondary)', fontSize: '0.9rem' }}>
-              Aucun événement prévu aujourd'hui
+              Aucun événement aujourd'hui
             </p>
           </div>
         )}
@@ -309,10 +309,10 @@ const MobileHome = () => {
           </div>
           <div style={{ flex: 1 }}>
             <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-              Munin
+              Munin Atlas
             </h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--mobile-text-secondary)' }}>
-              Base de connaissances scientifiques
+              Connaissances scientifiques
             </p>
           </div>
         </div>
@@ -323,10 +323,10 @@ const MobileHome = () => {
           </div>
           <div style={{ flex: 1 }}>
             <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-              Hugin
+              Hugin Lab
             </h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--mobile-text-secondary)' }}>
-              Outils de laboratoire et analyses
+              Outils de laboratoire
             </p>
           </div>
         </div>

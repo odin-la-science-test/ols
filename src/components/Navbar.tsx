@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { User, LogOut, Globe, ChevronDown, ChevronLeft, Settings, LayoutDashboard, StickyNote } from 'lucide-react';
-import { useLanguage, type Language } from './LanguageContext';
+import { User, LogOut, ChevronDown, ChevronLeft, Settings, LayoutDashboard, StickyNote, Layers } from 'lucide-react';
 import { useToast } from './ToastContext';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import NotificationCenter from './NotificationCenter';
@@ -11,7 +10,6 @@ import QuickNotes from './QuickNotes';
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { t, language, setLanguage } = useLanguage();
     const { showToast } = useToast();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isNotesOpen, setIsNotesOpen] = useState(false);
@@ -19,20 +17,7 @@ const Navbar = () => {
     const { isMobile } = useDeviceDetection();
     const [refreshAvatar, setRefreshAvatar] = useState(0);
 
-    const languages: { code: Language; label: string; flag: string }[] = [
-        { code: 'FR', label: 'Français', flag: '🇫🇷' },
-        { code: 'EN', label: 'English', flag: '🇺🇸' },
-        { code: 'ES', label: 'Español', flag: '🇪🇸' },
-        { code: 'DE', label: 'Deutsch', flag: '🇩🇪' },
-        { code: 'IT', label: 'Italiano', flag: '🇮🇹' },
-        { code: 'PT', label: 'Português', flag: '🇵🇹' },
-        { code: 'RU', label: 'Русский', flag: '🇷🇺' },
-        { code: 'JP', label: '日本語', flag: '🇯🇵' },
-        { code: 'HU', label: 'Magyar', flag: '🇭🇺' },
-        { code: 'ZH', label: '中文', flag: '🇨🇳' },
-        { code: 'AR', label: 'العربية', flag: '🇸🇦' },
-        { code: 'KO', label: '한국어', flag: '🇰🇷' }
-    ];
+    const languages: { code: string; label: string; flag: string }[] = [];
 
     const currentUser = localStorage.getItem('currentUser');
     const profileStr = currentUser ? localStorage.getItem(`user_profile_${currentUser}`) : null;
@@ -157,7 +142,7 @@ const Navbar = () => {
                                 marginLeft: '1rem'
                             }}
                         >
-                            <ChevronLeft size={16} /> {t('common.back')}
+                            <ChevronLeft size={16} /> Retour
                         </button>
                     )}
                 </div>
@@ -229,56 +214,21 @@ const Navbar = () => {
                                     animation: 'fadeIn 0.2s ease'
                                 }}>
                                     <div style={{ padding: '0.5rem 0.75rem 1rem', borderBottom: '1px solid var(--border-color)', marginBottom: '0.5rem' }}>
-                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>{t('common.account')}</p>
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Compte</p>
                                         <p style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{username}</p>
                                     </div>
 
                                     <button onClick={() => { navigate('/account'); setIsDropdownOpen(false); }} style={dropdownItemStyle}>
-                                        <User size={16} /> {t('common.profile') || 'Compte'}
+                                        <User size={16} /> Profil
                                     </button>
                                     <button onClick={() => { navigate('/settings'); setIsDropdownOpen(false); }} style={dropdownItemStyle}>
-                                        <Settings size={16} /> {t('common.settings') || 'Paramètres'}
+                                        <Settings size={16} /> Paramètres
                                     </button>
-
-                                    <div style={{ margin: '0.5rem 0', borderBottom: '1px solid var(--border-color)' }}></div>
-
-                                    <div style={{ padding: '0.5rem 0.75rem' }}>
-                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <Globe size={14} /> {t('common.language')}
-                                        </p>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
-                                            {languages.map((lang) => (
-                                                <button
-                                                    key={lang.code}
-                                                    onClick={() => {
-                                                        setLanguage(lang.code);
-                                                        showToast(`${lang.label} selected`, 'success');
-                                                    }}
-                                                    style={{
-                                                        padding: '0.4rem',
-                                                        borderRadius: '0.5rem',
-                                                        background: language === lang.code ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
-                                                        border: language === lang.code ? '1px solid var(--accent-munin)' : '1px solid transparent',
-                                                        color: language === lang.code ? 'var(--accent-munin)' : 'var(--text-secondary)',
-                                                        fontSize: '0.8rem',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '0.4rem',
-                                                        transition: 'all 0.2s'
-                                                    }}
-                                                >
-                                                    <span>{lang.flag}</span>
-                                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lang.label}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
 
                                     <div style={{ margin: '0.5rem 0', borderBottom: '1px solid var(--border-color)' }}></div>
 
                                     <button onClick={handleLogout} style={{ ...dropdownItemStyle, color: '#ef4444' }}>
-                                        <LogOut size={16} /> {t('common.logout')}
+                                        <LogOut size={16} /> Déconnexion
                                     </button>
                                 </div>
                             )}
@@ -449,7 +399,7 @@ const Navbar = () => {
                 </Link>
                 <Link to="/hugin" className={currentPath.startsWith('/hugin') ? 'active-tab' : ''} style={mobileTabStyle}>
                     <div style={{ padding: '0.5rem', borderRadius: '1rem', background: currentPath.startsWith('/hugin') ? 'var(--accent-primary)' : 'rgba(255,255,255,0.05)', color: currentPath.startsWith('/hugin') ? 'white' : 'var(--text-secondary)', transition: 'all 0.3s' }}>
-                        <Globe size={24} />
+                        <Layers size={24} />
                     </div>
                     <span style={{ fontSize: '0.65rem', fontWeight: 600 }}>Hugin</span>
                 </Link>

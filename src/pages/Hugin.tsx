@@ -6,7 +6,6 @@ import {
     TrendingUp, Grid, UserCheck, Search, FileText, Clock, GitBranch
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useLanguage } from '../components/LanguageContext';
 import { useToast } from '../components/ToastContext';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import Navbar from '../components/Navbar';
@@ -15,11 +14,10 @@ import { checkHasAccess, getAccessData } from '../utils/ShieldUtils';
 const Hugin = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { t } = useLanguage();
     const { showToast } = useToast();
     const { isMobile } = useDeviceDetection();
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeCategory, setActiveCategory] = useState('All');
+    const [activeCategory, setActiveCategory] = useState('Tout');
 
     // Subscription Check logic
     const userStr = localStorage.getItem('currentUser');
@@ -29,7 +27,7 @@ const Hugin = () => {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         if (params.get('denied')) {
-            showToast("Accès refusé. Ce module n'est pas inclus dans votre abonnement actuel.", "error");
+            showToast('Accès refusé', "error");
             // Clean URL
             navigate('/hugin', { replace: true });
         }
@@ -39,59 +37,61 @@ const Hugin = () => {
 
     const modules = [
         // Core
-        { id: 'messaging', name: 'Messagerie', desc: 'Messages et communications', icon: <Mail size={24} />, category: 'Core', path: '/hugin/messaging' },
-        { id: 'planning', name: 'Planning', desc: 'Gestion du temps', icon: <Calendar size={24} />, category: 'Core', path: '/hugin/planning' },
-        { id: 'documents', name: 'Documents', desc: 'Fichiers et archives', icon: <HardDrive size={24} />, category: 'Core', path: '/hugin/documents' },
+        { id: 'messaging', name: 'Messagerie', desc: 'Gestion des messages et communications', icon: <Mail size={24} />, category: 'Core', path: '/hugin/messaging' },
+        { id: 'planning', name: 'Planning', desc: 'Planification et calendrier', icon: <Calendar size={24} />, category: 'Core', path: '/hugin/planning' },
+        { id: 'documents', name: 'Documents', desc: 'Gestion documentaire', icon: <HardDrive size={24} />, category: 'Core', path: '/hugin/documents' },
         { id: 'inventory', name: 'Inventaire', desc: 'Gestion des stocks', icon: <Beaker size={24} />, category: 'Core', path: '/hugin/inventory' },
-        { id: 'meetings', name: 'Réunions', desc: 'Gestion des réunions', icon: <Video size={24} />, category: 'Core', path: '/hugin/meetings' },
+        { id: 'meetings', name: 'Réunions', desc: 'Visioconférences', icon: <Video size={24} />, category: 'Core', path: '/hugin/meetings' },
         { id: 'projects', name: 'Projets', desc: 'Gestion de projets', icon: <Layers size={24} />, category: 'Core', path: '/hugin/projects' },
-        { id: 'tableur', name: 'Tableur', desc: 'Tableur de laboratoire', icon: <Grid size={24} />, category: 'Core', path: '/hugin/tableur' },
-        { id: 'word', name: 'Traitement de Texte', desc: 'Éditeur de documents Word', icon: <FileText size={24} />, category: 'Core', path: '/hugin/word-processor' },
-        { id: 'poster', name: 'Poster Maker', desc: 'Créer des posters scientifiques', icon: <FileText size={24} />, category: 'Core', path: '/hugin/poster-maker' },
-        { id: 'it_archive', name: 'Archives IT', desc: 'Archives informatiques', icon: <HardDrive size={24} />, category: 'Core', path: '/hugin/it-archive' },
+        { id: 'tableur', name: 'Tableur', desc: 'Tableur scientifique', icon: <Grid size={24} />, category: 'Core', path: '/hugin/tableur' },
+        { id: 'word', name: 'Traitement de texte', desc: 'Éditeur de documents', icon: <FileText size={24} />, category: 'Core', path: '/hugin/word-processor' },
+        { id: 'poster', name: 'Créateur de posters', desc: 'Conception de posters scientifiques', icon: <FileText size={24} />, category: 'Core', path: '/hugin/poster-maker' },
+        { id: 'it_archive', name: 'Archives IT', desc: 'Archivage automatique', icon: <HardDrive size={24} />, category: 'Core', path: '/hugin/it-archive' },
 
         // Lab Management
-        { id: 'stock', name: 'Stocks', desc: 'Gestion des stocks', icon: <Package size={24} />, category: 'Lab', path: '/hugin/stock' },
-        { id: 'cryo', name: 'Cryoconservation', desc: 'Gestion cryo', icon: <Snowflake size={24} />, category: 'Lab', path: '/hugin/cryo' },
-        { id: 'equip', name: 'Équipements', desc: 'Gestion équipements', icon: <Activity size={24} />, category: 'Lab', path: '/hugin/equip' },
+        { id: 'stock', name: 'Stocks', desc: 'Gestion des stocks de laboratoire', icon: <Package size={24} />, category: 'Lab', path: '/hugin/stock' },
+        { id: 'cryo', name: 'Cryogénie', desc: 'Gestion des échantillons cryogéniques', icon: <Snowflake size={24} />, category: 'Lab', path: '/hugin/cryo' },
+        { id: 'equip', name: 'Équipements', desc: 'Gestion des équipements', icon: <Activity size={24} />, category: 'Lab', path: '/hugin/equip' },
         { id: 'budget', name: 'Budget', desc: 'Gestion budgétaire', icon: <Wallet size={24} />, category: 'Lab', path: '/hugin/budget' },
         { id: 'safety', name: 'Sécurité', desc: 'Protocoles de sécurité', icon: <ShieldAlert size={24} />, category: 'Lab', path: '/hugin/safety' },
-        { id: 'sop', name: 'SOPs', desc: 'Procédures opératoires', icon: <BookOpen size={24} />, category: 'Lab', path: '/hugin/sop' },
+        { id: 'sop', name: 'Procédures', desc: 'Procédures opératoires standard', icon: <BookOpen size={24} />, category: 'Lab', path: '/hugin/sop' },
 
         // Research
-        { id: 'culture', name: 'Cultures', desc: 'Suivi des cultures', icon: <Beaker size={24} />, category: 'Research', path: '/hugin/culture' },
-        { id: 'research', name: 'Recherche', desc: 'Projets scientifiques', icon: <Brain size={24} />, category: 'Research', path: '/hugin/research' },
-        { id: 'bibliography', name: 'Bibliographie', desc: 'Références scientifiques', icon: <Quote size={24} />, category: 'Research', path: '/hugin/bibliography' },
-        { id: 'notebook', name: 'Cahier de labo', desc: 'Notes de laboratoire', icon: <Book size={24} />, category: 'Research', path: '/hugin/notebook' },
+        { id: 'culture', name: 'Cultures', desc: 'Gestion des cultures microbiennes', icon: <Beaker size={24} />, category: 'Research', path: '/hugin/culture' },
+        { id: 'culture_cells', name: 'Culture cellulaire', desc: 'Gestion des cultures cellulaires', icon: <Activity size={24} />, category: 'Research', path: '/hugin/culture-cells' },
+        { id: 'research', name: 'Recherche', desc: 'Projets de recherche', icon: <Brain size={24} />, category: 'Research', path: '/hugin/research' },
+        { id: 'bibliography', name: 'Bibliographie', desc: 'Gestion bibliographique', icon: <Quote size={24} />, category: 'Research', path: '/hugin/bibliography' },
+        { id: 'notebook', name: 'Cahier de labo', desc: 'Cahier de laboratoire numérique', icon: <Book size={24} />, category: 'Research', path: '/hugin/notebook' },
 
         // Analysis
-        { id: 'bioanalyzer', name: 'BioAnalyzer', desc: 'Analyses biologiques', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/bioanalyzer' },
-        { id: 'imageanalyzer', name: 'Image Analyzer', desc: 'Analyse d\'images', icon: <Camera size={24} />, category: 'Analysis', path: '/hugin/imageanalyzer' },
+        { id: 'bioanalyzer', name: 'BioAnalyzer', desc: 'Analyse de données biologiques', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/bioanalyzer' },
+        { id: 'imageanalyzer', name: 'Analyse d\'images', desc: 'Traitement d\'images scientifiques', icon: <Camera size={24} />, category: 'Analysis', path: '/hugin/imageanalyzer' },
         { id: 'statistics', name: 'Statistiques', desc: 'Analyses statistiques', icon: <TrendingUp size={24} />, category: 'Analysis', path: '/hugin/statistics' },
-        { id: 'biotools', name: 'BioTools', desc: 'Outils biologiques', icon: <Calculator size={24} />, category: 'Analysis', path: '/hugin/biotools' },
+        { id: 'biotools', name: 'Outils bio', desc: 'Outils bioinformatiques', icon: <Calculator size={24} />, category: 'Analysis', path: '/hugin/biotools' },
         { id: 'sequence', name: 'Séquences', desc: 'Analyse de séquences', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/sequence' },
-        { id: 'flow', name: 'Cytométrie', desc: 'Analyse de flux', icon: <Activity size={24} />, category: 'Analysis', path: '/hugin/flow' },
-        { id: 'spectrum', name: 'Spectres', desc: 'Analyse spectrale', icon: <Zap size={24} />, category: 'Analysis', path: '/hugin/spectrum' },
-        { id: 'gel', name: 'Gels', desc: 'Analyse de gels', icon: <Layers size={24} />, category: 'Analysis', path: '/hugin/gel' },
+        { id: 'flow', name: 'Cytométrie', desc: 'Analyse de cytométrie en flux', icon: <Activity size={24} />, category: 'Analysis', path: '/hugin/flow' },
+        { id: 'spectrum', name: 'Spectrométrie', desc: 'Analyse spectrométrique', icon: <Zap size={24} />, category: 'Analysis', path: '/hugin/spectrum' },
+        { id: 'gel', name: 'Électrophorèse', desc: 'Analyse de gels', icon: <Layers size={24} />, category: 'Analysis', path: '/hugin/gel' },
         { id: 'phylo', name: 'Phylogénie', desc: 'Arbres phylogénétiques', icon: <Share2 size={24} />, category: 'Analysis', path: '/hugin/phylo' },
-        { id: 'molecules', name: 'Molécules', desc: 'Structures moléculaires', icon: <Box size={24} />, category: 'Analysis', path: '/hugin/molecules' },
-        { id: 'kinetics', name: 'Cinétique', desc: 'Analyses cinétiques', icon: <TrendingUp size={24} />, category: 'Analysis', path: '/hugin/kinetics' },
+        { id: 'molecules', name: 'Molécules', desc: 'Visualisation moléculaire', icon: <Box size={24} />, category: 'Analysis', path: '/hugin/molecules' },
+        { id: 'kinetics', name: 'Cinétique', desc: 'Analyse cinétique', icon: <TrendingUp size={24} />, category: 'Analysis', path: '/hugin/kinetics' },
         { id: 'plates', name: 'Plaques', desc: 'Gestion de plaques', icon: <Grid size={24} />, category: 'Analysis', path: '/hugin/plates' },
-        { id: 'mixer', name: 'Solutions', desc: 'Préparation solutions', icon: <Beaker size={24} />, category: 'Analysis', path: '/hugin/mixer' },
-        { id: 'primers', name: 'Primers', desc: 'Design de primers', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/primers' },
-        { id: 'cells', name: 'Cellules', desc: 'Suivi cellulaire', icon: <UserCheck size={24} />, category: 'Analysis', path: '/hugin/cells' },
-        { id: 'colony', name: 'Colonies', desc: 'Comptage colonies', icon: <Camera size={24} />, category: 'Analysis', path: '/hugin/colony' },
-        { id: 'proteinfold', name: 'ProteinFold', desc: 'Structures protéiques 3D', icon: <Layers size={24} />, category: 'Analysis', path: '/hugin/protein-fold' },
-        { id: 'labtimer', name: 'LabTimer', desc: 'Timers multiples pour expériences', icon: <Clock size={24} />, category: 'Core', path: '/hugin/lab-timer' },
-        { id: 'buffercalc', name: 'BufferCalc', desc: 'Calculateur de tampons', icon: <Beaker size={24} />, category: 'Analysis', path: '/hugin/buffer-calc' },
-        { id: 'pcrdesigner', name: 'PCR Designer', desc: 'Design de primers PCR', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/pcr-designer' },
-        { id: 'gelsimulator', name: 'Gel Simulator', desc: 'Simulation de gels d\'agarose', icon: <Layers size={24} />, category: 'Analysis', path: '/hugin/gel-simulator' },
-        { id: 'proteincalc', name: 'Protein Calculator', desc: 'Propriétés des protéines', icon: <Calculator size={24} />, category: 'Analysis', path: '/hugin/protein-calculator' },
-        { id: 'restrictionmap', name: 'Restriction Mapper', desc: 'Carte de restriction', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/restriction-mapper' },
-        { id: 'cloningassist', name: 'Cloning Assistant', desc: 'Assistant de clonage', icon: <GitBranch size={24} />, category: 'Analysis', path: '/hugin/cloning-assistant' }
+        { id: 'mixer', name: 'Mélangeur', desc: 'Calcul de mélanges', icon: <Beaker size={24} />, category: 'Analysis', path: '/hugin/mixer' },
+        { id: 'primers', name: 'Amorces', desc: 'Design d\'amorces PCR', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/primers' },
+        { id: 'cells', name: 'Cellules', desc: 'Comptage cellulaire', icon: <UserCheck size={24} />, category: 'Analysis', path: '/hugin/cells' },
+        { id: 'colony', name: 'Colonies', desc: 'Comptage de colonies', icon: <Camera size={24} />, category: 'Analysis', path: '/hugin/colony' },
+        { id: 'proteinfold', name: 'Repliement protéique', desc: 'Prédiction de structure', icon: <Layers size={24} />, category: 'Analysis', path: '/hugin/protein-fold' },
+        { id: 'labtimer', name: 'Chronomètre', desc: 'Minuteur de laboratoire', icon: <Clock size={24} />, category: 'Core', path: '/hugin/lab-timer' },
+        { id: 'buffercalc', name: 'Calcul de tampons', desc: 'Préparation de solutions tampons', icon: <Beaker size={24} />, category: 'Analysis', path: '/hugin/buffer-calc' },
+        { id: 'pcrdesigner', name: 'Design PCR', desc: 'Conception de PCR', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/pcr-designer' },
+        { id: 'gelsimulator', name: 'Simulateur de gel', desc: 'Simulation d\'électrophorèse', icon: <Layers size={24} />, category: 'Analysis', path: '/hugin/gel-simulator' },
+        { id: 'proteincalc', name: 'Calcul protéique', desc: 'Propriétés des protéines', icon: <Calculator size={24} />, category: 'Analysis', path: '/hugin/protein-calculator' },
+        { id: 'restrictionmap', name: 'Carte de restriction', desc: 'Cartographie de restriction', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/restriction-mapper' },
+        { id: 'cloningassist', name: 'Assistant de clonage', desc: 'Aide au clonage moléculaire', icon: <GitBranch size={24} />, category: 'Analysis', path: '/hugin/cloning-assistant' },
+        { id: 'bacterialgrowth', name: 'Croissance bactérienne', desc: 'Prédiction de croissance', icon: <TrendingUp size={24} />, category: 'Analysis', path: '/hugin/bacterial-growth' }
     ];
 
-    const categories = ['All', 'Core', 'Lab', 'Research', 'Analysis'];
+    const categories = ['Tout', 'Core', 'Lab', 'Research', 'Analysis'];
 
     const accessibleModules = modules.filter(m => hasAccess(m.id));
 
@@ -111,9 +111,9 @@ const Hugin = () => {
             <div className="container" style={{ paddingTop: '2rem' }}>
                 <header style={{ marginBottom: '3rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <img src="/logo3.png" alt="Hugin Lab Logo" style={{ width: '240px', height: '240px', objectFit: 'contain', marginBottom: '1.5rem', filter: 'drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(99, 102, 241, 0.3))' }} />
-                    <h1 className="text-gradient" style={{ fontSize: '3rem', marginBottom: '1rem' }}>{t('hugin.title')}</h1>
+                    <h1 className="text-gradient" style={{ fontSize: '3rem', marginBottom: '1rem' }}>Hugin Lab</h1>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem' }}>
-                        {t('hugin.subtitle')}
+                        Outils de laboratoire avancés
                     </p>
 
                     <div style={{ position: 'relative', width: '100%', maxWidth: '600px', margin: '0 auto 2rem auto' }}>
@@ -125,7 +125,7 @@ const Hugin = () => {
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder={t('hugin.global_search')}
+                            placeholder="Rechercher un module..."
                             className="input-field"
                             style={{
                                 paddingLeft: '3.5rem',
@@ -141,7 +141,7 @@ const Hugin = () => {
 
                     <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '2rem' }}>
                         {categories.filter(cat => {
-                            if (cat === 'All') return true;
+                            if (cat === 'Tout') return true;
                             return accessibleModules.some(m => m.category === cat);
                         }).map(cat => (
                             <button
@@ -161,7 +161,7 @@ const Hugin = () => {
                                     gap: '0.5rem'
                                 }}
                             >
-                                {cat === 'All' && <Grid size={16} />}
+                                {cat === 'Tout' && <Grid size={16} />}
                                 {cat === 'Core' && <Layers size={16} />}
                                 {cat === 'Lab' && <Package size={16} />}
                                 {cat === 'Research' && <Brain size={16} />}
@@ -172,7 +172,7 @@ const Hugin = () => {
                     </div>
                 </header>
 
-                {categories.filter(cat => cat !== 'All' && (activeCategory === 'All' || activeCategory === cat)).map(cat => {
+                {categories.filter(cat => cat !== 'Tout' && (activeCategory === 'Tout' || activeCategory === cat)).map(cat => {
                     const catModules = filteredModules.filter(m => m.category === cat);
                     if (catModules.length === 0) return null;
 

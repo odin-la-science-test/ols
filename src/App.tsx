@@ -3,22 +3,26 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import './App.css';
 import { initAutoWatchService } from './services/autoWatchService';
 import { useDeviceDetection } from './hooks/useDeviceDetection';
+import { SecurityManager } from './utils/advancedSecurity';
 
 // Composants critiques chargés immédiatement
 import LandingPage from './pages/LandingPage';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import TermsOfService from './pages/TermsOfService';
+import RGPD from './pages/RGPD';
+import Admin from './pages/Admin';
 import ShortcutManager from './components/ShortcutManager';
 import KeyboardShortcuts from './components/KeyboardShortcuts';
 import QuickNotes from './components/QuickNotes';
 import { ToastProvider } from './components/ToastContext';
-import { LanguageProvider } from './components/LanguageContext';
 import { ThemeProvider } from './components/ThemeContext';
 import CommandPalette from './components/CommandPalette';
 import ScrollToTop from './components/ScrollToTop';
 import BackToTop from './components/BackToTop';
 import VersionBadge from './components/VersionBadge';
+import CookieConsent from './components/CookieConsent';
 
 // Lazy loading pour les composants moins critiques
 const Munin = lazy(() => import('./pages/Munin'));
@@ -33,6 +37,7 @@ const Inventory = lazy(() => import('./pages/hugin/Inventory'));
 const Planning = lazy(() => import('./pages/hugin/Planning'));
 const Documents = lazy(() => import('./pages/hugin/Documents'));
 const CultureTracking = lazy(() => import('./pages/hugin/CultureTracking'));
+const CultureCells = lazy(() => import('./pages/hugin/CultureCells'));
 const ITArchive = lazy(() => import('./pages/hugin/ITArchive'));
 const Meetings = lazy(() => import('./pages/hugin/Meetings'));
 const ScientificResearch = lazy(() => import('./pages/hugin/ScientificResearch'));
@@ -79,6 +84,7 @@ const GelSimulator = lazy(() => import('./pages/hugin/GelSimulator'));
 const ProteinCalculator = lazy(() => import('./pages/hugin/ProteinCalculator'));
 const RestrictionMapper = lazy(() => import('./pages/hugin/RestrictionMapper'));
 const CloningAssistant = lazy(() => import('./pages/hugin/CloningAssistant'));
+const BacterialGrowthPredictor = lazy(() => import('./pages/hugin/BacterialGrowthPredictor'));
 const WhyOdin = lazy(() => import('./pages/WhyOdin'));
 const Enterprise = lazy(() => import('./pages/Enterprise'));
 const Pricing = lazy(() => import('./pages/Pricing'));
@@ -164,6 +170,48 @@ function App() {
   const [tempSessionActive, setTempSessionActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
 
+  // Initialiser le gestionnaire de sécurité
+  useEffect(() => {
+    SecurityManager.initialize({
+      enableClickjackingProtection: true,
+      enableBotDetection: true,
+      enableDataExfiltrationProtection: true,
+      enableDevToolsDetection: false, // Désactivé pour ne pas gêner le développement
+      enableTabnabbingProtection: true,
+      onDevToolsDetect: () => {
+        console.warn('DevTools détecté - Activité surveillée');
+      }
+    });
+  }, []);
+
+  // Protection contre le retour arrière - déconnexion automatique
+  useEffect(() => {
+    const protectedRoutes = ['/home', '/munin', '/hugin', '/account', '/settings', '/admin'];
+    const isProtectedRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
+    
+    if (isProtectedRoute && localStorage.getItem('isLoggedIn') === 'true') {
+      const handlePopState = (e: PopStateEvent) => {
+        const confirmLogout = window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
+        
+        if (confirmLogout) {
+          localStorage.clear();
+          navigate('/login', { replace: true });
+        } else {
+          // Empêcher le retour arrière
+          window.history.pushState(null, '', window.location.href);
+        }
+      };
+
+      // Ajouter un état dans l'historique pour détecter le retour arrière
+      window.history.pushState(null, '', window.location.href);
+      window.addEventListener('popstate', handlePopState);
+
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }
+  }, [location.pathname, navigate]);
+
   // Initialize Auto-Watch Service
   useEffect(() => {
     // Désactivé temporairement pour éviter les erreurs
@@ -245,7 +293,6 @@ function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
-        <LanguageProvider>
           <ShortcutManager />
           <KeyboardShortcuts />
           <CommandPalette />
@@ -281,6 +328,8 @@ function App() {
             } />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/rgpd" element={<RGPD />} />
             <Route path="/why-odin" element={<WhyOdin />} />
             <Route path="/enterprise" element={<Enterprise />} />
             <Route path="/pricing" element={<Pricing />} />
@@ -391,6 +440,11 @@ function App() {
             <Route path="/hugin/culture" element={
               <ProtectedRoute module="hugin_lab">
                 <CultureTracking />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/culture-cells" element={
+              <ProtectedRoute module="hugin_lab">
+                <CultureCells />
               </ProtectedRoute>
             } />
             <Route path="/hugin/it-archive" element={
@@ -618,6 +672,11 @@ function App() {
                 <CloningAssistant />
               </ProtectedRoute>
             } />
+            <Route path="/hugin/bacterial-growth" element={
+              <ProtectedRoute module="hugin_analysis">
+                <BacterialGrowthPredictor />
+              </ProtectedRoute>
+            } />
             <Route path="/account" element={
               <ProtectedRoute>
                 <Account />
@@ -633,12 +692,12 @@ function App() {
             } />
             <Route path="/admin" element={
               <ProtectedRoute>
-                <AdminDashboard />
+                <Admin />
               </ProtectedRoute>
             } />
           </Routes>
           </Suspense>
-        </LanguageProvider>
+          <CookieConsent />
       </ToastProvider>
     </ThemeProvider>
   );
