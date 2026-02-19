@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from './ThemeContext';
+import { LOGOS } from '../utils/logoCache';
 
 const Footer = () => {
     const { theme } = useTheme();
@@ -12,7 +13,7 @@ const Footer = () => {
             <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '4rem', marginBottom: '6rem' }}>
                 <div>
                     <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <img src="/logo1.png" alt="Logo" style={{ width: '40px', height: '40px', filter: 'drop-shadow(0 0 10px var(--accent-primary))' }} />
+                        <img src={LOGOS.main} alt="Logo" style={{ width: '40px', height: '40px', filter: 'drop-shadow(0 0 10px var(--accent-primary))' }} />
                         <span className="text-gradient">Odin</span>
                     </h2>
                     <p style={{ color: c.textSecondary, fontSize: '0.95rem', lineHeight: 1.6 }}>La plateforme ultime pour la recherche scientifique moderne et accélérée.</p>

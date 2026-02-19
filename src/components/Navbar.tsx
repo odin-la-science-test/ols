@@ -6,6 +6,7 @@ import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import NotificationCenter from './NotificationCenter';
 import Avatar from './Avatar';
 import QuickNotes from './QuickNotes';
+import { LOGOS } from '../utils/logoCache';
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -92,7 +93,7 @@ const Navbar = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
                     <Link to="/home" style={{ textDecoration: 'none', color: 'inherit', fontWeight: 700, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <img src="/logo1.png" alt="Odin Logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
+                            <img src={LOGOS.main} alt="Odin Logo" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
                             <span className="text-gradient">Odin la Science</span>
                         </div>
                     </Link>
@@ -321,7 +322,7 @@ const Navbar = () => {
                         <ChevronLeft size={24} />
                     </button>
                 ) : (
-                    <img src="/logo1.png" alt="Logo" style={{ width: '32px', height: '32px' }} />
+                    <img src={LOGOS.main} alt="Logo" style={{ width: '32px', height: '32px' }} />
                 )}
 
                 <h1 style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'white' }}>{pageTitle}</h1>
