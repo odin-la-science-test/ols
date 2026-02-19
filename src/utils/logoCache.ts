@@ -6,7 +6,9 @@
 // Version des logos - IMPORTANT: Changer cette date quand vous modifiez les logos
 // Format: YYYYMMDD-HHMM
 // Dernière modification des logos : 18/02/2026
-const LOGO_VERSION = '20260218-2000';
+// Logo Munin changé de logo2 vers logo6 : 19/02/2026
+// Logo Hugin changé de logo3 vers logo5 : 19/02/2026
+const LOGO_VERSION = '20260219-1530';
 
 /**
  * Retourne l'URL d'un logo avec cache-busting
@@ -24,7 +26,7 @@ export const getLogoUrl = (logoName: string): string => {
  */
 export const LOGOS = {
   get main() { return getLogoUrl('logo1.png'); },      // Logo principal Odin
-  get munin() { return getLogoUrl('logo2.png'); },     // Logo Munin Atlas
-  get hugin() { return getLogoUrl('logo3.png'); },     // Logo Hugin Lab
+  get munin() { return getLogoUrl('logo6.png'); },     // Logo Munin Atlas (changé de logo2 vers logo6)
+  get hugin() { return getLogoUrl('logo5.png'); },     // Logo Hugin Lab (changé de logo3 vers logo5)
   get alt() { return getLogoUrl('logo4.png'); }        // Logo alternatif
 } as const;
