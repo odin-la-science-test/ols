@@ -4,14 +4,12 @@ import {
     Calculator, Users, Settings, Grid, Sparkles, TrendingUp, Star
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useLanguage } from '../components/LanguageContext';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import Navbar from '../components/Navbar';
 import disciplinesData from '../data/disciplines.json';
 
 const Munin = () => {
     const navigate = useNavigate();
-    const { language, t } = useLanguage();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
     const [viewMode, setViewMode] = useState<'categories' | 'list'>('categories');
@@ -46,12 +44,7 @@ const Munin = () => {
 
     const getDisciplineDesc = (discipline: string) => {
         const d = discipline.toLowerCase();
-        if (language === 'FR') return `Accédez aux protocoles, fiches techniques et recherches concernant la ${d}.`;
-        if (language === 'ES') return `Acceda a protocolos, fichas técnicas e investigaciones sobre ${d}.`;
-        if (language === 'DE') return `Greifen Sie auf Protokolle, Datenblätter und Forschungsergebnisse zu ${d} zu.`;
-        if (language === 'HU') return `Hozzá nem férhet a protokollokhoz, adatlapokhoz és kutatásokhoz a ${d} területén.`;
-        if (language === 'ZH') return `访问有关${d}的协议、数据表和研究。`;
-        return `Access protocols, data sheets, and research regarding ${d}.`;
+        return `Accédez aux protocoles, fiches techniques et recherches concernant la ${d}.`;
     };
 
     const categorizedDisciplines = disciplinesData.map(d => ({
@@ -99,7 +92,7 @@ const Munin = () => {
                         fontSize: '3rem', 
                         marginBottom: '1rem' 
                     }}>
-                        {t('munin.title')}
+                        Munin Atlas
                     </h1>
                     
                     <p style={{ 
@@ -107,8 +100,7 @@ const Munin = () => {
                         fontSize: '1.2rem', 
                         marginBottom: '2rem'
                     }}>
-                        {language === 'FR' ? '250+ domaines scientifiques disponibles' :
-                            '250+ scientific domains available'}
+                        250+ domaines scientifiques disponibles
                     </p>
 
                     <div style={{ position: 'relative', width: '100%', maxWidth: '600px', margin: '0 auto 2rem auto' }}>
@@ -126,7 +118,7 @@ const Munin = () => {
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder={language === 'FR' ? 'Rechercher une discipline...' : 'Search for a discipline...'}
+                            placeholder="Rechercher une discipline..."
                             className="input-field"
                             style={{
                                 paddingLeft: '3.5rem',
@@ -160,7 +152,7 @@ const Munin = () => {
                                 }}
                             >
                                 {cat.icon}
-                                {cat.name === 'All' ? (language === 'FR' ? 'Tout' : 'All') : cat.name}
+                                {cat.name === 'All' ? 'Tout' : cat.name}
                             </button>
                         ))}
                     </div>
@@ -227,7 +219,7 @@ const Munin = () => {
                     <div style={{ textAlign: 'center', padding: '5rem', opacity: 0.5 }}>
                         <Search size={48} style={{ marginBottom: '1rem' }} />
                         <p style={{ fontSize: '1.2rem' }}>
-                            {language === 'FR' ? `Aucune discipline trouvée pour "${searchQuery}"` : `No disciplines found for "${searchQuery}"`}
+                            Aucune discipline trouvée pour "{searchQuery}"
                         </p>
                     </div>
                 )}

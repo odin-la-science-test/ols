@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { BookOpen, FlaskConical, TrendingUp, Clock, Star, Zap, Award, Target } from 'lucide-react';
-import { useLanguage } from '../components/LanguageContext';
 import Navbar from '../components/Navbar';
 import OnboardingMissions from '../components/OnboardingMissions';
 import { useTheme } from '../components/ThemeContext';
@@ -14,7 +13,6 @@ import { getFavorites, type Favorite } from '../utils/favorites';
 
 const Home = () => {
     const navigate = useNavigate();
-    const { t } = useLanguage();
     const { theme } = useTheme();
     const { isMobile } = useDeviceDetection();
     const c = theme.colors;
@@ -46,7 +44,7 @@ const Home = () => {
         setShowOnboarding(false);
     };
 
-    const username = localStorage.getItem('currentUser')?.split('@')[0] || 'User';
+    const username = localStorage.getItem('currentUser')?.split('@')[0] || 'Utilisateur';
 
     const [currentTime, setCurrentTime] = useState(new Date());
     const [unreadCount, setUnreadCount] = useState(0);
@@ -156,12 +154,12 @@ const Home = () => {
         color: getEventColor(index),
         status: getEventStatus(event.time)
     })) : [
-        { icon: <Clock size={20} />, title: '09:00 - Aucun événement prévu', time: 'Journée libre', date: new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }), color: '#64748b', status: 'upcoming' }
+        { icon: <Clock size={20} />, title: '09:00 - Aucun événement aujourd\'hui', time: 'Journée libre', date: new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }), color: '#64748b', status: 'upcoming' }
     ];
 
     const achievements = [
-        { icon: <Award size={24} />, title: 'Premier projet', desc: 'Complété', color: '#f59e0b' },
-        { icon: <Zap size={24} />, title: 'Productif', desc: '10 analyses', color: '#3b82f6' },
+        { icon: <Award size={24} />, title: 'Terminé', desc: '1 projet', color: '#f59e0b' },
+        { icon: <Zap size={24} />, title: 'Productif', desc: '10 analyses terminées', color: '#3b82f6' },
         { icon: <Star size={24} />, title: 'Expert', desc: 'Niveau 5', color: '#8b5cf6' }
     ];
 
@@ -196,7 +194,7 @@ const Home = () => {
                     }}>
                         <div>
                             <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.5)', fontWeight: 500, marginBottom: '0.5rem' }}>
-                                Bienvenue de retour,
+                                Bon retour,
                             </p>
                             <h1 style={{
                                 fontSize: '3rem',
@@ -212,7 +210,7 @@ const Home = () => {
                                 lineHeight: 1.6,
                                 opacity: 0.9
                             }}>
-                                {t('home.subtitle')}
+                                Votre plateforme scientifique tout-en-un
                             </p>
                         </div>
                         <div style={{
@@ -331,11 +329,11 @@ const Home = () => {
                         <BookOpen size={isMobile ? 32 : 48} />
                     </div>
                     <div>
-                        <h2 style={{ fontSize: isMobile ? '1.1rem' : 'var(--font-size-xl)', marginBottom: '0.5rem', fontWeight: 700 }}>{t('munin.title')}</h2>
+                        <h2 style={{ fontSize: isMobile ? '1.1rem' : 'var(--font-size-xl)', marginBottom: '0.5rem', fontWeight: 700 }}>Munin Atlas</h2>
                         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', lineHeight: 1.4, display: isMobile ? 'block' : 'none' }}>
-                            Accédez à vos documents et recherche scientifique.
+                            Accéder aux documents
                         </p>
-                        {!isMobile && <p style={{ color: c.textSecondary, fontSize: 'var(--font-size-sm)', lineHeight: 1.6 }}>{t('home.munin_desc')}</p>}
+                        {!isMobile && <p style={{ color: c.textSecondary, fontSize: 'var(--font-size-sm)', lineHeight: 1.6 }}>Encyclopédie scientifique complète</p>}
                     </div>
                 </div>
 
@@ -365,25 +363,25 @@ const Home = () => {
                         <FlaskConical size={isMobile ? 32 : 48} />
                     </div>
                     <div>
-                        <h2 style={{ fontSize: isMobile ? '1.1rem' : 'var(--font-size-xl)', marginBottom: '0.5rem', fontWeight: 700 }}>{t('hugin.title')}</h2>
+                        <h2 style={{ fontSize: isMobile ? '1.1rem' : 'var(--font-size-xl)', marginBottom: '0.5rem', fontWeight: 700 }}>Hugin Lab</h2>
                         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', lineHeight: 1.4, display: isMobile ? 'block' : 'none' }}>
-                            Lancez vos analyses et tests de laboratoire.
+                            Lancer des analyses
                         </p>
-                        {!isMobile && <p style={{ color: c.textSecondary, fontSize: 'var(--font-size-sm)', lineHeight: 1.6 }}>{t('home.hugin_desc')}</p>}
+                        {!isMobile && <p style={{ color: c.textSecondary, fontSize: 'var(--font-size-sm)', lineHeight: 1.6 }}>Outils de laboratoire avancés</p>}
                     </div>
                 </div>
             </div>
 
             {isMobile && (
                 <div style={{ marginTop: '2.5rem', width: '100%' }}>
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem', color: 'white' }}>Récents</h3>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '1rem', color: 'white' }}>Récent</h3>
                     <div className="card-native" style={{ padding: '1rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <FlaskConical size={20} />
                             </div>
                             <div style={{ flex: 1 }}>
-                                <p style={{ fontWeight: 600, fontSize: '0.9rem' }}>Analyse Bio-Tech #42</p>
+                                <p style={{ fontWeight: 600, fontSize: '0.9rem' }}>Analyse récente #42</p>
                                 <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>Il y a 2 heures</p>
                             </div>
                         </div>
@@ -411,7 +409,7 @@ const Home = () => {
                                 fontWeight: 700,
                                 color: 'white'
                             }}>
-                                Emploi du temps du jour
+                                Aujourd'hui
                             </h3>
                             <button
                                 onClick={() => navigate('/hugin/planning')}
@@ -435,7 +433,7 @@ const Home = () => {
                                     e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
                                 }}
                             >
-                                Voir le planning complet →
+                                Voir tout →
                             </button>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -509,7 +507,7 @@ const Home = () => {
                             marginBottom: '1.5rem',
                             color: 'white'
                         }}>
-                            Succès
+                            Progression
                         </h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             {achievements.map((achievement, i) => (

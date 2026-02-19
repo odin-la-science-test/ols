@@ -5,14 +5,13 @@ import {
     ChevronRight, Sparkles, ArrowRight,
     Play, Zap, Shield, Users, TrendingUp,
     CheckCircle, Award,
-    Microscope, FlaskConical, Dna, Brain, Menu, X
+    Microscope, FlaskConical, Dna, Brain
 } from 'lucide-react';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 
 const LandingPage = () => {
     const navigate = useNavigate();
     const [scrollY, setScrollY] = useState(0);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { isMobile } = useDeviceDetection();
 
     useEffect(() => {
@@ -195,10 +194,40 @@ const LandingPage = () => {
                         </div>
                     ) : (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                            <a href="#features" style={{ color: '#94a3b8', textDecoration: 'none', fontWeight: 500 }}>
+                            <a 
+                                href="#features" 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                style={{ 
+                                    color: '#94a3b8', 
+                                    textDecoration: 'none', 
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    transition: 'color 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = '#f8fafc'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
+                            >
                                 Fonctionnalités
                             </a>
-                            <a href="#pricing" style={{ color: '#94a3b8', textDecoration: 'none', fontWeight: 500 }}>
+                            <a 
+                                href="#pricing" 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                style={{ 
+                                    color: '#94a3b8', 
+                                    textDecoration: 'none', 
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    transition: 'color 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = '#f8fafc'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
+                            >
                                 Tarifs
                             </a>
                             <button
@@ -210,7 +239,16 @@ const LandingPage = () => {
                                     borderRadius: '0.5rem',
                                     color: '#f8fafc',
                                     cursor: 'pointer',
-                                    fontWeight: 600
+                                    fontWeight: 600,
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                    e.currentTarget.style.borderColor = '#3b82f6';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'transparent';
+                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
                                 }}
                             >
                                 Connexion
@@ -225,7 +263,16 @@ const LandingPage = () => {
                                     color: '#fff',
                                     cursor: 'pointer',
                                     fontWeight: 700,
-                                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
+                                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(59, 130, 246, 0.5)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.4)';
                                 }}
                             >
                                 Inscription
@@ -802,7 +849,7 @@ const LandingPage = () => {
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent'
                         }}>
-                            Choisissez votre formule
+                            Choisissez votre plan
                         </h2>
                         <p style={{ fontSize: '1.25rem', color: '#94a3b8' }}>
                             Des plans adaptés à tous les besoins, du chercheur individuel au laboratoire complet

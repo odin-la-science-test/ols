@@ -2,14 +2,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Search, ChevronRight, GitCompare } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { DisciplineData } from '../types/munin.types';
-import { useLanguage } from '../components/LanguageContext';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import Navbar from '../components/Navbar';
 
 const Discipline = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { t } = useLanguage();
     const { isMobile } = useDeviceDetection();
     const [searchTerm, setSearchTerm] = useState('');
     const [disciplineData, setDisciplineData] = useState<DisciplineData | null>(null);
@@ -94,7 +92,7 @@ const Discipline = () => {
             <div style={{ minHeight: '100vh' }}>
                 <Navbar />
                 <div className="container" style={{ paddingTop: '2rem', textAlign: 'center' }}>
-                    <p style={{ color: 'var(--text-secondary)' }}>{t('common.loading')}</p>
+                    <p style={{ color: 'var(--text-secondary)' }}>Chargement...</p>
                 </div>
             </div>
         );
@@ -150,7 +148,7 @@ const Discipline = () => {
                                 opacity: selectedEntities.length < 2 ? 0.5 : 1
                             }}
                         >
-                            <GitCompare size={18} /> {t('common.compare')} ({selectedEntities.length})
+                            <GitCompare size={18} /> Comparer ({selectedEntities.length})
                         </button>
                     )}
                 </div>
@@ -354,7 +352,7 @@ const Discipline = () => {
                         <Search size={20} color="var(--text-secondary)" />
                         <input
                             type="text"
-                            placeholder={`${t('common.search')} ${disciplineData.displayName}...`}
+                            placeholder={`Rechercher ${disciplineData.displayName}...`}
                             className="input-field"
                             style={{ marginBottom: 0, background: 'transparent', border: 'none', padding: '0.5rem', fontSize: '1.1rem', width: '100%' }}
                             value={searchTerm}
@@ -373,7 +371,7 @@ const Discipline = () => {
                             gap: '0.5rem'
                         }}
                     >
-                        {t('common.filters')} {showFilters ? '▲' : '▼'}
+                        Filtres {showFilters ? '▲' : '▼'}
                     </button>
                 </div>
 
@@ -392,7 +390,7 @@ const Discipline = () => {
                                         value={filters[key] || ''}
                                         onChange={(e) => setFilters({ ...filters, [key]: e.target.value })}
                                     >
-                                        <option value="">{t('common.all')}</option>
+                                        <option value="">Tous</option>
                                         {Array.from(values).sort().map(val => (
                                             <option key={val} value={val}>{val}</option>
                                         ))}
@@ -407,7 +405,7 @@ const Discipline = () => {
                                 style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}
                                 onClick={() => setFilters({})}
                             >
-                                {t('common.reset_filters')}
+                                Réinitialiser les filtres
                             </button>
                         </div>
                     </div>
@@ -551,7 +549,7 @@ const Discipline = () => {
                     {filteredEntities.length === 0 && (
                         <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>
                             <Search size={48} style={{ marginBottom: '1rem', opacity: 0.3 }} />
-                            <p style={{ fontSize: '1.1rem' }}>{t('common.no_results_found')} "{searchTerm}"</p>
+                            <p style={{ fontSize: '1.1rem' }}>Aucun résultat trouvé pour "{searchTerm}"</p>
                         </div>
                     )}
                 </div>
