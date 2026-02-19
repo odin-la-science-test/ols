@@ -43,7 +43,7 @@ const Admin = () => {
     useEffect(() => {
         // Vérifier si l'utilisateur est admin
         const currentUserRole = localStorage.getItem('currentUserRole');
-        if (currentUserRole !== 'admin') {
+        if (currentUserRole !== 'admin' && currentUserRole !== 'super_admin') {
             navigate('/home');
             return;
         }
