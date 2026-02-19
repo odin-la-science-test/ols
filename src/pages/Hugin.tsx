@@ -101,7 +101,7 @@ const Hugin = () => {
         const desc = (m as any).desc;
         const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             desc.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = activeCategory === 'All' || m.category === activeCategory;
+        const matchesCategory = activeCategory === 'Tout' || m.category === activeCategory;
         return matchesSearch && matchesCategory;
     });
 
