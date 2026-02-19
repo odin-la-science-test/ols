@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import '../../styles/mobile-app.css';
+import { LOGOS } from '../../utils/logoCache';
 
 const MobileLandingPage = () => {
     const navigate = useNavigate();
@@ -70,7 +71,7 @@ const MobileLandingPage = () => {
                     justifyContent: 'space-between'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <img src="/logo1.png" alt="Odin" style={{ height: '32px' }} />
+                        <img src={LOGOS.main} alt="Odin" style={{ height: '32px' }} />
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button
@@ -714,7 +715,7 @@ const MobileLandingPage = () => {
                     gap: '0.5rem',
                     marginBottom: '1rem'
                 }}>
-                    <img src="/logo1.png" alt="Odin" style={{ height: '24px' }} />
+                    <img src={LOGOS.main} alt="Odin" style={{ height: '24px' }} />
                     <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>Odin</span>
                 </div>
                 <p style={{

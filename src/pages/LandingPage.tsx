@@ -8,6 +8,7 @@ import {
     Microscope, FlaskConical, Dna, Brain
 } from 'lucide-react';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
+import { LOGOS } from '../utils/logoCache';
 
 const LandingPage = () => {
     const navigate = useNavigate();
@@ -144,7 +145,7 @@ const LandingPage = () => {
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '0.75rem', cursor: 'pointer' }}
                          onClick={() => navigate('/')}>
-                        <img src="/logo1.png" alt="Odin" style={{ height: isMobile ? '32px' : '40px' }} />
+                        <img src={LOGOS.main} alt="Odin" style={{ height: isMobile ? '32px' : '40px' }} />
                         {!isMobile && (
                             <span style={{
                                 fontSize: '1.5rem',
@@ -1275,7 +1276,7 @@ const LandingPage = () => {
                 }}>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                            <img src="/logo1.png" alt="Odin" style={{ height: '32px' }} />
+                            <img src={LOGOS.main} alt="Odin" style={{ height: '32px' }} />
                             <span style={{ fontSize: '1.25rem', fontWeight: 800 }}>Odin</span>
                         </div>
                         <p style={{ color: '#64748b', fontSize: '0.9rem' }}>

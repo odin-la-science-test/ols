@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, BookOpen, FlaskConical, Settings } from 'lucide-react';
 import '../styles/mobile-app.css';
+import { LOGOS } from '../utils/logoCache';
 
 const MobileBottomNav = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const MobileBottomNav = () => {
               }}
             >
               <img 
-                src="/logo1.png" 
+                src={LOGOS.main} 
                 alt="Odin Logo" 
                 style={{ 
                   height: '40px',

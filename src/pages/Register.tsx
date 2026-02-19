@@ -21,6 +21,7 @@ import {
     UserCog, Briefcase, GraduationCap, Wrench, Building, User, Landmark, Upload,
     CreditCard, TrendingUp
 } from 'lucide-react';
+import { LOGOS } from '../utils/logoCache';
 
 // Remise selon le nombre de comptes
 const VOLUME_DISCOUNTS = [
@@ -388,7 +389,7 @@ const Register = () => {
                     borderBottom: isMobile ? 'none' : `1px solid ${c.borderColor}`
                 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                        <img src="/logo1.png" alt="Odin" style={{ height: isMobile ? '50px' : '80px', filter: 'drop-shadow(0 0 10px rgba(99, 102, 241, 0.2))' }} />
+                        <img src={LOGOS.main} alt="Odin" style={{ height: isMobile ? '50px' : '80px', filter: 'drop-shadow(0 0 10px rgba(99, 102, 241, 0.2))' }} />
                         <h1 style={{ fontSize: isMobile ? '1.25rem' : '2.25rem', fontWeight: 800, background: `linear-gradient(135deg, ${c.accentPrimary}, ${c.accentSecondary})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                             Odin la Science
                         </h1>

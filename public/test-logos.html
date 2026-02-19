@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test des Logos - Odin La Science</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #0f172a;
+            color: white;
+        }
+        h1 {
+            text-align: center;
+            color: #6366f1;
+        }
+        .logo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .logo-card {
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .logo-card h2 {
+            color: #6366f1;
+            margin-bottom: 1rem;
+        }
+        .logo-card img {
+            max-width: 100%;
+            height: 200px;
+            object-fit: contain;
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        .logo-info {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+        .refresh-btn {
+            display: block;
+            margin: 2rem auto;
+            padding: 1rem 2rem;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .refresh-btn:hover {
+            background: #4f46e5;
+        }
+        .instructions {
+            background: #1e293b;
+            border-left: 4px solid #6366f1;
+            padding: 1rem;
+            margin: 2rem 0;
+            border-radius: 4px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #6366f1;
+        }
+        .instructions ol {
+            margin: 0.5rem 0;
+        }
+        .instructions li {
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Test des Logos - Odin La Science</h1>
+    
+    <div class="instructions">
+        <h3>📋 Instructions pour vider le cache :</h3>
+        <ol>
+            <li><strong>Windows/Linux :</strong> Appuyez sur <code>Ctrl + Shift + R</code></li>
+            <li><strong>Mac :</strong> Appuyez sur <code>Cmd + Shift + R</code></li>
+            <li><strong>Ou :</strong> Ouvrez les DevTools (F12) → Onglet Network → Cochez "Disable cache"</li>
+            <li><strong>Ou :</strong> Cliquez sur le bouton ci-dessous</li>
+        </ol>
+    </div>
+
+    <button class="refresh-btn" onclick="forceReload()">🔄 Forcer le rechargement des logos</button>
+
+    <div class="logo-grid">
+        <div class="logo-card">
+            <h2>Logo 1 - Principal Odin</h2>
+            <img id="logo1" src="/logo1.png" alt="Logo Odin Principal">
+            <div class="logo-info">
+                <p>Fichier : logo1.png</p>
+                <p>Dernière modification : 18/02/2026</p>
+            </div>
+        </div>
+
+        <div class="logo-card">
+            <h2>Logo 2 - Munin Atlas</h2>
+            <img id="logo2" src="/logo2.png" alt="Logo Munin Atlas">
+            <div class="logo-info">
+                <p>Fichier : logo2.png</p>
+                <p>Dernière modification : 18/02/2026</p>
+            </div>
+        </div>
+
+        <div class="logo-card">
+            <h2>Logo 3 - Hugin Lab</h2>
+            <img id="logo3" src="/logo3.png" alt="Logo Hugin Lab">
+            <div class="logo-info">
+                <p>Fichier : logo3.png</p>
+                <p>Dernière modification : 18/02/2026</p>
+            </div>
+        </div>
+
+        <div class="logo-card">
+            <h2>Logo 4 - Alternatif</h2>
+            <img id="logo4" src="/logo4.png" alt="Logo Alternatif">
+            <div class="logo-info">
+                <p>Fichier : logo4.png</p>
+                <p>Dernière modification : 18/02/2026</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function forceReload() {
+            const timestamp = Date.now();
+            document.getElementById('logo1').src = `/logo1.png?t=${timestamp}`;
+            document.getElementById('logo2').src = `/logo2.png?t=${timestamp}`;
+            document.getElementById('logo3').src = `/logo3.png?t=${timestamp}`;
+            document.getElementById('logo4').src = `/logo4.png?t=${timestamp}`;
+            
+            // Afficher un message
+            alert('✅ Logos rechargés avec succès !\n\nSi vous ne voyez toujours pas les nouveaux logos, essayez :\n1. Ctrl+Shift+R (hard refresh)\n2. Vider le cache du navigateur\n3. Mode navigation privée');
+        }
+
+        // Charger les logos avec timestamp au chargement de la page
+        window.addEventListener('load', () => {
+            const timestamp = Date.now();
+            document.getElementById('logo1').src = `/logo1.png?t=${timestamp}`;
+            document.getElementById('logo2').src = `/logo2.png?t=${timestamp}`;
+            document.getElementById('logo3').src = `/logo3.png?t=${timestamp}`;
+            document.getElementById('logo4').src = `/logo4.png?t=${timestamp}`;
+        });
+    </script>
+</body>
+</html>

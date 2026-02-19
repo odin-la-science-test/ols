@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import Navbar from '../components/Navbar';
 import disciplinesData from '../data/disciplines.json';
+import { LOGOS } from '../utils/logoCache';
 
 const Munin = () => {
     const navigate = useNavigate();
@@ -77,7 +78,7 @@ const Munin = () => {
                     alignItems: 'center'
                 }}>
                     <img 
-                        src="/logo2.png" 
+                        src={LOGOS.munin} 
                         alt="Munin Atlas Logo" 
                         style={{ 
                             width: '240px', 
