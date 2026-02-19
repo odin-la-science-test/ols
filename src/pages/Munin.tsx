@@ -81,10 +81,10 @@ const Munin = () => {
                         src={LOGOS.munin} 
                         alt="Munin Atlas Logo" 
                         style={{ 
-                            width: '240px', 
-                            height: '240px', 
+                            width: '400px', 
+                            height: '400px', 
                             objectFit: 'contain', 
-                            marginBottom: '1.5rem', 
+                            marginBottom: '0.5rem', 
                             filter: 'drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(16, 185, 129, 0.3))'
                         }} 
                     />
