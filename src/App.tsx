@@ -49,7 +49,8 @@ const CryoKeeper = lazy(() => import('./pages/hugin/CryoKeeper'));
 const EquipFlow = lazy(() => import('./pages/hugin/EquipFlow'));
 const GrantBudget = lazy(() => import('./pages/hugin/GrantBudget'));
 const SOPLibrary = lazy(() => import('./pages/hugin/SOPLibrary'));
-const BioToolBox = lazy(() => import('./pages/hugin/BioToolBox'));
+const BioTools = lazy(() => import('./pages/hugin/BioTools'));
+const AIAssistant = lazy(() => import('./pages/hugin/AIAssistant'));
 const SequenceLens = lazy(() => import('./pages/hugin/SequenceLens'));
 const ColonyVision = lazy(() => import('./pages/hugin/ColonyVision'));
 const ProjectMind = lazy(() => import('./pages/hugin/ProjectMind'));
@@ -503,14 +504,25 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="/hugin/biotools" element={
-              <ProtectedRoute module="hugin_analysis">
-                <BioToolBox />
-              </ProtectedRoute>
+              <Suspense fallback={<div>Chargement...</div>}>
+                <ProtectedRoute module="hugin_analysis">
+                  <BioTools />
+                </ProtectedRoute>
+              </Suspense>
+            } />
+            <Route path="/hugin/ai-assistant" element={
+              <Suspense fallback={<div>Chargement...</div>}>
+                <ProtectedRoute module="hugin_analysis">
+                  <AIAssistant />
+                </ProtectedRoute>
+              </Suspense>
             } />
             <Route path="/hugin/sequence" element={
-              <ProtectedRoute module="hugin_analysis">
-                <SequenceLens />
-              </ProtectedRoute>
+              <Suspense fallback={<div>Chargement...</div>}>
+                <ProtectedRoute module="hugin_analysis">
+                  <SequenceLens />
+                </ProtectedRoute>
+              </Suspense>
             } />
             <Route path="/hugin/colony" element={
               <ProtectedRoute module="hugin_analysis">
@@ -675,6 +687,11 @@ function App() {
             <Route path="/hugin/bacterial-growth" element={
               <ProtectedRoute module="hugin_analysis">
                 <BacterialGrowthPredictor />
+              </ProtectedRoute>
+            } />
+            <Route path="/hugin/biotools" element={
+              <ProtectedRoute module="hugin_analysis">
+                <BioTools />
               </ProtectedRoute>
             } />
             <Route path="/account" element={

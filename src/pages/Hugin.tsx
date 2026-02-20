@@ -3,7 +3,7 @@ import {
     Beaker, Calendar, Mail, HardDrive, Video, Brain, Quote, Book,
     Package, Snowflake, Activity, Wallet, BookOpen, Calculator,
     Dna, Camera, Layers, ShieldAlert, Zap, Share2, Box,
-    TrendingUp, Grid, UserCheck, Search, FileText, Clock, GitBranch
+    TrendingUp, Grid, UserCheck, Search, FileText, Clock, GitBranch, Bot
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '../components/ToastContext';
@@ -89,7 +89,9 @@ const Hugin = () => {
         { id: 'proteincalc', name: 'Calcul protéique', desc: 'Propriétés des protéines', icon: <Calculator size={24} />, category: 'Analysis', path: '/hugin/protein-calculator' },
         { id: 'restrictionmap', name: 'Carte de restriction', desc: 'Cartographie de restriction', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/restriction-mapper' },
         { id: 'cloningassist', name: 'Assistant de clonage', desc: 'Aide au clonage moléculaire', icon: <GitBranch size={24} />, category: 'Analysis', path: '/hugin/cloning-assistant' },
-        { id: 'bacterialgrowth', name: 'Croissance bactérienne', desc: 'Prédiction de croissance', icon: <TrendingUp size={24} />, category: 'Analysis', path: '/hugin/bacterial-growth' }
+        { id: 'bacterialgrowth', name: 'Croissance bactérienne', desc: 'Prédiction de croissance', icon: <TrendingUp size={24} />, category: 'Analysis', path: '/hugin/bacterial-growth' },
+        { id: 'biotools', name: 'Outils Bio', desc: 'Calculateurs et convertisseurs (dilutions, concentrations, masse moléculaire)', icon: <Calculator size={24} />, category: 'Analysis', path: '/hugin/biotools' },
+        { id: 'ai-assistant', name: 'Mímir', desc: 'Assistant scientifique intelligent - Votre conseiller en sagesse scientifique', icon: <Bot size={24} />, category: 'Analysis', path: '/hugin/ai-assistant' }
     ];
 
     const categories = ['Tout', 'Core', 'Lab', 'Research', 'Analysis'];
