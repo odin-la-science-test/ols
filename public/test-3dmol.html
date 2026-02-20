@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test 3Dmol.js</title>
+    <script src="https://3Dmol.csb.pitt.edu/build/3Dmol-min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        #viewer {
+            width: 800px;
+            height: 600px;
+            border: 2px solid #3b82f6;
+            margin: 20px auto;
+            position: relative;
+        }
+        .controls {
+            text-align: center;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .info {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 15px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Test de Visualisation 3D avec 3Dmol.js</h1>
+    
+    <div class="info">
+        <strong>Instructions :</strong>
+        <ul>
+            <li>Clic gauche + glisser : Rotation</li>
+            <li>Molette : Zoom</li>
+            <li>Clic droit + glisser : Translation</li>
+        </ul>
+    </div>
+
+    <div class="controls">
+        <button onclick="setStyle('cartoon')">Cartoon</button>
+        <button onclick="setStyle('stick')">Stick</button>
+        <button onclick="setStyle('sphere')">Sphere</button>
+        <button onclick="setStyle('surface')">Surface</button>
+        <button onclick="resetView()">Réinitialiser</button>
+    </div>
+
+    <div id="viewer"></div>
+
+    <div class="info" id="status">
+        Chargement...
+    </div>
+
+    <script>
+        let viewer;
+        let currentStyle = 'cartoon';
+
+        // PDB de démonstration (hélice alpha simple)
+        const pdbData = `HEADER    DEMO STRUCTURE
+TITLE     STRUCTURE DE DEMONSTRATION
+REMARK    Hélice alpha simple pour test
+ATOM      1  CA  ALA A   1       2.300   0.000   0.000  1.00 85.00           C
+ATOM      2  CA  LEU A   2       1.414   1.879   1.500  1.00 87.00           C
+ATOM      3  CA  VAL A   3      -0.414   2.179   3.000  1.00 89.00           C
+ATOM      4  CA  ILE A   4      -2.179   1.414   4.500  1.00 91.00           C
+ATOM      5  CA  SER A   5      -2.879  -0.414   6.000  1.00 93.00           C
+ATOM      6  CA  THR A   6      -2.179  -2.179   7.500  1.00 95.00           C
+ATOM      7  CA  GLY A   7      -0.414  -2.879   9.000  1.00 93.00           C
+ATOM      8  CA  ALA A   8       1.414  -2.179  10.500  1.00 91.00           C
+ATOM      9  CA  LEU A   9       2.879  -0.414  12.000  1.00 89.00           C
+ATOM     10  CA  VAL A  10       2.179   1.414  13.500  1.00 87.00           C
+ATOM     11  CA  ILE A  11       0.414   2.879  15.000  1.00 85.00           C
+ATOM     12  CA  SER A  12      -1.414   2.179  16.500  1.00 83.00           C
+ATOM     13  CA  THR A  13      -2.879   0.414  18.000  1.00 81.00           C
+ATOM     14  CA  GLY A  14      -2.179  -1.414  19.500  1.00 79.00           C
+ATOM     15  CA  ALA A  15      -0.414  -2.879  21.000  1.00 77.00           C
+ATOM     16  CA  LEU A  16       1.414  -2.179  22.500  1.00 75.00           C
+ATOM     17  CA  VAL A  17       2.879  -0.414  24.000  1.00 73.00           C
+ATOM     18  CA  ILE A  18       2.179   1.414  25.500  1.00 71.00           C
+ATOM     19  CA  SER A  19       0.414   2.879  27.000  1.00 69.00           C
+ATOM     20  CA  THR A  20      -1.414   2.179  28.500  1.00 67.00           C
+END`;
+
+        // Initialiser le viewer
+        function initViewer() {
+            try {
+                const element = document.getElementById('viewer');
+                const config = { backgroundColor: '#0a0a0a' };
+                
+                viewer = $3Dmol.createViewer(element, config);
+                
+                // Charger la structure
+                viewer.addModel(pdbData, 'pdb');
+                
+                // Appliquer le style par défaut
+                viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+                
+                // Centrer et afficher
+                viewer.zoomTo();
+                viewer.render();
+                
+                document.getElementById('status').innerHTML = '<strong style="color: #10b981;">✓ Viewer 3D chargé avec succès !</strong><br>La structure est une hélice alpha de 20 résidus.';
+                
+                console.log('Viewer initialisé avec succès');
+            } catch (error) {
+                console.error('Erreur initialisation:', error);
+                document.getElementById('status').innerHTML = '<strong style="color: #ef4444;">✗ Erreur de chargement</strong><br>' + error.message;
+            }
+        }
+
+        // Changer le style
+        function setStyle(style) {
+            if (!viewer) return;
+            
+            currentStyle = style;
+            viewer.setStyle({}, {});
+            
+            switch(style) {
+                case 'cartoon':
+                    viewer.setStyle({}, {cartoon: {color: 'spectrum'}});
+                    break;
+                case 'stick':
+                    viewer.setStyle({}, {stick: {radius: 0.15, colorscheme: 'Jmol'}});
+                    break;
+                case 'sphere':
+                    viewer.setStyle({}, {sphere: {radius: 0.5, colorscheme: 'Jmol'}});
+                    break;
+                case 'surface':
+                    viewer.addSurface($3Dmol.SurfaceType.VDW, {opacity: 0.85, colorscheme: 'Jmol'});
+                    break;
+            }
+            
+            viewer.render();
+            console.log('Style changé:', style);
+        }
+
+        // Réinitialiser la vue
+        function resetView() {
+            if (!viewer) return;
+            viewer.zoomTo();
+            viewer.render();
+        }
+
+        // Attendre que 3Dmol soit chargé
+        window.addEventListener('load', function() {
+            if (typeof $3Dmol !== 'undefined') {
+                console.log('3Dmol.js détecté');
+                initViewer();
+            } else {
+                console.error('3Dmol.js non chargé');
+                document.getElementById('status').innerHTML = '<strong style="color: #ef4444;">✗ 3Dmol.js non chargé</strong><br>Vérifiez votre connexion internet.';
+            }
+        });
+    </script>
+</body>
+</html>
