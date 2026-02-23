@@ -41,7 +41,7 @@ const Hugin = () => {
         { id: 'messaging', name: 'Messagerie', desc: 'Gestion des messages et communications', icon: <Mail size={24} />, category: 'Core', path: '/hugin/messaging' },
         { id: 'planning', name: 'Planning', desc: 'Planification et calendrier', icon: <Calendar size={24} />, category: 'Core', path: '/hugin/planning' },
         { id: 'documents', name: 'Documents', desc: 'Gestion documentaire', icon: <HardDrive size={24} />, category: 'Core', path: '/hugin/documents' },
-        { id: 'inventory', name: 'Inventaire', desc: 'Gestion des stocks', icon: <Beaker size={24} />, category: 'Core', path: '/hugin/inventory' },
+        { id: 'inventory', name: 'Inventaire', desc: 'Gestion de l\'inventaire', icon: <Beaker size={24} />, category: 'Core', path: '/hugin/inventory' },
         { id: 'meetings', name: 'Réunions', desc: 'Visioconférences', icon: <Video size={24} />, category: 'Core', path: '/hugin/meetings' },
         { id: 'projects', name: 'Projets', desc: 'Gestion de projets', icon: <Layers size={24} />, category: 'Core', path: '/hugin/projects' },
         { id: 'tableur', name: 'Tableur', desc: 'Tableur scientifique', icon: <Grid size={24} />, category: 'Core', path: '/hugin/tableur' },
@@ -50,7 +50,6 @@ const Hugin = () => {
         { id: 'it_archive', name: 'Archives IT', desc: 'Archivage automatique', icon: <HardDrive size={24} />, category: 'Core', path: '/hugin/it-archive' },
 
         // Lab Management
-        { id: 'stock', name: 'Stocks', desc: 'Gestion des stocks de laboratoire', icon: <Package size={24} />, category: 'Lab', path: '/hugin/stock' },
         { id: 'cryo', name: 'Cryogénie', desc: 'Gestion des échantillons cryogéniques', icon: <Snowflake size={24} />, category: 'Lab', path: '/hugin/cryo' },
         { id: 'equip', name: 'Équipements', desc: 'Gestion des équipements', icon: <Activity size={24} />, category: 'Lab', path: '/hugin/equip' },
         { id: 'budget', name: 'Budget', desc: 'Gestion budgétaire', icon: <Wallet size={24} />, category: 'Lab', path: '/hugin/budget' },
@@ -68,7 +67,6 @@ const Hugin = () => {
         { id: 'bioanalyzer', name: 'BioAnalyzer', desc: 'Analyse de données biologiques', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/bioanalyzer' },
         { id: 'imageanalyzer', name: 'Analyse d\'images', desc: 'Traitement d\'images scientifiques', icon: <Camera size={24} />, category: 'Analysis', path: '/hugin/imageanalyzer' },
         { id: 'statistics', name: 'Statistiques', desc: 'Analyses statistiques', icon: <TrendingUp size={24} />, category: 'Analysis', path: '/hugin/statistics' },
-        { id: 'biotools', name: 'Outils bio', desc: 'Outils bioinformatiques', icon: <Calculator size={24} />, category: 'Analysis', path: '/hugin/biotools' },
         { id: 'sequence', name: 'Séquences', desc: 'Analyse de séquences', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/sequence' },
         { id: 'flow', name: 'Cytométrie', desc: 'Analyse de cytométrie en flux', icon: <Activity size={24} />, category: 'Analysis', path: '/hugin/flow' },
         { id: 'spectrum', name: 'Spectrométrie', desc: 'Analyse spectrométrique', icon: <Zap size={24} />, category: 'Analysis', path: '/hugin/spectrum' },

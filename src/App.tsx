@@ -44,7 +44,6 @@ const ScientificResearch = lazy(() => import('./pages/hugin/ScientificResearch')
 const TableurLab = lazy(() => import('./pages/hugin/TableurLab'));
 const Bibliography = lazy(() => import('./pages/hugin/Bibliography'));
 const LabNotebook = lazy(() => import('./pages/hugin/LabNotebook'));
-const StockManager = lazy(() => import('./pages/hugin/StockManager'));
 const CryoKeeper = lazy(() => import('./pages/hugin/CryoKeeper'));
 const EquipFlow = lazy(() => import('./pages/hugin/EquipFlow'));
 const GrantBudget = lazy(() => import('./pages/hugin/GrantBudget'));
@@ -478,11 +477,7 @@ function App() {
                 <LabNotebook />
               </ProtectedRoute>
             } />
-            <Route path="/hugin/stock" element={
-              <ProtectedRoute module="hugin_lab">
-                <StockManager />
-              </ProtectedRoute>
-            } />
+            <Route path="/hugin/stock" element={<Navigate to="/hugin" replace />} />
             <Route path="/hugin/cryo" element={
               <ProtectedRoute module="hugin_lab">
                 <CryoKeeper />
