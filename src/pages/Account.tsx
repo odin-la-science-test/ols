@@ -1,11 +1,9 @@
-import React, { useState, lazy, Suspense } from 'react';
+import React, { useState } from 'react';
 import { useToast } from '../components/ToastContext';
 import Navbar from '../components/Navbar';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import Avatar from '../components/Avatar';
-
-// Import dynamique du composant mobile avec export default
-const MobileAccountContent = lazy(() => import('./mobile/Account').then(module => ({ default: module.default })));
+import MobileAccount from './mobile/Account';
 
 const Account = () => {
     const { showToast } = useToast();
@@ -14,22 +12,7 @@ const Account = () => {
 
     // Si mobile, afficher la version mobile
     if (isMobile) {
-        return (
-            <Suspense fallback={
-                <div style={{ 
-                    minHeight: '100vh', 
-                    background: '#0a0e27', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    color: 'white'
-                }}>
-                    Chargement...
-                </div>
-            }>
-                <MobileAccountContent />
-            </Suspense>
-        );
+        return <MobileAccount />;
     }
 
     // Fetch profile from localStorage
