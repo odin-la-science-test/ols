@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Database, Microscope, Settings, User, LogOut, FileText, Bell } from 'lucide-react';
 import './DesktopLayout.css';

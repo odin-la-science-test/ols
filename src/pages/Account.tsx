@@ -4,8 +4,8 @@ import Navbar from '../components/Navbar';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import Avatar from '../components/Avatar';
 
-// Import dynamique du composant mobile
-const MobileAccountContent = lazy(() => import('./mobile/Account'));
+// Import dynamique du composant mobile avec export default
+const MobileAccountContent = lazy(() => import('./mobile/Account').then(module => ({ default: module.default })));
 
 const Account = () => {
     const { showToast } = useToast();
