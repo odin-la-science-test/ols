@@ -9,6 +9,7 @@ import { useElectron } from './hooks/useElectron';
 // Composants critiques chargés immédiatement
 import LandingPage from './pages/LandingPage';
 import Home from './pages/Home';
+import DesktopHome from './pages/DesktopHome';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import TermsOfService from './pages/TermsOfService';
@@ -22,7 +23,6 @@ import { ThemeProvider } from './components/ThemeContext';
 import CommandPalette from './components/CommandPalette';
 import ScrollToTop from './components/ScrollToTop';
 import BackToTop from './components/BackToTop';
-import VersionBadge from './components/VersionBadge';
 import CookieConsent from './components/CookieConsent';
 import ElectronWrapper from './components/ElectronWrapper';
 import DesktopLogin from './pages/DesktopLogin';
@@ -303,10 +303,9 @@ function App() {
           <ShortcutManager />
           <KeyboardShortcuts />
           <CommandPalette />
-          {location.pathname !== '/' && <QuickNotes showFloatingButton={location.pathname === '/home' && !isMobile} />}
+          {location.pathname !== '/' && <QuickNotes showFloatingButton={false} />}
           <ScrollToTop />
           <BackToTop />
-          <VersionBadge position="bottom-right" />
           {tempSessionActive && (
             <div style={{
               position: 'fixed', top: 0, left: 0, right: 0, height: '3px',
@@ -356,7 +355,7 @@ function App() {
             <Route path="/home" element={
               <ProtectedRoute>
                 <ResponsiveRoute 
-                  desktop={<Home />}
+                  desktop={isElectron ? <DesktopHome /> : <Home />}
                   mobile={<MobileHome />}
                 />
               </ProtectedRoute>

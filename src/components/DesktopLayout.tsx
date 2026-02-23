@@ -35,7 +35,6 @@ const DesktopLayout = ({ children }: DesktopLayoutProps) => {
       <div className="desktop-sidebar">
         <div className="desktop-sidebar-header">
           <img src="/logo1.png" alt="OLS" className="desktop-logo" />
-          <h1 className="desktop-app-title">Odin La Science</h1>
         </div>
 
         <nav className="desktop-nav">
