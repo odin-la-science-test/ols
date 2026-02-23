@@ -118,6 +118,7 @@ const MobilePlanning = lazy(() => import('./pages/mobile/hugin/Planning'));
 const MobileMessaging = lazy(() => import('./pages/mobile/hugin/Messaging'));
 const MobileSafetyHub = lazy(() => import('./pages/mobile/hugin/SafetyHub'));
 const MobileLandingPage = lazy(() => import('./pages/mobile/LandingPage'));
+const MobileAccount = lazy(() => import('./pages/mobile/AccountWrapper'));
 
 // ResponsiveRoute component
 import ResponsiveRoute from './components/ResponsiveRoute';
@@ -700,7 +701,10 @@ function App() {
             } />
             <Route path="/account" element={
               <ProtectedRoute>
-                <Account />
+                <ResponsiveRoute 
+                  desktop={<Account />}
+                  mobile={<MobileAccount />}
+                />
               </ProtectedRoute>
             } />
             <Route path="/settings" element={

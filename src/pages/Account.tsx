@@ -1,19 +1,13 @@
 import React, { useState } from 'react';
 import { useToast } from '../components/ToastContext';
 import Navbar from '../components/Navbar';
-import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import Avatar from '../components/Avatar';
-import { MobileAccount } from './mobile/Account';
+import { useDeviceDetection } from '../hooks/useDeviceDetection';
 
 const Account = () => {
     const { showToast } = useToast();
     const { isMobile } = useDeviceDetection();
     const [refreshAvatar, setRefreshAvatar] = useState(0);
-
-    // Si mobile, afficher la version mobile
-    if (isMobile) {
-        return <MobileAccount />;
-    }
 
     // Fetch profile from localStorage
     const currentUser = localStorage.getItem('currentUser') || 'User';
