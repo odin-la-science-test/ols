@@ -1,9 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Clock, Mail, Calendar, Search, StickyNote } from 'lucide-react';
+import { Clock, Mail, Calendar, Search, StickyNote, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTheme } from '../components/ThemeContext';
 import GlobalSearch from '../components/GlobalSearch';
 import QuickNotes from '../components/QuickNotes';
+
+interface Event {
+    id?: string;
+    title: string;
+    description?: string;
+    date: string;
+    time: string;
+    type?: string;
+}
 
 const DesktopHome = () => {
     const navigate = useNavigate();
@@ -13,9 +22,11 @@ const DesktopHome = () => {
 
     const [currentTime, setCurrentTime] = useState(new Date());
     const [unreadCount, setUnreadCount] = useState(0);
-    const [todayEvents, setTodayEvents] = useState<any[]>([]);
+    const [allEvents, setAllEvents] = useState<Event[]>([]);
+    const [selectedDate, setSelectedDate] = useState(new Date());
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isNotesOpen, setIsNotesOpen] = useState(false);
+    const [currentMonth, setCurrentMonth] = useState(new Date());
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -47,25 +58,20 @@ const DesktopHome = () => {
     }, []);
 
     useEffect(() => {
-        const loadTodayEvents = async () => {
+        const loadEvents = async () => {
             try {
                 const { fetchModuleData } = await import('../utils/persistence');
                 const events = await fetchModuleData('planning');
                 if (events && Array.isArray(events)) {
-                    const today = new Date().toISOString().split('T')[0];
-                    const todayEventsFiltered = events
-                        .filter((event: any) => event.date === today)
-                        .sort((a: any, b: any) => a.time.localeCompare(b.time))
-                        .slice(0, 4);
-                    setTodayEvents(todayEventsFiltered);
+                    setAllEvents(events);
                 }
             } catch (error) {
                 console.error('Error loading events:', error);
             }
         };
 
-        loadTodayEvents();
-        const interval = setInterval(loadTodayEvents, 30000);
+        loadEvents();
+        const interval = setInterval(loadEvents, 30000);
         return () => clearInterval(interval);
     }, []);
 
@@ -104,6 +110,150 @@ const DesktopHome = () => {
             day: 'numeric'
         });
     };
+
+    // Fonctions pour le calendrier
+    const getDaysInMonth = (date: Date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay();
+        
+        return { daysInMonth, startingDayOfWeek };
+    };
+
+    const getEventsForDate = (date: Date) => {
+        const dateStr = date.toISOString().split('T')[0];
+        return allEvents.filter(event => event.date === dateStr);
+    };
+
+    const getTodayEvents = () => {
+        const today = new Date().toISOString().split('T')[0];
+        return allEvents
+            .filter(event => event.date === today)
+            .sort((a, b) => a.time.localeCompare(b.time));
+    };
+
+    const getSelectedDateEvents = () => {
+        const dateStr = selectedDate.toISOString().split('T')[0];
+        return allEvents
+            .filter(event => event.date === dateStr)
+            .sort((a, b) => a.time.localeCompare(b.time));
+    };
+
+    const previousMonth = () => {
+        setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
+    };
+
+    const nextMonth = () => {
+        setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
+    };
+
+    const isToday = (date: Date) => {
+        const today = new Date();
+        return date.getDate() === today.getDate() &&
+               date.getMonth() === today.getMonth() &&
+               date.getFullYear() === today.getFullYear();
+    };
+
+    const isSelectedDate = (date: Date) => {
+        return date.getDate() === selectedDate.getDate() &&
+               date.getMonth() === selectedDate.getMonth() &&
+               date.getFullYear() === selectedDate.getFullYear();
+    };
+
+    const renderCalendar = () => {
+        const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentMonth);
+        const days = [];
+        const weekDays = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+
+        // En-tête des jours
+        const header = weekDays.map(day => (
+            <div key={day} style={{
+                padding: '0.5rem',
+                textAlign: 'center',
+                fontWeight: 600,
+                color: theme.colors.textSecondary,
+                fontSize: '0.85rem'
+            }}>
+                {day}
+            </div>
+        ));
+
+        // Jours vides avant le début du mois
+        for (let i = 0; i < startingDayOfWeek; i++) {
+            days.push(<div key={`empty-${i}`} />);
+        }
+
+        // Jours du mois
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+            const dayEvents = getEventsForDate(date);
+            const hasEvents = dayEvents.length > 0;
+            const isTodayDate = isToday(date);
+            const isSelected = isSelectedDate(date);
+
+            days.push(
+                <div
+                    key={day}
+                    onClick={() => setSelectedDate(date)}
+                    style={{
+                        padding: '0.5rem',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        borderRadius: '0.5rem',
+                        background: isSelected 
+                            ? theme.colors.accentPrimary 
+                            : isTodayDate 
+                            ? theme.colors.accentPrimary + '20'
+                            : 'transparent',
+                        color: isSelected ? '#ffffff' : theme.colors.textPrimary,
+                        fontWeight: isTodayDate || isSelected ? 700 : 400,
+                        border: isTodayDate && !isSelected ? `2px solid ${theme.colors.accentPrimary}` : 'none',
+                        position: 'relative',
+                        transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                        if (!isSelected) {
+                            e.currentTarget.style.background = theme.colors.bgTertiary;
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (!isSelected) {
+                            e.currentTarget.style.background = isTodayDate 
+                                ? theme.colors.accentPrimary + '20'
+                                : 'transparent';
+                        }
+                    }}
+                >
+                    {day}
+                    {hasEvents && (
+                        <div style={{
+                            position: 'absolute',
+                            bottom: '4px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '4px',
+                            height: '4px',
+                            borderRadius: '50%',
+                            background: isSelected ? '#ffffff' : theme.colors.accentSecondary
+                        }} />
+                    )}
+                </div>
+            );
+        }
+
+        return (
+            <>
+                {header}
+                {days}
+            </>
+        );
+    };
+
+    const todayEvents = getTodayEvents();
+    const selectedDateEvents = getSelectedDateEvents();
 
     return (
         <div style={{
@@ -181,7 +331,7 @@ const DesktopHome = () => {
             {/* Cartes d'information */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: '1.5rem',
                 marginBottom: '2rem'
             }}>
@@ -247,18 +397,204 @@ const DesktopHome = () => {
                 </div>
             </div>
 
-            {/* Événements du jour */}
-            {todayEvents.length > 0 && (
+            {/* Planning et événements */}
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '1.5rem',
+                marginBottom: '2rem'
+            }}>
+                {/* Calendrier */}
                 <div style={{
                     background: theme.colors.bgSecondary,
                     border: `1px solid ${theme.colors.accentPrimary}20`,
                     borderRadius: '1rem',
-                    padding: '2rem'
+                    padding: '1.5rem'
                 }}>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem' }}>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '1.5rem'
+                    }}>
+                        <button
+                            onClick={previousMonth}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: theme.colors.textPrimary,
+                                cursor: 'pointer',
+                                padding: '0.5rem',
+                                borderRadius: '0.5rem',
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                        >
+                            <ChevronLeft size={24} />
+                        </button>
+                        <h2 style={{
+                            fontSize: '1.25rem',
+                            fontWeight: 700,
+                            margin: 0
+                        }}>
+                            {currentMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                        </h2>
+                        <button
+                            onClick={nextMonth}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: theme.colors.textPrimary,
+                                cursor: 'pointer',
+                                padding: '0.5rem',
+                                borderRadius: '0.5rem',
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                        >
+                            <ChevronRight size={24} />
+                        </button>
+                    </div>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(7, 1fr)',
+                        gap: '0.25rem'
+                    }}>
+                        {renderCalendar()}
+                    </div>
+                    <button
+                        onClick={() => navigate('/hugin/planning')}
+                        style={{
+                            marginTop: '1.5rem',
+                            padding: '0.75rem',
+                            background: theme.colors.accentPrimary,
+                            border: 'none',
+                            borderRadius: '0.5rem',
+                            color: '#ffffff',
+                            cursor: 'pointer',
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem',
+                            fontWeight: 600,
+                            fontSize: '1rem'
+                        }}
+                    >
+                        <Plus size={20} />
+                        Ajouter un événement
+                    </button>
+                </div>
+
+                {/* Événements du jour sélectionné */}
+                <div style={{
+                    background: theme.colors.bgSecondary,
+                    border: `1px solid ${theme.colors.accentSecondary}20`,
+                    borderRadius: '1rem',
+                    padding: '1.5rem'
+                }}>
+                    <h2 style={{
+                        fontSize: '1.25rem',
+                        fontWeight: 700,
+                        marginBottom: '1.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                    }}>
+                        <Calendar size={24} />
+                        {isToday(selectedDate) ? "Aujourd'hui" : selectedDate.toLocaleDateString('fr-FR', { 
+                            weekday: 'long',
+                            day: 'numeric',
+                            month: 'long'
+                        })}
+                    </h2>
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.75rem',
+                        maxHeight: '400px',
+                        overflowY: 'auto'
+                    }}>
+                        {selectedDateEvents.length > 0 ? (
+                            selectedDateEvents.map((event, index) => (
+                                <div
+                                    key={index}
+                                    style={{
+                                        padding: '1rem',
+                                        background: theme.colors.bgPrimary,
+                                        borderRadius: '0.5rem',
+                                        border: `1px solid ${theme.colors.accentPrimary}20`,
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s'
+                                    }}
+                                    onClick={() => navigate('/hugin/planning')}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.borderColor = theme.colors.accentPrimary;
+                                        e.currentTarget.style.transform = 'translateX(4px)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.borderColor = theme.colors.accentPrimary + '20';
+                                        e.currentTarget.style.transform = 'translateX(0)';
+                                    }}
+                                >
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'flex-start',
+                                        marginBottom: '0.5rem'
+                                    }}>
+                                        <div style={{ fontWeight: 600, fontSize: '1rem' }}>
+                                            {event.title}
+                                        </div>
+                                        <div style={{
+                                            padding: '0.25rem 0.75rem',
+                                            background: theme.colors.accentPrimary + '20',
+                                            borderRadius: '0.25rem',
+                                            color: theme.colors.accentPrimary,
+                                            fontWeight: 600,
+                                            fontSize: '0.85rem'
+                                        }}>
+                                            {event.time}
+                                        </div>
+                                    </div>
+                                    {event.description && (
+                                        <div style={{
+                                            fontSize: '0.9rem',
+                                            color: theme.colors.textSecondary,
+                                            lineHeight: '1.4'
+                                        }}>
+                                            {event.description}
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        ) : (
+                            <div style={{
+                                padding: '2rem',
+                                textAlign: 'center',
+                                color: theme.colors.textSecondary
+                            }}>
+                                <Calendar size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                                <p>Aucun événement prévu</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Événements d'aujourd'hui (si différent de la date sélectionnée) */}
+            {!isToday(selectedDate) && todayEvents.length > 0 && (
+                <div style={{
+                    background: theme.colors.bgSecondary,
+                    border: `1px solid ${theme.colors.accentPrimary}20`,
+                    borderRadius: '1rem',
+                    padding: '1.5rem',
+                    marginBottom: '2rem'
+                }}>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1rem' }}>
                         📅 Événements d'aujourd'hui
                     </h2>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                         {todayEvents.map((event, index) => (
                             <div
                                 key={index}
