@@ -37,7 +37,7 @@ function createWindow() {
 
   // Charger l'application depuis Vercel (production)
   // L'application desktop se connecte directement au serveur Vercel
-  const VERCEL_URL = 'https://ols-scientist.vercel.app';
+  const VERCEL_URL = 'https://ols-odin-la-science.vercel.app';
   
   if (process.env.NODE_ENV === 'development') {
     // En dev, on peut utiliser localhost OU Vercel
