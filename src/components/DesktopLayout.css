@@ -1,0 +1,182 @@
+/* Desktop Layout - Design unique pour l'application */
+
+.desktop-layout {
+  display: flex;
+  height: 100vh;
+  background: #0a0e27;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.desktop-sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #1a1f3a 0%, #0f1229 100%);
+  border-right: 1px solid rgba(99, 102, 241, 0.2);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.desktop-sidebar-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+  text-align: center;
+}
+
+.desktop-logo {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 0.75rem;
+  filter: drop-shadow(0 4px 12px rgba(99, 102, 241, 0.4));
+}
+
+.desktop-app-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+/* Navigation */
+.desktop-nav {
+  flex: 1;
+  padding: 1rem 0.75rem;
+  overflow-y: auto;
+}
+
+.desktop-nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  margin-bottom: 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.desktop-nav-item:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: #ffffff;
+  transform: translateX(4px);
+}
+
+.desktop-nav-item.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+  color: #ffffff;
+  border-left: 3px solid #6366f1;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.desktop-nav-item svg {
+  flex-shrink: 0;
+}
+
+/* Bottom items */
+.desktop-sidebar-bottom {
+  padding: 0.75rem;
+  border-top: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.desktop-nav-item.logout {
+  color: rgba(239, 68, 68, 0.8);
+  margin-top: 0.5rem;
+}
+
+.desktop-nav-item.logout:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Main Content */
+.desktop-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.desktop-content {
+  flex: 1;
+  overflow-y: auto;
+  background: #0a0e27;
+}
+
+/* Scrollbar personnalisé */
+.desktop-nav::-webkit-scrollbar,
+.desktop-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.desktop-nav::-webkit-scrollbar-track,
+.desktop-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.desktop-nav::-webkit-scrollbar-thumb,
+.desktop-content::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 4px;
+}
+
+.desktop-nav::-webkit-scrollbar-thumb:hover,
+.desktop-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5);
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.desktop-nav-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Responsive pour petits écrans desktop */
+@media (max-width: 1024px) {
+  .desktop-sidebar {
+    width: 80px;
+  }
+
+  .desktop-sidebar-header {
+    padding: 1rem 0.5rem;
+  }
+
+  .desktop-app-title {
+    display: none;
+  }
+
+  .desktop-nav-item span {
+    display: none;
+  }
+
+  .desktop-nav-item {
+    justify-content: center;
+    padding: 0.875rem;
+  }
+
+  .desktop-nav-item.active {
+    border-left: none;
+    border-bottom: 3px solid #6366f1;
+  }
+}

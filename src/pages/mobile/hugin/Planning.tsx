@@ -9,6 +9,13 @@ const MobilePlanning = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newEvent, setNewEvent] = useState({
+    title: '',
+    time: '09:00',
+    resource: '',
+    description: ''
+  });
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -51,6 +58,34 @@ const MobilePlanning = () => {
     completed: { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', text: '✓ Terminé' },
     'in-progress': { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', text: '⏳ En cours' },
     upcoming: { bg: 'rgba(100, 116, 139, 0.1)', color: '#64748b', text: '⏰ À venir' }
+  };
+
+  const handleAddEvent = async () => {
+    if (!newEvent.title || !newEvent.resource) {
+      alert('Veuillez remplir le titre et la ressource');
+      return;
+    }
+
+    const event = {
+      id: Date.now().toString(),
+      title: newEvent.title,
+      time: newEvent.time,
+      date: selectedDate,
+      resource: newEvent.resource,
+      description: newEvent.description
+    };
+
+    try {
+      const { saveModuleItem } = await import('../../../utils/persistence');
+      await saveModuleItem('planning', event);
+      setEvents([...events, event]);
+      setShowAddModal(false);
+      setNewEvent({ title: '', time: '09:00', resource: '', description: '' });
+      alert('Événement ajouté avec succès !');
+    } catch (error) {
+      console.error('Error adding event:', error);
+      alert('Erreur lors de l\'ajout de l\'événement');
+    }
   };
 
   return (
@@ -106,6 +141,7 @@ const MobilePlanning = () => {
           </h2>
           <button
             className="mobile-btn-primary"
+            onClick={() => setShowAddModal(true)}
             style={{
               width: 'auto',
               padding: '0.5rem 1rem',
@@ -188,6 +224,160 @@ const MobilePlanning = () => {
           })
         )}
       </div>
+
+      {/* Modal d'ajout d'événement */}
+      {showAddModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(10px)',
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'var(--mobile-card-bg)',
+            borderRadius: '1rem',
+            padding: '1.5rem',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            maxHeight: '90vh',
+            overflow: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Nouvel événement</h2>
+              <button
+                onClick={() => setShowAddModal(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--mobile-text)',
+                  padding: '0.5rem',
+                  cursor: 'pointer',
+                  fontSize: '1.5rem'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--mobile-text-secondary)', marginBottom: '0.5rem' }}>
+                  Titre *
+                </label>
+                <input
+                  type="text"
+                  value={newEvent.title}
+                  onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                  placeholder="Titre de l'événement"
+                  className="mobile-input"
+                  style={{ marginBottom: 0 }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--mobile-text-secondary)', marginBottom: '0.5rem' }}>
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="mobile-input"
+                  style={{ marginBottom: 0 }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--mobile-text-secondary)', marginBottom: '0.5rem' }}>
+                  Heure *
+                </label>
+                <input
+                  type="time"
+                  value={newEvent.time}
+                  onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+                  className="mobile-input"
+                  style={{ marginBottom: 0 }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--mobile-text-secondary)', marginBottom: '0.5rem' }}>
+                  Ressource/Lieu *
+                </label>
+                <input
+                  type="text"
+                  value={newEvent.resource}
+                  onChange={(e) => setNewEvent({ ...newEvent, resource: e.target.value })}
+                  placeholder="Ex: Salle 101, Labo A..."
+                  className="mobile-input"
+                  style={{ marginBottom: 0 }}
+                />
+              </div>
+
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--mobile-text-secondary)', marginBottom: '0.5rem' }}>
+                  Description
+                </label>
+                <textarea
+                  value={newEvent.description}
+                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                  placeholder="Description de l'événement..."
+                  style={{
+                    width: '100%',
+                    minHeight: '120px',
+                    padding: '1rem',
+                    borderRadius: '0.75rem',
+                    border: '1px solid var(--mobile-border)',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: 'var(--mobile-text)',
+                    fontSize: '0.95rem',
+                    fontFamily: 'inherit',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: 'auto' }}>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    borderRadius: '0.75rem',
+                    border: '1px solid var(--mobile-border)',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: 'var(--mobile-text)',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleAddEvent}
+                  className="mobile-btn-primary"
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <Plus size={18} />
+                  Ajouter
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <MobileBottomNav />
     </div>

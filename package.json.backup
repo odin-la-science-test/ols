@@ -1,28 +1,13 @@
 {
-  "name": "odin-la-science-desktop",
-  "productName": "Odin La Science",
-  "version": "1.0.0",
-  "description": "Plateforme scientifique complète - Application Desktop",
-  "main": "electron/main.js",
-  "author": "Odin La Science",
-  "license": "MIT",
-  "homepage": "https://odinlascience.com",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/odin-la-science/ols.git"
-  },
+  "name": "test-antigravity",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "electron:dev": "cross-env NODE_ENV=development electron .",
-    "electron:build": "electron-builder",
-    "electron:build:win": "electron-builder --win",
-    "electron:build:mac": "electron-builder --mac",
-    "electron:build:linux": "electron-builder --linux",
-    "electron:build:all": "electron-builder -mwl",
-    "postinstall": "electron-builder install-app-deps"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.95.3",
@@ -55,9 +40,9 @@
     "@types/react-dom": "^19.2.3",
     "@types/react-plotly.js": "^2.6.4",
     "@vitejs/plugin-react": "^5.1.1",
-    "concurrently": "^9.1.0",
+    "concurrently": "^9.2.1",
     "cross-env": "^7.0.3",
-    "electron": "^33.2.0",
+    "electron": "^33.4.11",
     "electron-builder": "^25.1.8",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
@@ -68,9 +53,6 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
-    "wait-on": "^8.0.1"
-  },
-  "build": {
-    "extends": "./electron-builder.yml"
+    "wait-on": "^8.0.5"
   }
 }

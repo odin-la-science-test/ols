@@ -10,6 +10,13 @@ const MobileMessaging = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFolder, setSelectedFolder] = useState('inbox');
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
+  const [showComposeModal, setShowComposeModal] = useState(false);
+  const [newMessage, setNewMessage] = useState({
+    to: '',
+    subject: '',
+    body: '',
+    priority: 'medium'
+  });
 
   useEffect(() => {
     const loadMessages = async () => {
@@ -68,6 +75,37 @@ const MobileMessaging = () => {
       setSelectedMessage(null);
     } else {
       navigate('/hugin');
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.to || !newMessage.subject || !newMessage.body) {
+      alert('Veuillez remplir tous les champs');
+      return;
+    }
+
+    const message = {
+      id: Date.now().toString(),
+      from: 'Moi',
+      to: newMessage.to,
+      subject: newMessage.subject,
+      body: newMessage.body,
+      priority: newMessage.priority,
+      date: new Date().toISOString(),
+      folder: 'sent',
+      read: true
+    };
+
+    try {
+      const { saveModuleItem } = await import('../../../utils/persistence');
+      await saveModuleItem('messaging', message);
+      setMessages([...messages, message]);
+      setShowComposeModal(false);
+      setNewMessage({ to: '', subject: '', body: '', priority: 'medium' });
+      alert('Message envoyé avec succès !');
+    } catch (error) {
+      console.error('Error sending message:', error);
+      alert('Erreur lors de l\'envoi du message');
     }
   };
 
@@ -218,7 +256,7 @@ const MobileMessaging = () => {
                   fontWeight: 600
                 }}>
                   <Paperclip size={12} />
-                  {selectedMessage.attachments} pièce(s) jointe(s)
+                  {typeof selectedMessage.attachments === 'number' ? selectedMessage.attachments : Array.isArray(selectedMessage.attachments) ? selectedMessage.attachments.length : 1} pièce(s) jointe(s)
                 </div>
               )}
             </div>
@@ -333,9 +371,26 @@ const MobileMessaging = () => {
         </div>
 
         {/* Messages List */}
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem' }}>
-          Messages ({filteredMessages.length})
-        </h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>
+            Messages ({filteredMessages.length})
+          </h2>
+          <button
+            onClick={() => setShowComposeModal(true)}
+            className="mobile-btn-primary"
+            style={{
+              width: 'auto',
+              padding: '0.5rem 1rem',
+              fontSize: '0.85rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            <Send size={16} />
+            Nouveau
+          </button>
+        </div>
 
         {filteredMessages.length === 0 ? (
           <div className="mobile-card" style={{ textAlign: 'center', padding: '2rem' }}>
@@ -414,6 +469,150 @@ const MobileMessaging = () => {
           ))
         )}
       </div>
+
+      {/* Modal de composition */}
+      {showComposeModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(10px)',
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'var(--mobile-card-bg)',
+            borderRadius: '1rem',
+            padding: '1.5rem',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            maxHeight: '90vh',
+            overflow: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>Nouveau message</h2>
+              <button
+                onClick={() => setShowComposeModal(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--mobile-text)',
+                  padding: '0.5rem',
+                  cursor: 'pointer',
+                  fontSize: '1.5rem'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--mobile-text-secondary)', marginBottom: '0.5rem' }}>
+                  Destinataire *
+                </label>
+                <input
+                  type="text"
+                  value={newMessage.to}
+                  onChange={(e) => setNewMessage({ ...newMessage, to: e.target.value })}
+                  placeholder="nom@exemple.com"
+                  className="mobile-input"
+                  style={{ marginBottom: 0 }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--mobile-text-secondary)', marginBottom: '0.5rem' }}>
+                  Sujet *
+                </label>
+                <input
+                  type="text"
+                  value={newMessage.subject}
+                  onChange={(e) => setNewMessage({ ...newMessage, subject: e.target.value })}
+                  placeholder="Sujet du message"
+                  className="mobile-input"
+                  style={{ marginBottom: 0 }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--mobile-text-secondary)', marginBottom: '0.5rem' }}>
+                  Priorité
+                </label>
+                <select
+                  value={newMessage.priority}
+                  onChange={(e) => setNewMessage({ ...newMessage, priority: e.target.value })}
+                  className="mobile-input"
+                  style={{ marginBottom: 0 }}
+                >
+                  <option value="low">Basse</option>
+                  <option value="medium">Moyenne</option>
+                  <option value="high">Haute</option>
+                </select>
+              </div>
+
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--mobile-text-secondary)', marginBottom: '0.5rem' }}>
+                  Message *
+                </label>
+                <textarea
+                  value={newMessage.body}
+                  onChange={(e) => setNewMessage({ ...newMessage, body: e.target.value })}
+                  placeholder="Écrivez votre message..."
+                  style={{
+                    width: '100%',
+                    minHeight: '200px',
+                    padding: '1rem',
+                    borderRadius: '0.75rem',
+                    border: '1px solid var(--mobile-border)',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: 'var(--mobile-text)',
+                    fontSize: '0.95rem',
+                    fontFamily: 'inherit',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: 'auto' }}>
+                <button
+                  onClick={() => setShowComposeModal(false)}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    borderRadius: '0.75rem',
+                    border: '1px solid var(--mobile-border)',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: 'var(--mobile-text)',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleSendMessage}
+                  className="mobile-btn-primary"
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <Send size={18} />
+                  Envoyer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <MobileBottomNav />
     </div>

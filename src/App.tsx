@@ -4,6 +4,7 @@ import './App.css';
 import { initAutoWatchService } from './services/autoWatchService';
 import { useDeviceDetection } from './hooks/useDeviceDetection';
 import { SecurityManager } from './utils/advancedSecurity';
+import { useElectron } from './hooks/useElectron';
 
 // Composants critiques chargés immédiatement
 import LandingPage from './pages/LandingPage';
@@ -23,6 +24,8 @@ import ScrollToTop from './components/ScrollToTop';
 import BackToTop from './components/BackToTop';
 import VersionBadge from './components/VersionBadge';
 import CookieConsent from './components/CookieConsent';
+import ElectronWrapper from './components/ElectronWrapper';
+import DesktopLogin from './pages/DesktopLogin';
 
 // Lazy loading pour les composants moins critiques
 const Munin = lazy(() => import('./pages/Munin'));
@@ -168,6 +171,7 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isMobile } = useDeviceDetection();
+  const { isElectron } = useElectron();
   const [tempSessionActive, setTempSessionActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
 
@@ -294,6 +298,7 @@ function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
+        <ElectronWrapper>
           <ShortcutManager />
           <KeyboardShortcuts />
           <CommandPalette />
@@ -327,7 +332,7 @@ function App() {
                 mobile={<MobileLandingPage />}
               />
             } />
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={isElectron ? <DesktopLogin /> : <Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/rgpd" element={<RGPD />} />
@@ -714,6 +719,7 @@ function App() {
           </Routes>
           </Suspense>
           <CookieConsent />
+        </ElectronWrapper>
       </ToastProvider>
     </ThemeProvider>
   );

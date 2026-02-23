@@ -1,13 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { useToast } from '../components/ToastContext';
 import Navbar from '../components/Navbar';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import Avatar from '../components/Avatar';
 
+// Import dynamique du composant mobile
+const MobileAccountContent = lazy(() => import('./mobile/Account'));
+
 const Account = () => {
     const { showToast } = useToast();
     const { isMobile } = useDeviceDetection();
     const [refreshAvatar, setRefreshAvatar] = useState(0);
+
+    // Si mobile, afficher la version mobile
+    if (isMobile) {
+        return (
+            <Suspense fallback={
+                <div style={{ 
+                    minHeight: '100vh', 
+                    background: '#0a0e27', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    color: 'white'
+                }}>
+                    Chargement...
+                </div>
+            }>
+                <MobileAccountContent />
+            </Suspense>
+        );
+    }
 
     // Fetch profile from localStorage
     const currentUser = localStorage.getItem('currentUser') || 'User';

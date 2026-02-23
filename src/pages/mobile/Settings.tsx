@@ -19,7 +19,9 @@ const MobileSettings = () => {
         const userData = JSON.parse(userStr);
         setUser(userData);
       } catch (error) {
-        console.error('Error parsing user data:', error);
+        // Si ce n'est pas du JSON, c'est probablement juste l'email
+        console.log('User data is not JSON, treating as email:', userStr);
+        setUser({ email: userStr });
       }
     }
   }, [refreshAvatar]);
