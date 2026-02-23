@@ -3,7 +3,7 @@ import { useToast } from '../components/ToastContext';
 import Navbar from '../components/Navbar';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import Avatar from '../components/Avatar';
-import MobileAccount from './mobile/Account';
+import { MobileAccount } from './mobile/Account';
 
 const Account = () => {
     const { showToast } = useToast();
