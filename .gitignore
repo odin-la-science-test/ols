@@ -36,3 +36,8 @@ response.html
 
 # Vercel
 .vercel
+
+# Electron build output
+release/
+dist-electron/
+out/
