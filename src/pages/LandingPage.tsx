@@ -5,7 +5,8 @@ import {
     ChevronRight, Sparkles, ArrowRight,
     Play, Zap, Shield, Users, TrendingUp,
     CheckCircle, Award,
-    Microscope, FlaskConical, Dna, Brain
+    Microscope, FlaskConical, Dna, Brain,
+    Download, Monitor
 } from 'lucide-react';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import { LOGOS } from '../utils/logoCache';
@@ -20,6 +21,15 @@ const LandingPage = () => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    const handleDownloadDesktop = () => {
+        // Lien direct vers le fichier .exe sur GitHub Releases
+        const downloadUrl = 'https://github.com/odin-la-science-test/ols/releases/latest/download/Odin-La-Science-Setup.exe';
+        
+        // Téléchargement direct - le navigateur téléchargera automatiquement le fichier
+        // Si le fichier n'existe pas encore, GitHub redirigera vers la page des releases
+        window.location.href = downloadUrl;
+    };
 
     const features = [
         {
@@ -386,28 +396,67 @@ const LandingPage = () => {
                                 onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                                 onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                             >
-                                S'inscrire
+                                Commencer gratuitement
                                 <ArrowRight size={20} />
                             </button>
                             {!isMobile && (
-                                <button
-                                    style={{
-                                        padding: '1rem 2rem',
-                                        background: 'rgba(255, 255, 255, 0.05)',
-                                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                                        borderRadius: '0.75rem',
-                                        color: '#f8fafc',
-                                        fontSize: '1.1rem',
-                                        fontWeight: 600,
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '0.5rem'
-                                    }}
-                                >
-                                    <Play size={20} />
-                                    Voir la démo
-                                </button>
+                                <>
+                                    <button
+                                        onClick={handleDownloadDesktop}
+                                        style={{
+                                            padding: '1rem 2rem',
+                                            background: 'rgba(16, 185, 129, 0.1)',
+                                            border: '1px solid rgba(16, 185, 129, 0.3)',
+                                            borderRadius: '0.75rem',
+                                            color: '#10b981',
+                                            fontSize: '1.1rem',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.5rem',
+                                            transition: 'all 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
+                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                                            e.currentTarget.style.transform = 'translateY(0)';
+                                        }}
+                                    >
+                                        <Download size={20} />
+                                        Télécharger l'app
+                                    </button>
+                                    <button
+                                        style={{
+                                            padding: '1rem 2rem',
+                                            background: 'rgba(255, 255, 255, 0.05)',
+                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            borderRadius: '0.75rem',
+                                            color: '#f8fafc',
+                                            fontSize: '1.1rem',
+                                            fontWeight: 600,
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.5rem',
+                                            transition: 'all 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                            e.currentTarget.style.transform = 'translateY(0)';
+                                        }}
+                                    >
+                                        <Play size={20} />
+                                        Voir la démo
+                                    </button>
+                                </>
                             )}
                         </div>
 
@@ -557,6 +606,433 @@ const LandingPage = () => {
                                 <span style={{ fontSize: '1.25rem', fontWeight: 700 }}>{company.name}</span>
                             </div>
                         ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Section Application Desktop */}
+            {!isMobile && (
+                <section style={{
+                    padding: '6rem 2rem',
+                    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05))',
+                    borderTop: '1px solid rgba(16, 185, 129, 0.1)',
+                    borderBottom: '1px solid rgba(16, 185, 129, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}>
+                    <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '600px',
+                        height: '600px',
+                        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%)',
+                        filter: 'blur(100px)',
+                        pointerEvents: 'none'
+                    }} />
+                    
+                    <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '4rem',
+                            alignItems: 'center'
+                        }}>
+                            <div>
+                                <div style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    padding: '0.5rem 1rem',
+                                    background: 'rgba(16, 185, 129, 0.1)',
+                                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                                    borderRadius: '2rem',
+                                    marginBottom: '2rem',
+                                    fontSize: '0.9rem',
+                                    fontWeight: 600,
+                                    color: '#10b981'
+                                }}>
+                                    <Monitor size={16} />
+                                    Application Desktop
+                                </div>
+
+                                <h2 style={{
+                                    fontSize: '3rem',
+                                    fontWeight: 900,
+                                    lineHeight: 1.1,
+                                    marginBottom: '1.5rem',
+                                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent'
+                                }}>
+                                    Travaillez hors ligne avec l'app desktop
+                                </h2>
+
+                                <p style={{
+                                    fontSize: '1.1rem',
+                                    color: '#94a3b8',
+                                    lineHeight: 1.6,
+                                    marginBottom: '2rem'
+                                }}>
+                                    Téléchargez l'application desktop Odin La Science pour Windows et profitez d'une expérience optimisée avec accès hors ligne, performances accrues et interface dédiée.
+                                </p>
+
+                                <div style={{ marginBottom: '2rem' }}>
+                                    {[
+                                        'Interface optimisée pour le desktop',
+                                        'Accès hors ligne à vos données',
+                                        'Performances maximales',
+                                        'Synchronisation automatique',
+                                        'Raccourcis clavier avancés'
+                                    ].map((feature, i) => (
+                                        <div key={i} style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.75rem',
+                                            marginBottom: '0.75rem'
+                                        }}>
+                                            <CheckCircle size={20} color="#10b981" />
+                                            <span style={{ color: '#cbd5e1' }}>{feature}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button
+                                    onClick={handleDownloadDesktop}
+                                    style={{
+                                        padding: '1rem 2.5rem',
+                                        background: 'linear-gradient(135deg, #10b981, #059669)',
+                                        border: 'none',
+                                        borderRadius: '0.75rem',
+                                        color: '#fff',
+                                        fontSize: '1.1rem',
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '0.75rem',
+                                        boxShadow: '0 8px 24px rgba(16, 185, 129, 0.4)',
+                                        transition: 'all 0.2s'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                        e.currentTarget.style.boxShadow = '0 12px 32px rgba(16, 185, 129, 0.5)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = '0 8px 24px rgba(16, 185, 129, 0.4)';
+                                    }}
+                                >
+                                    <Download size={24} />
+                                    Télécharger pour Windows
+                                    <span style={{
+                                        fontSize: '0.85rem',
+                                        opacity: 0.9,
+                                        fontWeight: 500
+                                    }}>
+                                        (Gratuit)
+                                    </span>
+                                </button>
+
+                                <p style={{
+                                    marginTop: '1rem',
+                                    fontSize: '0.85rem',
+                                    color: '#64748b'
+                                }}>
+                                    Compatible Windows 10/11 • Version 1.0.0 • ~150 MB
+                                </p>
+                            </div>
+
+                            <div style={{
+                                background: 'rgba(16, 185, 129, 0.05)',
+                                border: '2px solid rgba(16, 185, 129, 0.2)',
+                                borderRadius: '1.5rem',
+                                padding: '3rem',
+                                textAlign: 'center'
+                            }}>
+                                <Monitor size={120} color="#10b981" style={{ marginBottom: '2rem' }} />
+                                <h3 style={{
+                                    fontSize: '1.5rem',
+                                    fontWeight: 700,
+                                    marginBottom: '1rem',
+                                    color: '#10b981'
+                                }}>
+                                    Installation Simple
+                                </h3>
+                                <div style={{
+                                    textAlign: 'left',
+                                    color: '#94a3b8',
+                                    lineHeight: 1.8
+                                }}>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <strong style={{ color: '#cbd5e1' }}>1.</strong> Téléchargez l'installateur
+                                    </div>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <strong style={{ color: '#cbd5e1' }}>2.</strong> Exécutez le fichier .exe
+                                    </div>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <strong style={{ color: '#cbd5e1' }}>3.</strong> Suivez l'assistant d'installation
+                                    </div>
+                                    <div>
+                                        <strong style={{ color: '#cbd5e1' }}>4.</strong> Lancez depuis le bureau ou le menu démarrer
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* Section Multi-Plateforme */}
+            <section style={{
+                padding: '8rem 2rem',
+                background: 'rgba(255, 255, 255, 0.02)',
+                borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+            }}>
+                <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
+                        <h2 style={{
+                            fontSize: '3rem',
+                            fontWeight: 900,
+                            marginBottom: '1rem',
+                            background: 'linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                        }}>
+                            Disponible sur Toutes vos Plateformes
+                        </h2>
+                        <p style={{ fontSize: '1.25rem', color: '#94a3b8' }}>
+                            Une expérience optimisée pour chaque appareil
+                        </p>
+                    </div>
+
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+                        gap: '2rem'
+                    }}>
+                        {/* Web */}
+                        <div style={{
+                            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05))',
+                            border: '1px solid rgba(59, 130, 246, 0.2)',
+                            borderRadius: '1.5rem',
+                            padding: '3rem 2rem',
+                            textAlign: 'center',
+                            transition: 'all 0.3s'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-8px)';
+                            e.currentTarget.style.borderColor = '#3b82f6';
+                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(59, 130, 246, 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.2)';
+                            e.currentTarget.style.boxShadow = 'none';
+                        }}>
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 2rem',
+                                boxShadow: '0 10px 30px rgba(59, 130, 246, 0.4)'
+                            }}>
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="2" y1="12" x2="22" y2="12"/>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                </svg>
+                            </div>
+                            <h3 style={{
+                                fontSize: '1.75rem',
+                                fontWeight: 700,
+                                marginBottom: '1rem',
+                                color: '#f8fafc'
+                            }}>
+                                Version Web
+                            </h3>
+                            <p style={{
+                                color: '#94a3b8',
+                                lineHeight: 1.6,
+                                marginBottom: '1.5rem'
+                            }}>
+                                Accédez depuis n'importe quel navigateur. Interface complète et responsive avec toutes les fonctionnalités.
+                            </p>
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.5rem',
+                                fontSize: '0.9rem',
+                                color: '#cbd5e1'
+                            }}>
+                                <div>✓ Aucune installation</div>
+                                <div>✓ Mises à jour automatiques</div>
+                                <div>✓ Accessible partout</div>
+                            </div>
+                        </div>
+
+                        {/* Desktop */}
+                        <div style={{
+                            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05))',
+                            border: '1px solid rgba(16, 185, 129, 0.2)',
+                            borderRadius: '1.5rem',
+                            padding: '3rem 2rem',
+                            textAlign: 'center',
+                            transition: 'all 0.3s',
+                            position: 'relative'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-8px)';
+                            e.currentTarget.style.borderColor = '#10b981';
+                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(16, 185, 129, 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+                            e.currentTarget.style.boxShadow = 'none';
+                        }}>
+                            <div style={{
+                                position: 'absolute',
+                                top: '1rem',
+                                right: '1rem',
+                                background: 'linear-gradient(135deg, #10b981, #059669)',
+                                padding: '0.5rem 1rem',
+                                borderRadius: '2rem',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                color: '#fff'
+                            }}>
+                                RECOMMANDÉ
+                            </div>
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                background: 'linear-gradient(135deg, #10b981, #059669)',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 2rem',
+                                boxShadow: '0 10px 30px rgba(16, 185, 129, 0.4)'
+                            }}>
+                                <Monitor size={40} color="#fff" />
+                            </div>
+                            <h3 style={{
+                                fontSize: '1.75rem',
+                                fontWeight: 700,
+                                marginBottom: '1rem',
+                                color: '#f8fafc'
+                            }}>
+                                Application Desktop
+                            </h3>
+                            <p style={{
+                                color: '#94a3b8',
+                                lineHeight: 1.6,
+                                marginBottom: '1.5rem'
+                            }}>
+                                Interface optimisée pour Windows. Performances maximales et expérience desktop native.
+                            </p>
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.5rem',
+                                fontSize: '0.9rem',
+                                color: '#cbd5e1',
+                                marginBottom: '1.5rem'
+                            }}>
+                                <div>✓ Interface dédiée</div>
+                                <div>✓ Splash screen animé</div>
+                                <div>✓ Raccourcis clavier</div>
+                            </div>
+                            <button
+                                onClick={handleDownloadDesktop}
+                                style={{
+                                    padding: '0.875rem 1.5rem',
+                                    background: 'linear-gradient(135deg, #10b981, #059669)',
+                                    border: 'none',
+                                    borderRadius: '0.75rem',
+                                    color: '#fff',
+                                    fontSize: '1rem',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    width: '100%',
+                                    transition: 'transform 0.2s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                            >
+                                Télécharger
+                            </button>
+                        </div>
+
+                        {/* Mobile */}
+                        <div style={{
+                            background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05))',
+                            border: '1px solid rgba(139, 92, 246, 0.2)',
+                            borderRadius: '1.5rem',
+                            padding: '3rem 2rem',
+                            textAlign: 'center',
+                            transition: 'all 0.3s'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-8px)';
+                            e.currentTarget.style.borderColor = '#8b5cf6';
+                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(139, 92, 246, 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.2)';
+                            e.currentTarget.style.boxShadow = 'none';
+                        }}>
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 2rem',
+                                boxShadow: '0 10px 30px rgba(139, 92, 246, 0.4)'
+                            }}>
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
+                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                                    <line x1="12" y1="18" x2="12.01" y2="18"/>
+                                </svg>
+                            </div>
+                            <h3 style={{
+                                fontSize: '1.75rem',
+                                fontWeight: 700,
+                                marginBottom: '1rem',
+                                color: '#f8fafc'
+                            }}>
+                                Application Mobile
+                            </h3>
+                            <p style={{
+                                color: '#94a3b8',
+                                lineHeight: 1.6,
+                                marginBottom: '1.5rem'
+                            }}>
+                                Interface tactile optimisée pour smartphones et tablettes. Accédez à vos données en mobilité.
+                            </p>
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.5rem',
+                                fontSize: '0.9rem',
+                                color: '#cbd5e1'
+                            }}>
+                                <div>✓ Interface tactile</div>
+                                <div>✓ Navigation simplifiée</div>
+                                <div>✓ Accès en déplacement</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -1332,6 +1808,24 @@ const LandingPage = () => {
                     to {
                         opacity: 1;
                         transform: translateY(0);
+                    }
+                }
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                    }
+                    to {
+                        opacity: 1;
+                    }
+                }
+                @keyframes slideInRight {
+                    from {
+                        opacity: 0;
+                        transform: translateX(100px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
                     }
                 }
                 @keyframes pulse {

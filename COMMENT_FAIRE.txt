@@ -1,0 +1,82 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║   COMMENT ACTIVER LE TÉLÉCHARGEMENT AUTOMATIQUE             ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+
+PROBLÈME ACTUEL:
+  Le bouton "Télécharger" redirige vers GitHub au lieu de 
+  télécharger directement le fichier .exe
+
+RAISON:
+  Le fichier n'existe pas encore sur GitHub Releases
+
+SOLUTION (10 minutes):
+
+  ┌─────────────────────────────────────────────────────────┐
+  │ ÉTAPE 1: Build l'application (5-10 min)                │
+  └─────────────────────────────────────────────────────────┘
+  
+  Ouvre PowerShell et tape:
+  
+    .\BUILD-RAPIDE.ps1
+  
+  Ou manuellement:
+  
+    npm run build
+    npm run electron:build
+  
+  Résultat: release\Odin-La-Science-Setup.exe
+
+
+  ┌─────────────────────────────────────────────────────────┐
+  │ ÉTAPE 2: Upload sur GitHub (2 min)                     │
+  └─────────────────────────────────────────────────────────┘
+  
+  1. Va sur:
+     https://github.com/odin-la-science-test/ols/releases/new
+  
+  2. Remplis:
+     - Tag: v1.0.0
+     - Title: Odin La Science v1.0.0
+     - Description: Application Desktop v1.0.0
+  
+  3. Drag & Drop le fichier:
+     release\Odin-La-Science-Setup.exe
+  
+  4. Clique "Publish release"
+
+
+  ┌─────────────────────────────────────────────────────────┐
+  │ C'EST TOUT!                                             │
+  └─────────────────────────────────────────────────────────┘
+  
+  Le téléchargement automatique fonctionnera immédiatement!
+  
+  Test: https://github.com/odin-la-science-test/ols/releases/latest/download/Odin-La-Science-Setup.exe
+
+
+═══════════════════════════════════════════════════════════════
+
+POURQUOI ÇA MARCHE:
+
+  Le code est déjà configuré pour télécharger depuis:
+  
+    /releases/latest/download/Odin-La-Science-Setup.exe
+  
+  Dès que tu publies la release, le lien devient valide et
+  le téléchargement se fait automatiquement!
+
+═══════════════════════════════════════════════════════════════
+
+MISES À JOUR FUTURES:
+
+  Pour publier une nouvelle version:
+  
+  1. Build: .\BUILD-RAPIDE.ps1
+  2. Crée une nouvelle release (v1.0.1, v1.0.2...)
+  3. Upload le fichier avec le MÊME nom
+  
+  Le lien /latest/ pointera toujours vers la dernière version!
+
+═══════════════════════════════════════════════════════════════

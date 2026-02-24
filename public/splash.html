@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odin La Science - Chargement</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #f8fafc;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .splash-container {
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .logo-container {
+            margin-bottom: 2rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .logo-circle {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+            position: relative;
+        }
+
+        .logo-circle::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            filter: blur(20px);
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .logo-text {
+            font-size: 4rem;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .spinner-container {
+            margin-bottom: 2rem;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        .loading-text {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            animation: textPulse 2s ease-in-out infinite;
+            min-height: 30px;
+        }
+
+        .progress-bar-container {
+            width: 400px;
+            height: 6px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 0 auto 1rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 3px;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            width: 0%;
+            animation: progress 3s ease-in-out infinite;
+        }
+
+        .progress-text {
+            color: #3b82f6;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .version {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.9;
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes textPulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        @keyframes progress {
+            0% {
+                width: 0%;
+            }
+            50% {
+                width: 70%;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="splash-container">
+        <div class="logo-container">
+            <div class="logo-circle">
+                <div class="logo-text">O</div>
+            </div>
+        </div>
+
+        <h1 class="title">Odin La Science</h1>
+        <p class="subtitle">Plateforme Scientifique Complète</p>
+
+        <div class="spinner-container">
+            <div class="spinner"></div>
+        </div>
+
+        <p class="loading-text" id="loadingText">Initialisation...</p>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar"></div>
+        </div>
+
+        <p class="progress-text">Chargement en cours...</p>
+
+        <p class="version">Version 1.0.0</p>
+    </div>
+
+    <script>
+        // Animation du texte de chargement
+        const loadingTexts = [
+            'Initialisation...',
+            'Chargement des modules...',
+            'Connexion au serveur...',
+            'Chargement des données...',
+            'Préparation de l\'interface...',
+            'Presque prêt...'
+        ];
+        
+        let currentIndex = 0;
+        const loadingTextElement = document.getElementById('loadingText');
+        
+        setInterval(() => {
+            currentIndex = (currentIndex + 1) % loadingTexts.length;
+            loadingTextElement.textContent = loadingTexts[currentIndex];
+        }, 600);
+    </script>
+</body>
+</html>

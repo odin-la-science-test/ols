@@ -502,11 +502,27 @@ const DesktopHome = () => {
                         gap: '0.5rem'
                     }}>
                         <Calendar size={24} />
-                        {isToday(selectedDate) ? "Aujourd'hui" : selectedDate.toLocaleDateString('fr-FR', { 
-                            weekday: 'long',
-                            day: 'numeric',
-                            month: 'long'
-                        })}
+                        {(() => {
+                            const today = new Date();
+                            const tomorrow = new Date(today);
+                            tomorrow.setDate(tomorrow.getDate() + 1);
+                            
+                            if (isToday(selectedDate)) {
+                                return "Aujourd'hui";
+                            } else if (
+                                selectedDate.getDate() === tomorrow.getDate() &&
+                                selectedDate.getMonth() === tomorrow.getMonth() &&
+                                selectedDate.getFullYear() === tomorrow.getFullYear()
+                            ) {
+                                return "Demain";
+                            } else {
+                                return selectedDate.toLocaleDateString('fr-FR', { 
+                                    weekday: 'long',
+                                    day: 'numeric',
+                                    month: 'long'
+                                });
+                            }
+                        })()}
                     </h2>
                     <div style={{
                         display: 'flex',

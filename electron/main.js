@@ -3,10 +3,64 @@ const path = require('path');
 const fs = require('fs');
 
 let mainWindow;
+let splashWindow;
 let tray;
+
+// Protocole personnalisé pour lancer l'app depuis le navigateur
+const PROTOCOL_NAME = 'odin-la-science';
+
+// Enregistrer le protocole au démarrage
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient(PROTOCOL_NAME, process.execPath, [path.resolve(process.argv[1])]);
+  }
+} else {
+  app.setAsDefaultProtocolClient(PROTOCOL_NAME);
+}
+
+// Gérer les liens de protocole (Windows)
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // Quelqu'un a essayé de lancer une deuxième instance
+    // On focus la fenêtre existante
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+}
 
 // Désactiver l'accélération matérielle si nécessaire
 // app.disableHardwareAcceleration();
+
+function createSplashWindow() {
+  splashWindow = new BrowserWindow({
+    width: 600,
+    height: 400,
+    frame: false,
+    transparent: false,
+    alwaysOnTop: true,
+    resizable: false,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true
+    },
+    backgroundColor: '#0a0e27',
+    show: true
+  });
+
+  // Charger la page de splash
+  const splashPath = path.join(__dirname, '../public/splash.html');
+  splashWindow.loadFile(splashPath);
+
+  splashWindow.on('closed', () => {
+    splashWindow = null;
+  });
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -23,17 +77,35 @@ function createWindow() {
       allowRunningInsecureContent: false
     },
     backgroundColor: '#0a0e27',
-    show: false,
+    show: false, // Ne pas afficher immédiatement
     frame: true,
     titleBarStyle: 'default',
-    autoHideMenuBar: false, // Garder le menu
+    autoHideMenuBar: false,
     title: 'Odin La Science'
   });
 
-  // Afficher la fenêtre quand elle est prête
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
+  // Afficher la fenêtre principale et fermer le splash quand tout est chargé
+  mainWindow.webContents.on('did-finish-load', () => {
+    // Attendre que la page soit complètement rendue
+    setTimeout(() => {
+      if (splashWindow && !splashWindow.isDestroyed()) {
+        splashWindow.close();
+      }
+      mainWindow.show();
+      mainWindow.focus();
+    }, 3000); // Délai de 3 secondes pour s'assurer que tout est chargé
   });
+
+  // Fermer le splash après un délai maximum (au cas où did-finish-load ne se déclenche pas)
+  setTimeout(() => {
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.close();
+    }
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  }, 8000); // Maximum 8 secondes
 
   // Charger l'application depuis Vercel (production)
   // L'application desktop se connecte directement au serveur Vercel
@@ -322,7 +394,16 @@ ipcMain.handle('get-app-path', () => {
 });
 
 // Événements de l'application
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  // Créer d'abord le splash screen
+  createSplashWindow();
+  
+  // Attendre un peu avant de créer la fenêtre principale
+  // Cela permet au splash de s'afficher complètement avant que le chargement commence
+  setTimeout(() => {
+    createWindow();
+  }, 500);
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

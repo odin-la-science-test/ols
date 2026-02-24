@@ -1,0 +1,35 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║              📥 TÉLÉCHARGEMENT AUTOMATIQUE                   ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝
+
+
+🎯 PROBLÈME:
+   Le bouton "Télécharger" redirige vers GitHub
+
+
+✅ SOLUTION (10 minutes):
+
+   1. Exécute:  .\BUILD-RAPIDE.ps1
+   
+   2. Va sur:   https://github.com/odin-la-science-test/ols/releases/new
+   
+   3. Upload:   release\Odin-La-Science-Setup.exe
+   
+   4. Publie la release
+
+
+🎉 RÉSULTAT:
+   Le téléchargement automatique fonctionne!
+
+
+═══════════════════════════════════════════════════════════════
+
+📖 PLUS DE DÉTAILS:
+
+   - COMMENT_FAIRE.txt          → Instructions simples
+   - README_TELECHARGEMENT.md   → Guide complet
+   - BUILD-RAPIDE.ps1           → Script de build
+
+═══════════════════════════════════════════════════════════════

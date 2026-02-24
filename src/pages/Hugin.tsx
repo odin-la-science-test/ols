@@ -8,6 +8,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '../components/ToastContext';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
+import { useElectron } from '../hooks/useElectron';
 import Navbar from '../components/Navbar';
 import { checkHasAccess, getAccessData } from '../utils/ShieldUtils';
 import { LOGOS } from '../utils/logoCache';
@@ -17,6 +18,7 @@ const Hugin = () => {
     const location = useLocation();
     const { showToast } = useToast();
     const { isMobile } = useDeviceDetection();
+    const { isElectron } = useElectron();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('Tout');
 
@@ -107,12 +109,14 @@ const Hugin = () => {
 
     return (
         <div style={{ minHeight: '100vh', position: 'relative', paddingBottom: '4rem' }}>
-            <Navbar />
+            {!isElectron && <Navbar />}
 
-            <div className="container" style={{ paddingTop: '2rem' }}>
+            <div className="container" style={{ paddingTop: isElectron ? '1rem' : '2rem' }}>
                 <header style={{ marginBottom: '3rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <img src={LOGOS.hugin} alt="Hugin Lab Logo" style={{ width: '400px', height: '400px', objectFit: 'contain', marginBottom: '0.5rem', filter: 'drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(99, 102, 241, 0.3))' }} />
-                    <h1 className="text-gradient" style={{ fontSize: '3rem', marginBottom: '1rem' }}>Hugin Lab</h1>
+                    {!isElectron && (
+                        <img src={LOGOS.hugin} alt="Hugin Lab Logo" style={{ width: '400px', height: '400px', objectFit: 'contain', marginBottom: '0.5rem', filter: 'drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(99, 102, 241, 0.3))' }} />
+                    )}
+                    <h1 className="text-gradient" style={{ fontSize: isElectron ? '2.5rem' : '3rem', marginBottom: '1rem' }}>Hugin Lab</h1>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem' }}>
                         Outils de laboratoire avancés
                     </p>

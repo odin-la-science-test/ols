@@ -5,6 +5,7 @@ import { initAutoWatchService } from './services/autoWatchService';
 import { useDeviceDetection } from './hooks/useDeviceDetection';
 import { SecurityManager } from './utils/advancedSecurity';
 import { useElectron } from './hooks/useElectron';
+import SplashScreen from './components/SplashScreen';
 
 // Composants critiques chargés immédiatement
 import LandingPage from './pages/LandingPage';
@@ -175,6 +176,17 @@ function App() {
   const { isElectron } = useElectron();
   const [tempSessionActive, setTempSessionActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
+  const [showSplash, setShowSplash] = useState(false); // Désactivé car le splash HTML natif le remplace
+
+  // Gérer le splash screen
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
+
+  // Le splash screen HTML natif s'affiche maintenant, pas besoin du React splash
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
 
   // Initialiser le gestionnaire de sécurité
   useEffect(() => {

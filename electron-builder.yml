@@ -22,23 +22,45 @@ win:
     - target: nsis
       arch:
         - x64
-        - ia32
     - target: portable
       arch:
         - x64
   icon: build/icon.ico
-  artifactName: ${productName}-Setup-${version}.${ext}
+  artifactName: Odin-La-Science-Setup.${ext}
+  # IMPORTANT: Désactive la console Windows pour un lancement propre
+  executableName: "OdinLaScience"
+  requestedExecutionLevel: asInvoker
+  # Désactiver la signature de code
+  sign: null
+  signDlls: false
+  signingHashAlgorithms: []
+  # Protocole personnalisé pour lancer depuis le navigateur
+  protocols:
+    - name: Odin La Science
+      schemes:
+        - odin-la-science
 
 nsis:
-  oneClick: false
-  allowToChangeInstallationDirectory: true
-  createDesktopShortcut: true
+  oneClick: true
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: false
+  createDesktopShortcut: always
   createStartMenuShortcut: true
   shortcutName: Odin La Science
   installerIcon: build/icon.ico
   uninstallerIcon: build/icon.ico
   installerHeaderIcon: build/icon.ico
   deleteAppDataOnUninstall: false
+  runAfterFinish: true
+  # Enregistrer le protocole personnalisé
+  include: |
+    !macro customInstall
+      WriteRegStr HKCU "Software\Classes\odin-la-science" "" "URL:Odin La Science Protocol"
+      WriteRegStr HKCU "Software\Classes\odin-la-science" "URL Protocol" ""
+      WriteRegStr HKCU "Software\Classes\odin-la-science\DefaultIcon" "" "$INSTDIR\${APP_EXECUTABLE_FILENAME},0"
+      WriteRegStr HKCU "Software\Classes\odin-la-science\shell\open\command" "" '"$INSTDIR\${APP_EXECUTABLE_FILENAME}" "%1"'
+    !macroend
 
 # Configuration Mac
 mac:

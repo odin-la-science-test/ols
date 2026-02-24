@@ -43,7 +43,7 @@ if ($magickInstalled) {
     Write-Host ""
     Write-Host "Option 2 - Installer ImageMagick:" -ForegroundColor White
     Write-Host "  1. Téléchargez: https://imagemagick.org/script/download.php" -ForegroundColor Gray
-    Write-Host "  2. Installez (cochez 'Add to PATH')" -ForegroundColor Gray
+    Write-Host "  2. Installez (cochez Add to PATH)" -ForegroundColor Gray
     Write-Host "  3. Relancez ce script" -ForegroundColor Gray
     Write-Host ""
     Write-Host "Option 3 - Utiliser un éditeur:" -ForegroundColor White
@@ -54,11 +54,11 @@ if ($magickInstalled) {
 }
 
 Write-Host ""
-Write-Host "💡 L'icône sera utilisée pour:" -ForegroundColor Cyan
-Write-Host "  - L'exécutable .exe" -ForegroundColor White
-Write-Host "  - Le raccourci bureau" -ForegroundColor White
-Write-Host "  - La barre des tâches" -ForegroundColor White
-Write-Host "  - L'installateur" -ForegroundColor White
+Write-Host "💡 Icône utilisée pour:" -ForegroundColor Cyan
+Write-Host "  - Exécutable .exe" -ForegroundColor White
+Write-Host "  - Raccourci bureau" -ForegroundColor White
+Write-Host "  - Barre des tâches" -ForegroundColor White
+Write-Host "  - Installateur" -ForegroundColor White
 Write-Host ""
 
 pause

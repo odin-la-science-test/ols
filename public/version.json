@@ -1,7 +1,7 @@
 {
-  "version": "2026.02.23.1521",
-  "buildTime": "2026-02-23T14:21:55.633Z",
-  "environment": "production",
-  "gitHash": "a94e7f2",
+  "version": "2026.02.24.1655",
+  "buildTime": "2026-02-24T15:55:40.318Z",
+  "environment": "development",
+  "gitHash": "8c4133a",
   "gitBranch": "main"
 }

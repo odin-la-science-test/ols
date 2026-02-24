@@ -5,12 +5,14 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
+import { useElectron } from '../hooks/useElectron';
 import Navbar from '../components/Navbar';
 import disciplinesData from '../data/disciplines.json';
 import { LOGOS } from '../utils/logoCache';
 
 const Munin = () => {
     const navigate = useNavigate();
+    const { isElectron } = useElectron();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
     const [viewMode, setViewMode] = useState<'categories' | 'list'>('categories');
@@ -66,9 +68,9 @@ const Munin = () => {
             position: 'relative', 
             paddingBottom: '4rem'
         }}>
-            <Navbar />
+            {!isElectron && <Navbar />}
 
-            <div className="container" style={{ paddingTop: '2rem' }}>
+            <div className="container" style={{ paddingTop: isElectron ? '1rem' : '2rem' }}>
 
                 <header style={{ 
                     marginBottom: '3rem', 
@@ -77,20 +79,22 @@ const Munin = () => {
                     flexDirection: 'column', 
                     alignItems: 'center'
                 }}>
-                    <img 
-                        src={LOGOS.munin} 
-                        alt="Munin Atlas Logo" 
-                        style={{ 
-                            width: '400px', 
-                            height: '400px', 
-                            objectFit: 'contain', 
-                            marginBottom: '0.5rem', 
-                            filter: 'drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(16, 185, 129, 0.3))'
-                        }} 
-                    />
+                    {!isElectron && (
+                        <img 
+                            src={LOGOS.munin} 
+                            alt="Munin Atlas Logo" 
+                            style={{ 
+                                width: '400px', 
+                                height: '400px', 
+                                objectFit: 'contain', 
+                                marginBottom: '0.5rem', 
+                                filter: 'drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(16, 185, 129, 0.3))'
+                            }} 
+                        />
+                    )}
                     
                     <h1 className="text-gradient" style={{ 
-                        fontSize: '3rem', 
+                        fontSize: isElectron ? '2.5rem' : '3rem', 
                         marginBottom: '1rem' 
                     }}>
                         Munin Atlas
