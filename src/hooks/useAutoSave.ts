@@ -10,7 +10,7 @@ interface AutoSaveOptions {
 
 export const useAutoSave = ({ data, onSave, interval = 30000, enabled = true }: AutoSaveOptions) => {
   const lastSavedData = useRef<string>('');
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     if (!enabled) return;
