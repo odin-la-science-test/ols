@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <style>
+      .border { fill: #ED1C24; }
+      .symbol { fill: none; stroke: #000000; stroke-width: 2; }
+      .symbol-fill { fill: #000000; }
+      .bg { fill: #FFFFFF; }
+    </style>
+  </defs>
+  <polygon class="border" points="50,2 98,88 2,88"/>
+  <polygon class="bg" points="50,8 92,82 8,82"/>
+  <polygon class="border" points="50,14 86,76 14,76"/>
+  <!-- Corrosion - test tube on hand and metal -->
+  <rect class="symbol" x="28" y="22" width="12" height="18"/>
+  <path class="symbol" d="M34,40 L28,45 L24,60"/>
+  <rect class="symbol-fill" x="20" y="60" width="10" height="6"/>
+  <line class="symbol" x1="22" y1="63" x2="28" y2="63" stroke-width="2.5"/>
+  
+  <rect class="symbol" x="58" y="32" width="12" height="14"/>
+  <path class="symbol" d="M64,46 L70,50 L74,65"/>
+  <rect class="symbol-fill" x="70" y="65" width="10" height="6"/>
+  <line class="symbol" x1="72" y1="68" x2="78" y2="68" stroke-width="2.5"/>
+</svg>

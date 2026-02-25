@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     Beaker, Calendar, Mail, HardDrive, Video, Brain, Quote, Book,
     Package, Snowflake, Activity, Wallet, BookOpen, Calculator,
     Dna, Camera, Layers, ShieldAlert, Zap, Share2, Box,
-    TrendingUp, Grid, UserCheck, Search, FileText, Clock, GitBranch, Bot
+    TrendingUp, Grid, UserCheck, Search, FileText, Clock, GitBranch, Bot, Edit3
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '../components/ToastContext';
@@ -12,6 +12,15 @@ import { useElectron } from '../hooks/useElectron';
 import Navbar from '../components/Navbar';
 import { checkHasAccess, getAccessData } from '../utils/ShieldUtils';
 import { LOGOS } from '../utils/logoCache';
+import HuginEditMode from '../components/HuginEditMode';
+import { 
+    getHuginModulesOrder, 
+    applySortOrder, 
+    filterVisibleModules,
+    getCurrentUserEmail
+} from '../utils/huginCustomization';
+import type { ModuleOrder } from '../utils/huginCustomization';
+import { getBetaFeatures, isSuperAdmin } from '../utils/betaAccess';
 
 const Hugin = () => {
     const navigate = useNavigate();
@@ -21,6 +30,8 @@ const Hugin = () => {
     const { isElectron } = useElectron();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('Tout');
+    const [editMode, setEditMode] = useState(false);
+    const [customOrder, setCustomOrder] = useState<ModuleOrder[]>([]);
 
     // Subscription Check logic
     const userStr = localStorage.getItem('currentUser');
@@ -34,9 +45,15 @@ const Hugin = () => {
             // Clean URL
             navigate('/hugin', { replace: true });
         }
-    }, [location]);
+        
+        // Charger l'ordre personnalisé
+        const order = getHuginModulesOrder();
+        setCustomOrder(order);
+    }, [location, navigate, showToast]);
 
     const hasAccess = (moduleId: string) => checkHasAccess(moduleId, userStr, sub || undefined, hiddenTools);
+
+    const isUserSuperAdmin = isSuperAdmin(getCurrentUserEmail());
 
     const modules = [
         // Core
@@ -94,11 +111,53 @@ const Hugin = () => {
         { id: 'ai-assistant', name: 'Mímir', desc: 'Assistant scientifique intelligent - Votre conseiller en sagesse scientifique', icon: <Bot size={24} />, category: 'Analysis', path: '/hugin/ai-assistant' }
     ];
 
+    // Charger les modules beta et les fusionner avec les modules standards
+    const allModules = useMemo(() => {
+        const standardModules: any[] = [...modules];
+        
+        if (!isUserSuperAdmin) return standardModules;
+        
+        const order = getHuginModulesOrder();
+        const betaFeatures = getBetaFeatures();
+        
+        console.log('🔄 Recalcul allModules, ordre:', order);
+        
+        // Ajouter les modules beta à la liste
+        order.forEach(orderItem => {
+            if (orderItem.id.startsWith('beta_')) {
+                const originalId = orderItem.id.replace('beta_', '');
+                const betaModule = betaFeatures.find(f => f.id === originalId);
+                if (betaModule) {
+                    console.log('✅ Ajout module beta:', betaModule.name);
+                    standardModules.push({
+                        id: orderItem.id,
+                        name: betaModule.name,
+                        desc: betaModule.description,
+                        icon: <span style={{ fontSize: '1.5rem' }}>🧪</span>,
+                        category: betaModule.category,
+                        path: betaModule.path,
+                        isBeta: true // Marqueur pour le style
+                    });
+                }
+            }
+        });
+        
+        console.log('📦 Total modules:', standardModules.length);
+        return standardModules;
+    }, [isUserSuperAdmin, customOrder]);
+
     const categories = ['Tout', 'Core', 'Lab', 'Research', 'Analysis'];
 
-    const accessibleModules = modules.filter(m => hasAccess(m.id));
+    const accessibleModules = allModules.filter(m => hasAccess(m.id));
 
-    const filteredModules = accessibleModules.filter(m => {
+    // Appliquer l'ordre personnalisé et filtrer les modules cachés
+    let sortedModules = accessibleModules;
+    if (customOrder.length > 0) {
+        sortedModules = applySortOrder(accessibleModules, customOrder);
+        sortedModules = filterVisibleModules(sortedModules, customOrder);
+    }
+
+    const filteredModules = sortedModules.filter(m => {
         const name = (m as any).name;
         const desc = (m as any).desc;
         const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -106,6 +165,15 @@ const Hugin = () => {
         const matchesCategory = activeCategory === 'Tout' || m.category === activeCategory;
         return matchesSearch && matchesCategory;
     });
+
+    const handleSaveCustomization = (huginModules: ModuleOrder[], betaModules: ModuleOrder[]) => {
+        console.log('💾 Callback sauvegarde reçu');
+        console.log('📦 Modules Hugin:', huginModules);
+        console.log('🧪 Modules Beta:', betaModules);
+        
+        // Forcer le rechargement complet de la page pour appliquer les changements
+        window.location.reload();
+    };
 
     return (
         <div style={{ minHeight: '100vh', position: 'relative', paddingBottom: '4rem' }}>
@@ -144,7 +212,7 @@ const Hugin = () => {
                         />
                     </div>
 
-                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '2rem' }}>
+                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '2rem', alignItems: 'center' }}>
                         {categories.filter(cat => {
                             if (cat === 'Tout') return true;
                             return accessibleModules.some(m => m.category === cat);
@@ -174,6 +242,36 @@ const Hugin = () => {
                                 {cat}
                             </button>
                         ))}
+                        
+                        <div style={{ width: '1px', height: '24px', background: 'rgba(255, 255, 255, 0.2)', margin: '0 0.5rem' }}></div>
+                        
+                        <button
+                            onClick={() => setEditMode(true)}
+                            style={{
+                                padding: '0.6rem 1.25rem',
+                                borderRadius: '1rem',
+                                border: '2px solid var(--accent-hugin)',
+                                background: 'rgba(99, 102, 241, 0.1)',
+                                color: 'var(--accent-hugin)',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                fontWeight: 600,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'var(--accent-hugin)';
+                                e.currentTarget.style.color = 'white';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)';
+                                e.currentTarget.style.color = 'var(--accent-hugin)';
+                            }}
+                        >
+                            <Edit3 size={16} />
+                            Personnaliser
+                        </button>
                     </div>
                 </header>
 
@@ -190,6 +288,7 @@ const Hugin = () => {
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
                                 {catModules.map(m => {
+                                    const isBeta = (m as any).isBeta === true;
                                     return (
                                         <div
                                             key={m.id}
@@ -200,23 +299,40 @@ const Hugin = () => {
                                                 position: 'relative',
                                                 padding: '1.25rem',
                                                 transition: 'all 0.2s',
-                                                border: '1px solid rgba(255, 255, 255, 0.1)'
+                                                border: isBeta ? '2px solid rgba(245, 158, 11, 0.5)' : '1px solid rgba(255, 255, 255, 0.1)',
+                                                background: isBeta ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 146, 60, 0.05))' : undefined
                                             }}
                                             onMouseEnter={(e) => {
                                                 e.currentTarget.style.transform = 'translateY(-4px)';
-                                                e.currentTarget.style.boxShadow = '0 8px 24px rgba(99, 102, 241, 0.2)';
+                                                e.currentTarget.style.boxShadow = isBeta ? '0 8px 24px rgba(245, 158, 11, 0.3)' : '0 8px 24px rgba(99, 102, 241, 0.2)';
                                             }}
                                             onMouseLeave={(e) => {
                                                 e.currentTarget.style.transform = 'translateY(0)';
                                                 e.currentTarget.style.boxShadow = '';
                                             }}
                                         >
+                                            {isBeta && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    top: '0.5rem',
+                                                    right: '0.5rem',
+                                                    padding: '0.25rem 0.6rem',
+                                                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                                    borderRadius: '6px',
+                                                    fontSize: '0.7rem',
+                                                    color: 'white',
+                                                    fontWeight: 700,
+                                                    boxShadow: '0 2px 8px rgba(245, 158, 11, 0.4)'
+                                                }}>
+                                                    🧪 BETA
+                                                </div>
+                                            )}
                                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
                                                 <div style={{ 
                                                     padding: '0.75rem', 
-                                                    background: 'rgba(99, 102, 241, 0.15)', 
+                                                    background: isBeta ? 'rgba(245, 158, 11, 0.2)' : 'rgba(99, 102, 241, 0.15)', 
                                                     borderRadius: '0.75rem', 
-                                                    color: 'var(--accent-hugin)',
+                                                    color: isBeta ? '#f59e0b' : 'var(--accent-hugin)',
                                                     flexShrink: 0
                                                 }}>
                                                     {m.icon}
@@ -245,6 +361,15 @@ const Hugin = () => {
                     </div>
                 )}
             </div>
+
+            {/* Edit Mode Modal */}
+            {editMode && (
+                <HuginEditMode
+                    modules={accessibleModules}
+                    onClose={() => setEditMode(false)}
+                    onSave={handleSaveCustomization}
+                />
+            )}
         </div>
     );
 };

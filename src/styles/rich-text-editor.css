@@ -1,0 +1,37 @@
+/* Styles globaux pour l'éditeur de texte riche - Version simplifiée */
+
+/* Images - Styles de base */
+[contenteditable] img,
+.preview-content img {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+}
+
+/* Conteneurs d'images en mode classique */
+[contenteditable] .image-container-left,
+[contenteditable] .image-container-center,
+[contenteditable] .image-container-right,
+.preview-content .image-container-left,
+.preview-content .image-container-center,
+.preview-content .image-container-right {
+  display: block;
+  margin: 20px 0;
+  clear: both;
+}
+
+/* Conteneurs d'images en mode libre */
+[contenteditable] .image-container-free,
+.preview-content .image-container-free {
+  display: block;
+  position: relative;
+  margin: 20px 0;
+  clear: both;
+  min-height: 400px;
+}
+
+/* Images en mode libre */
+[contenteditable] .image-free,
+.preview-content .image-free {
+  position: absolute;
+}

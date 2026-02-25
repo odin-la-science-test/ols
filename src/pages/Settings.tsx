@@ -2,10 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTheme, type ThemeName } from '../components/ThemeContext';
 import { useToast } from '../components/ToastContext';
 import Navbar from '../components/Navbar';
+import BetaModulesOrganizer from '../components/BetaModulesOrganizer';
+import { checkBetaAccess } from '../utils/betaAccess';
 import {
     Settings as SettingsIcon, Palette, LayoutTemplate, Sparkles, Type,
     Bell, BellRing, Volume2, Clock, Shield, Save, History, Trash2,
-    Zap, Rocket, ZoomIn, Archive, Download, Upload, RefreshCw, Database
+    Zap, Rocket, ZoomIn, Archive, Download, Upload, RefreshCw, Database, Beaker
 } from 'lucide-react';
 
 const Settings = () => {
@@ -415,6 +417,17 @@ const Settings = () => {
                             </div>
                         </div>
                     </Section>
+
+                    {/* Beta Modules Organization - Only for super admins */}
+                    {checkBetaAccess() && (
+                        <Section
+                            title="Modules Beta"
+                            icon={<Beaker size={32} />}
+                            description="Organisez l'affichage des modules beta"
+                        >
+                            <BetaModulesOrganizer />
+                        </Section>
+                    )}
 
                     {/* Raccourcis Clavier */}
                     <Section

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <style>
+      .border { fill: #ED1C24; }
+      .symbol { fill: none; stroke: #000000; stroke-width: 2.5; }
+      .bg { fill: #FFFFFF; }
+    </style>
+  </defs>
+  <polygon class="border" points="50,2 98,88 2,88"/>
+  <polygon class="bg" points="50,8 92,82 8,82"/>
+  <polygon class="border" points="50,14 86,76 14,76"/>
+  <!-- Environment - dead tree and fish -->
+  <path class="symbol" d="M35,42 Q35,28 50,28 Q65,28 65,42 Q65,52 50,52 Q35,52 35,42"/>
+  <circle class="symbol" cx="50" cy="42" r="7"/>
+  <path class="symbol" d="M43,36 L46,40 L50,33 L54,40 L57,36" stroke-width="2"/>
+  <path class="symbol" d="M43,48 L46,44 L50,51 L54,44 L57,48" stroke-width="2"/>
+  <line class="symbol" x1="35" y1="42" x2="28" y2="42"/>
+  <line class="symbol" x1="65" y1="42" x2="72" y2="42"/>
+  <path class="symbol" d="M50,52 L50,62"/>
+  <path class="symbol" d="M45,59 L50,62 L55,59"/>
+</svg>

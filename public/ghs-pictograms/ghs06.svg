@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <style>
+      .border { fill: #ED1C24; }
+      .symbol { fill: none; stroke: #000000; stroke-width: 2.5; }
+      .symbol-fill { fill: #000000; }
+      .bg { fill: #FFFFFF; }
+    </style>
+  </defs>
+  <polygon class="border" points="50,2 98,88 2,88"/>
+  <polygon class="bg" points="50,8 92,82 8,82"/>
+  <polygon class="border" points="50,14 86,76 14,76"/>
+  <!-- Skull and crossbones -->
+  <ellipse class="symbol" cx="50" cy="32" rx="16" ry="14"/>
+  <circle class="symbol-fill" cx="43" cy="30" r="3"/>
+  <circle class="symbol-fill" cx="57" cy="30" r="3"/>
+  <ellipse class="symbol" cx="43" cy="30" rx="4" ry="6"/>
+  <ellipse class="symbol" cx="57" cy="30" rx="4" ry="6"/>
+  <path class="symbol" d="M40,40 Q50,36 60,40"/>
+  <line class="symbol" x1="36" y1="43" x2="32" y2="48"/>
+  <line class="symbol" x1="64" y1="43" x2="68" y2="48"/>
+  <!-- Crossbones -->
+  <line class="symbol" x1="38" y1="52" x2="44" y2="66" stroke-width="3"/>
+  <line class="symbol" x1="50" y1="52" x2="50" y2="66" stroke-width="3"/>
+  <line class="symbol" x1="62" y1="52" x2="56" y2="66" stroke-width="3"/>
+  <ellipse class="symbol-fill" cx="41" cy="52" rx="4" ry="3"/>
+  <ellipse class="symbol-fill" cx="50" cy="52" rx="4" ry="3"/>
+  <ellipse class="symbol-fill" cx="59" cy="52" rx="4" ry="3"/>
+  <ellipse class="symbol-fill" cx="41" cy="66" rx="4" ry="3"/>
+  <ellipse class="symbol-fill" cx="50" cy="66" rx="4" ry="3"/>
+  <ellipse class="symbol-fill" cx="59" cy="66" rx="4" ry="3"/>
+</svg>

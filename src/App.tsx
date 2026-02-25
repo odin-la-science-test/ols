@@ -109,6 +109,15 @@ const Cookies = lazy(() => import('./pages/Cookies'));
 const OpenSourceTools = lazy(() => import('./pages/OpenSourceTools'));
 const Tutorial = lazy(() => import('./pages/Tutorial'));
 
+// Beta pages
+const BetaHub = lazy(() => import('./pages/BetaHub'));
+const BetaLabNotebook = lazy(() => import('./pages/beta/BetaLabNotebook'));
+const BetaProtocolBuilder = lazy(() => import('./pages/beta/BetaProtocolBuilder'));
+const BetaChemicalInventory = lazy(() => import('./pages/beta/BetaChemicalInventory'));
+const BetaBackupManager = lazy(() => import('./pages/beta/BetaBackupManager'));
+const BetaEquipmentBooking = lazy(() => import('./pages/beta/BetaEquipmentBooking'));
+const BetaExperimentPlanner = lazy(() => import('./pages/beta/BetaExperimentPlanner'));
+
 // Mobile pages
 const MobileHome = lazy(() => import('./pages/mobile/Home'));
 const MobileMunin = lazy(() => import('./pages/mobile/Munin'));
@@ -729,6 +738,43 @@ function App() {
             <Route path="/admin" element={
               <ProtectedRoute>
                 <Admin />
+              </ProtectedRoute>
+            } />
+            
+            {/* Beta Test Routes - Accès restreint aux super admins */}
+            <Route path="/beta-hub" element={
+              <ProtectedRoute>
+                <BetaHub />
+              </ProtectedRoute>
+            } />
+            <Route path="/beta/lab-notebook" element={
+              <ProtectedRoute>
+                <BetaLabNotebook />
+              </ProtectedRoute>
+            } />
+            <Route path="/beta/protocol-builder" element={
+              <ProtectedRoute>
+                <BetaProtocolBuilder />
+              </ProtectedRoute>
+            } />
+            <Route path="/beta/chemical-inventory" element={
+              <ProtectedRoute>
+                <BetaChemicalInventory />
+              </ProtectedRoute>
+            } />
+            <Route path="/beta/backup-manager" element={
+              <ProtectedRoute>
+                <BetaBackupManager />
+              </ProtectedRoute>
+            } />
+            <Route path="/beta/equipment-booking" element={
+              <ProtectedRoute>
+                <BetaEquipmentBooking />
+              </ProtectedRoute>
+            } />
+            <Route path="/beta/experiment-planner" element={
+              <ProtectedRoute>
+                <BetaExperimentPlanner />
               </ProtectedRoute>
             } />
           </Routes>

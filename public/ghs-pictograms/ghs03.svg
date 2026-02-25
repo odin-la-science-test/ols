@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <style>
+      .border { fill: #ED1C24; }
+      .symbol { fill: none; stroke: #000000; stroke-width: 2.5; }
+      .bg { fill: #FFFFFF; }
+    </style>
+  </defs>
+  <polygon class="border" points="50,2 98,88 2,88"/>
+  <polygon class="bg" points="50,8 92,82 8,82"/>
+  <polygon class="border" points="50,14 86,76 14,76"/>
+  <!-- Oxidizing symbol (circle with flame) -->
+  <circle class="symbol" cx="50" cy="45" r="18"/>
+  <line class="symbol" x1="50" y1="27" x2="50" y2="20"/>
+  <line class="symbol" x1="50" y1="63" x2="50" y2="70"/>
+  <line class="symbol" x1="32" y1="45" x2="25" y2="45"/>
+  <line class="symbol" x1="68" y1="45" x2="75" y2="45"/>
+  <line class="symbol" x1="37" y1="32" x2="31" y2="26"/>
+  <line class="symbol" x1="63" y1="58" x2="69" y2="64"/>
+  <line class="symbol" x1="63" y1="32" x2="69" y2="26"/>
+  <line class="symbol" x1="37" y1="58" x2="31" y2="64"/>
+</svg>

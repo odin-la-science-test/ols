@@ -5,8 +5,9 @@ import Navbar from '../components/Navbar';
 import {
     Users, Building2, CreditCard, TrendingUp, CheckCircle, XCircle,
     Clock, Search, Filter, Download, Eye, Edit, Trash2, Shield,
-    AlertTriangle, FileText, GraduationCap, Landmark
+    AlertTriangle, FileText, GraduationCap, Landmark, Beaker
 } from 'lucide-react';
+import { checkBetaAccess } from '../utils/betaAccess';
 
 interface User {
     email: string;
@@ -39,6 +40,20 @@ const Admin = () => {
     const [filterCategory, setFilterCategory] = useState<'all' | 'personal' | 'enterprise'>('all');
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [showModal, setShowModal] = useState(false);
+
+    // Add pulse animation
+    const pulseAnimation = `
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.9;
+            }
+        }
+    `;
 
     useEffect(() => {
         // Vérifier si l'utilisateur est admin
@@ -123,6 +138,7 @@ const Admin = () => {
 
     return (
         <div style={{ minHeight: '100vh', background: c.bgPrimary }}>
+            <style>{pulseAnimation}</style>
             <Navbar />
             
             <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem' }}>
@@ -246,6 +262,96 @@ const Admin = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Beta Hub Access Button */}
+                {checkBetaAccess() && (
+                    <div style={{
+                        marginBottom: '2rem',
+                        padding: '1.5rem',
+                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%)',
+                        border: '2px solid rgba(245, 158, 11, 0.3)',
+                        borderRadius: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}>
+                        <div style={{
+                            position: 'absolute',
+                            top: '-50%',
+                            right: '-10%',
+                            width: '300px',
+                            height: '300px',
+                            background: 'radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, transparent 70%)',
+                            borderRadius: '50%',
+                            filter: 'blur(40px)'
+                        }} />
+                        
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                                <div style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
+                                    borderRadius: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: '0 8px 24px rgba(245, 158, 11, 0.4)',
+                                    animation: 'pulse 2s infinite'
+                                }}>
+                                    <Beaker size={24} color="white" />
+                                </div>
+                                <div>
+                                    <h3 style={{
+                                        fontSize: '1.25rem',
+                                        fontWeight: '800',
+                                        margin: 0,
+                                        color: c.textPrimary
+                                    }}>
+                                        Beta Test Hub
+                                    </h3>
+                                    <p style={{ color: c.textSecondary, fontSize: '0.9rem', margin: '0.25rem 0 0 0' }}>
+                                        Accès aux fonctionnalités expérimentales (Super Admin uniquement)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button
+                            onClick={() => navigate('/beta-hub')}
+                            style={{
+                                position: 'relative',
+                                zIndex: 1,
+                                padding: '1rem 2rem',
+                                background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
+                                border: 'none',
+                                borderRadius: '0.75rem',
+                                color: 'white',
+                                fontWeight: '700',
+                                fontSize: '1rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                boxShadow: '0 4px 20px rgba(245, 158, 11, 0.4)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 8px 30px rgba(245, 158, 11, 0.6)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '0 4px 20px rgba(245, 158, 11, 0.4)';
+                            }}
+                        >
+                            <Beaker size={20} />
+                            Accéder au Beta Hub
+                        </button>
+                    </div>
+                )}
 
                 {/* Filters and Search */}
                 <div style={{

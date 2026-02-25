@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <style>
+      .border { fill: #ED1C24; }
+      .symbol { fill: #000000; }
+      .bg { fill: #FFFFFF; }
+    </style>
+  </defs>
+  <polygon class="border" points="50,2 98,88 2,88"/>
+  <polygon class="bg" points="50,8 92,82 8,82"/>
+  <polygon class="border" points="50,14 86,76 14,76"/>
+  <!-- Explosion symbol -->
+  <circle class="symbol" cx="50" cy="45" r="6"/>
+  <path class="symbol" d="M50,45 L48,32 L45,45 L42,30 L40,45 L35,35 L33,48"/>
+  <path class="symbol" d="M50,45 L52,32 L55,45 L58,30 L60,45 L65,35 L67,48"/>
+  <path class="symbol" d="M35,48 L30,55 L40,60 L50,65 L60,60 L70,55 L67,48"/>
+</svg>

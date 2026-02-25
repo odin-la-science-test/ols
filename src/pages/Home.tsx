@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { BookOpen, FlaskConical, TrendingUp, Clock, Star, Zap, Award, Target } from 'lucide-react';
+import { BookOpen, FlaskConical, TrendingUp, Clock, Star, Zap, Award, Target, Beaker } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import OnboardingMissions from '../components/OnboardingMissions';
 import { useTheme } from '../components/ThemeContext';
@@ -10,6 +10,7 @@ import UsageStats from '../components/UsageStats';
 import FavoritesPanel from '../components/FavoritesPanel';
 import ProgressTracker from '../components/ProgressTracker';
 import { getFavorites, type Favorite } from '../utils/favorites';
+import { checkBetaAccess } from '../utils/betaAccess';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -146,6 +147,8 @@ const Home = () => {
         }
     ];
 
+    const isBetaUser = checkBetaAccess();
+
     const recentActivities = todayEvents.length > 0 ? todayEvents.map((event, index) => ({
         icon: getEventIcon(event.title),
         title: `${event.time} - ${event.title}`,
@@ -277,6 +280,79 @@ const Home = () => {
                                     </div>
                                 </div>
                             ))}
+                            
+                            {/* Beta Hub Button - Visible uniquement pour les super admins */}
+                            {isBetaUser && (
+                                <div 
+                                    onClick={() => navigate('/beta-hub')}
+                                    style={{
+                                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(239, 68, 68, 0.2))',
+                                        border: '2px solid rgba(245, 158, 11, 0.5)',
+                                        borderRadius: '1rem',
+                                        padding: '1.25rem',
+                                        minWidth: '140px',
+                                        textAlign: 'center',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s',
+                                        position: 'relative',
+                                        overflow: 'hidden',
+                                        animation: 'betaPulse 2s infinite'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-4px) scale(1.02)';
+                                        e.currentTarget.style.borderColor = '#f59e0b';
+                                        e.currentTarget.style.boxShadow = '0 8px 24px rgba(245, 158, 11, 0.4)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                                        e.currentTarget.style.borderColor = 'rgba(245, 158, 11, 0.5)';
+                                        e.currentTarget.style.boxShadow = 'none';
+                                    }}
+                                >
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '-50%',
+                                        left: '-50%',
+                                        width: '200%',
+                                        height: '200%',
+                                        background: 'radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, transparent 70%)',
+                                        animation: 'betaRotate 4s linear infinite'
+                                    }} />
+                                    <div style={{
+                                        position: 'relative',
+                                        zIndex: 1
+                                    }}>
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '0.5rem',
+                                            marginBottom: '0.5rem',
+                                            color: '#f59e0b'
+                                        }}>
+                                            <Beaker size={20} />
+                                        </div>
+                                        <div style={{
+                                            fontSize: '1.5rem',
+                                            fontWeight: 800,
+                                            background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
+                                            WebkitBackgroundClip: 'text',
+                                            WebkitTextFillColor: 'transparent',
+                                            backgroundClip: 'text',
+                                            marginBottom: '0.25rem'
+                                        }}>
+                                            BETA
+                                        </div>
+                                        <div style={{
+                                            fontSize: '0.85rem',
+                                            color: 'rgba(245, 158, 11, 0.9)',
+                                            fontWeight: 600
+                                        }}>
+                                            Test Hub
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -591,6 +667,24 @@ const Home = () => {
                 .home-card:active {
                     transform: scale(0.98);
                     opacity: 0.9;
+                }
+                
+                @keyframes betaPulse {
+                    0%, 100% {
+                        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+                    }
+                    50% {
+                        box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+                    }
+                }
+                
+                @keyframes betaRotate {
+                    0% {
+                        transform: rotate(0deg);
+                    }
+                    100% {
+                        transform: rotate(360deg);
+                    }
                 }
             `}</style>
         </div>
