@@ -47,7 +47,7 @@ const Meetings = lazy(() => import('./pages/hugin/Meetings'));
 const ScientificResearch = lazy(() => import('./pages/hugin/ScientificResearch'));
 const TableurLab = lazy(() => import('./pages/hugin/TableurLab'));
 const Bibliography = lazy(() => import('./pages/hugin/Bibliography'));
-const LabNotebook = lazy(() => import('./pages/hugin/LabNotebook'));
+const LabNotebook = lazy(() => import('./pages/hugin/LabNotebook').then(module => ({ default: module.LabNotebook })));
 const CryoKeeper = lazy(() => import('./pages/hugin/CryoKeeper'));
 const EquipFlow = lazy(() => import('./pages/hugin/EquipFlow'));
 const GrantBudget = lazy(() => import('./pages/hugin/GrantBudget'));

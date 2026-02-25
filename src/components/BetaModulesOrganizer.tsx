@@ -200,7 +200,6 @@ export const BetaModulesOrganizer: React.FC = () => {
                 }}
               >
                 <GripVertical size={20} color="#94a3b8" />
-                <div style={{ fontSize: '2rem' }}>{module.icon}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ color: '#f8fafc', fontWeight: '600', marginBottom: '0.25rem' }}>
                     {module.name}

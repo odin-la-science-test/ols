@@ -1,6 +1,6 @@
 import React from 'react';
 import { Sun, Moon, Monitor } from 'lucide-react';
-import { useDarkMode, Theme } from '../hooks/useDarkMode';
+import { useDarkMode, type Theme } from '../hooks/useDarkMode';
 
 export const ThemeToggle: React.FC = () => {
   const { theme, toggleTheme } = useDarkMode();
