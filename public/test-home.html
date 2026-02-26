@@ -1,0 +1,342 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Nouvelle Page d'Accueil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0e27;
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 3rem;
+        }
+        
+        .greeting h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .greeting p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .clock {
+            padding: 1rem 1.5rem;
+            background: #1e293b;
+            border-radius: 1rem;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .btn {
+            padding: 1rem;
+            background: #1e293b;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: #1e293b;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+        
+        .stat-icon {
+            padding: 1rem;
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 0.75rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            color: #94a3b8;
+        }
+        
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .universes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .universe-card {
+            background: #1e293b;
+            border: 2px solid rgba(99, 102, 241, 0.4);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .universe-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(99, 102, 241, 0.6);
+            border-color: #6366f1;
+        }
+        
+        .universe-card.hugin { border-color: rgba(99, 102, 241, 0.4); }
+        .universe-card.hugin:hover { border-color: #6366f1; box-shadow: 0 12px 32px rgba(99, 102, 241, 0.6); }
+        .universe-card.hugin .gradient-bar { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+        
+        .universe-card.munin { border-color: rgba(16, 185, 129, 0.4); }
+        .universe-card.munin:hover { border-color: #10b981; box-shadow: 0 12px 32px rgba(16, 185, 129, 0.6); }
+        .universe-card.munin .gradient-bar { background: linear-gradient(135deg, #10b981, #059669); }
+        
+        .universe-card.beta { border-color: rgba(245, 158, 11, 0.4); }
+        .universe-card.beta:hover { border-color: #f59e0b; box-shadow: 0 12px 32px rgba(245, 158, 11, 0.6); }
+        .universe-card.beta .gradient-bar { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        
+        .gradient-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+        }
+        
+        .universe-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+        
+        .universe-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        .universe-card.hugin .universe-title { 
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .universe-card.munin .universe-title { 
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .universe-card.beta .universe-title { 
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .universe-desc {
+            color: #94a3b8;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .features {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .universe-card.hugin .feature { background: rgba(99, 102, 241, 0.1); }
+        .universe-card.hugin .feature:hover { background: rgba(99, 102, 241, 0.2); transform: translateX(4px); }
+        
+        .universe-card.munin .feature { background: rgba(16, 185, 129, 0.1); }
+        .universe-card.munin .feature:hover { background: rgba(16, 185, 129, 0.2); transform: translateX(4px); }
+        
+        .universe-card.beta .feature { background: rgba(245, 158, 11, 0.1); }
+        .universe-card.beta .feature:hover { background: rgba(245, 158, 11, 0.2); transform: translateX(4px); }
+        
+        .arrow {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.5rem;
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 50%;
+        }
+        
+        .universe-card.hugin .arrow { background: rgba(99, 102, 241, 0.2); }
+        .universe-card.munin .arrow { background: rgba(16, 185, 129, 0.2); }
+        .universe-card.beta .arrow { background: rgba(245, 158, 11, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="greeting">
+            <h1>Bonjour, Utilisateur</h1>
+            <p id="date"></p>
+        </div>
+        <div class="quick-actions">
+            <div class="clock">
+                🕐 <span id="time"></span>
+            </div>
+            <button class="btn">🔍</button>
+            <button class="btn">📝</button>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-icon">✉️</div>
+            <div style="flex: 1;">
+                <div class="stat-value">3</div>
+                <div class="stat-label">Messages non lus</div>
+            </div>
+            <div>→</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div style="flex: 1;">
+                <div class="stat-value">5</div>
+                <div class="stat-label">Événements aujourd'hui</div>
+            </div>
+            <div>→</div>
+        </div>
+    </div>
+
+    <h2 class="section-title">✨ Vos univers scientifiques</h2>
+
+    <div class="universes">
+        <div class="universe-card hugin">
+            <div class="gradient-bar"></div>
+            <div class="universe-logo">🧪</div>
+            <h3 class="universe-title">Hugin Lab</h3>
+            <p class="universe-desc">Outils de laboratoire avancés</p>
+            <div class="features">
+                <div class="feature">🧪 Inventaire chimique</div>
+                <div class="feature">🧫 Cahier de labo</div>
+                <div class="feature">📋 Protocoles</div>
+                <div class="feature">🤖 Assistant IA</div>
+            </div>
+            <div class="arrow">→</div>
+        </div>
+
+        <div class="universe-card munin">
+            <div class="gradient-bar"></div>
+            <div class="universe-logo">📚</div>
+            <h3 class="universe-title">Munin</h3>
+            <p class="universe-desc">Encyclopédie scientifique</p>
+            <div class="features">
+                <div class="feature">📖 Disciplines</div>
+                <div class="feature">💾 Base de connaissances</div>
+                <div class="feature">🔍 Recherche avancée</div>
+                <div class="feature">📈 Actualités</div>
+            </div>
+            <div class="arrow">→</div>
+        </div>
+
+        <div class="universe-card beta">
+            <div class="gradient-bar"></div>
+            <div class="universe-logo">🚀</div>
+            <h3 class="universe-title">Beta Hub</h3>
+            <p class="universe-desc">Fonctionnalités expérimentales</p>
+            <div class="features">
+                <div class="feature">✨ Nouvelles fonctionnalités</div>
+                <div class="feature">⚡ Tests en avant-première</div>
+                <div class="feature">👥 Feedback communauté</div>
+                <div class="feature">📈 Roadmap</div>
+            </div>
+            <div class="arrow">→</div>
+        </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('time').textContent = now.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
+            document.getElementById('date').textContent = now.toLocaleDateString('fr-FR', { 
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
+</body>
+</html>

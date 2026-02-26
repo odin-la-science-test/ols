@@ -23,11 +23,11 @@ const LandingPage = () => {
     }, []);
 
     const handleDownloadDesktop = () => {
-        // Lien direct vers le fichier .exe sur GitHub Releases
-        const downloadUrl = 'https://github.com/odin-la-science-test/ols/releases/latest/download/Odin-La-Science-Setup.exe';
+        // Lien direct vers le fichier ZIP portable sur GitHub Releases
+        const downloadUrl = 'https://github.com/odin-la-science-test/ols/releases/latest/download/Odin-La-Science-Portable-v1.0.0.zip';
         
         // Téléchargement direct - le navigateur téléchargera automatiquement le fichier
-        // Si le fichier n'existe pas encore, GitHub redirigera vers la page des releases
+        // Version portable: extraire le ZIP et lancer OdinLaScience.exe
         window.location.href = downloadUrl;
     };
 

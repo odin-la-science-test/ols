@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Splash Screen</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00f5ff;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #00f5ff, #0080ff);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+        .button:hover {
+            transform: scale(1.05);
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #00f5ff;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .info {
+            background: rgba(0, 245, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #00f5ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Test du Nouveau Splash Screen</h1>
+        
+        <div class="info">
+            <strong>Le nouveau design inclut :</strong>
+            <ul>
+                <li>✨ Fond noir avec réseau de particules animées</li>
+                <li>🧬 Logo ADN hélicoïdal en 3D</li>
+                <li>⚛️ Loader moléculaire avec atomes en orbite</li>
+                <li>💫 Titre holographique "ODIN"</li>
+                <li>🔬 Thème cyber-scientifique cyan néon</li>
+                <li>📊 Barre de progression quantique</li>
+                <li>🌐 Canvas avec particules connectées</li>
+            </ul>
+        </div>
+
+        <a href="public/splash.html" class="button" target="_blank">
+            Ouvrir dans un nouvel onglet
+        </a>
+
+        <a href="#" class="button" onclick="document.getElementById('preview').src = 'public/splash.html?' + Date.now(); return false;">
+            Recharger l'aperçu
+        </a>
+
+        <h2>Aperçu :</h2>
+        <iframe id="preview" src="public/splash.html"></iframe>
+
+        <div class="info" style="margin-top: 20px;">
+            <strong>💡 Astuce :</strong> Si vous ne voyez pas les changements, cliquez sur "Recharger l'aperçu" ou appuyez sur Ctrl+F5 dans votre navigateur.
+        </div>
+    </div>
+</body>
+</html>

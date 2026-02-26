@@ -39,17 +39,17 @@ if (!gotTheLock) {
 
 function createSplashWindow() {
   splashWindow = new BrowserWindow({
-    width: 600,
-    height: 400,
+    width: 800,
+    height: 600,
     frame: false,
-    transparent: false,
+    transparent: true,
     alwaysOnTop: true,
     resizable: false,
+    center: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true
     },
-    backgroundColor: '#0a0e27',
     show: true
   });
 

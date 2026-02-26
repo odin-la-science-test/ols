@@ -24,7 +24,7 @@ interface Module {
 interface HuginEditModeProps {
   modules: Module[];
   onClose: () => void;
-  onSave: (huginModules: ModuleOrder[], betaModules: ModuleOrder[]) => void;
+  onSave: () => void;
 }
 
 const HuginEditMode: React.FC<HuginEditModeProps> = ({ modules, onClose, onSave }) => {
@@ -220,8 +220,9 @@ const HuginEditMode: React.FC<HuginEditModeProps> = ({ modules, onClose, onSave 
     
     // Fermer et recharger après un court délai
     setTimeout(() => {
-      onSave(huginOrder, betaOrder);
+      onSave();
       onClose();
+      window.location.reload();
     }, 500);
   };
 

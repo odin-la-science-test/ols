@@ -1,0 +1,437 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Page d'Accueil Professionnelle</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0e27;
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+        }
+        
+        .header-left p {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.5);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header-left h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header-left .subtitle {
+            color: #94a3b8;
+            font-size: 1rem;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        
+        .quick-stats {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            min-width: 140px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+        }
+        
+        .stat-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .platforms {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .platform-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border-radius: 1rem;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .platform-card.munin {
+            border-top: 4px solid #10b981;
+        }
+        
+        .platform-card.hugin {
+            border-top: 4px solid #6366f1;
+        }
+        
+        .platform-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .platform-card.munin:hover {
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+        
+        .platform-card.hugin:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+        
+        .platform-icon {
+            padding: 1.25rem;
+            border-radius: 1.25rem;
+            margin-bottom: 1.5rem;
+            font-size: 3rem;
+        }
+        
+        .platform-icon.munin {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+        
+        .platform-icon.hugin {
+            background: rgba(99, 102, 241, 0.15);
+            color: #6366f1;
+        }
+        
+        .platform-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        
+        .platform-desc {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .btn-view-all {
+            padding: 0.5rem 1rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 0.5rem;
+            color: #3b82f6;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-view-all:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+        }
+        
+        .event-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 1rem;
+        }
+        
+        .event-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .event-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .event-content {
+            flex: 1;
+        }
+        
+        .event-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .event-location {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .event-date {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 0.25rem;
+        }
+        
+        .event-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .achievement-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 1rem;
+        }
+        
+        .achievement-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .achievement-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .achievement-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .achievement-desc {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <p>Bon retour,</p>
+                <h1>Utilisateur</h1>
+                <p class="subtitle">Votre plateforme scientifique tout-en-un</p>
+            </div>
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #3b82f6;">📧</div>
+                    <div class="stat-value" style="color: #3b82f6;">3</div>
+                    <div class="stat-label">Messages non lus</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #f59e0b;">🕐</div>
+                    <div class="stat-value" style="color: #f59e0b;" id="time">--:--</div>
+                    <div class="stat-label">Heure</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Platforms -->
+        <div class="platforms">
+            <div class="platform-card munin">
+                <div class="platform-icon munin">📚</div>
+                <div>
+                    <h2 class="platform-title">Munin Atlas</h2>
+                    <p class="platform-desc">Encyclopédie scientifique complète</p>
+                </div>
+            </div>
+            <div class="platform-card hugin">
+                <div class="platform-icon hugin">🧪</div>
+                <div>
+                    <h2 class="platform-title">Hugin Lab</h2>
+                    <p class="platform-desc">Outils de laboratoire avancés</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Today Section -->
+            <div>
+                <div class="section-header">
+                    <h3 class="section-title">Aujourd'hui</h3>
+                    <button class="btn-view-all">Voir tout →</button>
+                </div>
+                
+                <div class="event-card" style="border-left: 4px solid #6366f1;">
+                    <div class="event-icon" style="background: rgba(99, 102, 241, 0.15); color: #6366f1;">🕐</div>
+                    <div class="event-content">
+                        <p class="event-title">09:00 - Réunion d'équipe</p>
+                        <p class="event-location">📍 Salle de conférence A</p>
+                        <p class="event-date">📅 <span id="today-date"></span></p>
+                    </div>
+                    <div class="event-status" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">✓ Terminé</div>
+                </div>
+
+                <div class="event-card" style="border-left: 4px solid #10b981;">
+                    <div class="event-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">🧪</div>
+                    <div class="event-content">
+                        <p class="event-title">14:30 - Analyse des échantillons</p>
+                        <p class="event-location">📍 Laboratoire 3</p>
+                        <p class="event-date">📅 <span id="today-date2"></span></p>
+                    </div>
+                    <div class="event-status" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">⏳ En cours</div>
+                </div>
+
+                <div class="event-card" style="border-left: 4px solid #8b5cf6;">
+                    <div class="event-icon" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">📄</div>
+                    <div class="event-content">
+                        <p class="event-title">16:00 - Présentation des résultats</p>
+                        <p class="event-location">📍 Amphithéâtre principal</p>
+                        <p class="event-date">📅 <span id="today-date3"></span></p>
+                    </div>
+                    <div class="event-status" style="background: rgba(100, 116, 139, 0.1); color: #64748b;">⏰ À venir</div>
+                </div>
+            </div>
+
+            <!-- Progression Section -->
+            <div>
+                <h3 class="section-title" style="margin-bottom: 1.5rem;">Progression</h3>
+                
+                <div class="achievement-card">
+                    <div class="achievement-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">🏆</div>
+                    <div>
+                        <p class="achievement-title">Terminé</p>
+                        <p class="achievement-desc">1 projet</p>
+                    </div>
+                </div>
+
+                <div class="achievement-card">
+                    <div class="achievement-icon" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">⚡</div>
+                    <div>
+                        <p class="achievement-title">Productif</p>
+                        <p class="achievement-desc">10 analyses terminées</p>
+                    </div>
+                </div>
+
+                <div class="achievement-card">
+                    <div class="achievement-icon" style="background: rgba(139, 92, 246, 0.15); color: #8b5cf6;">⭐</div>
+                    <div>
+                        <p class="achievement-title">Expert</p>
+                        <p class="achievement-desc">Niveau 5</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('time').textContent = now.toLocaleTimeString('fr-FR', { 
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
+            
+            const dateStr = now.toLocaleDateString('fr-FR', { 
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long'
+            });
+            document.getElementById('today-date').textContent = dateStr;
+            document.getElementById('today-date2').textContent = dateStr;
+            document.getElementById('today-date3').textContent = dateStr;
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
+</body>
+</html>

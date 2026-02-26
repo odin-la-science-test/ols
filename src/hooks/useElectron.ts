@@ -21,16 +21,21 @@ declare global {
   }
 }
 
+// Détection synchrone pour éviter le flash
+const isElectronEnv = typeof window !== 'undefined' && !!window.electronAPI;
+
 export const useElectron = () => {
-  const [isElectron, setIsElectron] = useState(false);
-  const [electronAPI, setElectronAPI] = useState<ElectronAPI | null>(null);
+  // Initialisation synchrone pour éviter le flash
+  const [isElectron] = useState(isElectronEnv);
+  const [electronAPI, setElectronAPI] = useState<ElectronAPI | null>(
+    isElectronEnv ? window.electronAPI || null : null
+  );
 
   useEffect(() => {
-    if (window.electronAPI) {
-      setIsElectron(true);
+    if (window.electronAPI && !electronAPI) {
       setElectronAPI(window.electronAPI);
     }
-  }, []);
+  }, [electronAPI]);
 
   return {
     isElectron,

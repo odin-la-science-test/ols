@@ -31,7 +31,7 @@ const Hugin = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('Tout');
     const [editMode, setEditMode] = useState(false);
-    const [customOrder, setCustomOrder] = useState<ModuleOrder[]>([]);
+    const [customOrder, setCustomOrder] = useState<ModuleOrder[]>(() => getHuginModulesOrder());
 
     // Subscription Check logic
     const userStr = localStorage.getItem('currentUser');
@@ -45,10 +45,6 @@ const Hugin = () => {
             // Clean URL
             navigate('/hugin', { replace: true });
         }
-        
-        // Charger l'ordre personnalisé
-        const order = getHuginModulesOrder();
-        setCustomOrder(order);
     }, [location, navigate, showToast]);
 
     const hasAccess = (moduleId: string) => checkHasAccess(moduleId, userStr, sub || undefined, hiddenTools);
@@ -115,20 +111,24 @@ const Hugin = () => {
     const allModules = useMemo(() => {
         const standardModules: any[] = [...modules];
         
-        if (!isUserSuperAdmin) return standardModules;
+        if (!isUserSuperAdmin) {
+            console.log('👤 Utilisateur standard, modules:', standardModules.length);
+            return standardModules;
+        }
         
-        const order = getHuginModulesOrder();
         const betaFeatures = getBetaFeatures();
         
-        console.log('🔄 Recalcul allModules, ordre:', order);
+        console.log('🔄 Recalcul allModules');
+        console.log('📋 customOrder:', customOrder);
+        console.log('🧪 betaFeatures disponibles:', betaFeatures.map(f => f.id));
         
-        // Ajouter les modules beta à la liste
-        order.forEach(orderItem => {
+        // Ajouter les modules beta qui sont dans customOrder
+        customOrder.forEach(orderItem => {
             if (orderItem.id.startsWith('beta_')) {
                 const originalId = orderItem.id.replace('beta_', '');
                 const betaModule = betaFeatures.find(f => f.id === originalId);
                 if (betaModule) {
-                    console.log('✅ Ajout module beta:', betaModule.name);
+                    console.log('✅ Ajout module beta:', betaModule.name, '(id:', orderItem.id, ')');
                     standardModules.push({
                         id: orderItem.id,
                         name: betaModule.name,
@@ -138,11 +138,13 @@ const Hugin = () => {
                         path: betaModule.path,
                         isBeta: true // Marqueur pour le style
                     });
+                } else {
+                    console.warn('⚠️ Module beta introuvable:', originalId);
                 }
             }
         });
         
-        console.log('📦 Total modules:', standardModules.length);
+        console.log('📦 Total modules (avec beta):', standardModules.length);
         return standardModules;
     }, [isUserSuperAdmin, customOrder]);
 
@@ -166,13 +168,9 @@ const Hugin = () => {
         return matchesSearch && matchesCategory;
     });
 
-    const handleSaveCustomization = (huginModules: ModuleOrder[], betaModules: ModuleOrder[]) => {
-        console.log('💾 Callback sauvegarde reçu');
-        console.log('📦 Modules Hugin:', huginModules);
-        console.log('🧪 Modules Beta:', betaModules);
-        
-        // Forcer le rechargement complet de la page pour appliquer les changements
-        window.location.reload();
+    const handleSaveCustomization = () => {
+        console.log('💾 Callback sauvegarde - rechargement de la page');
+        // Le rechargement est géré par HuginEditMode
     };
 
     return (
