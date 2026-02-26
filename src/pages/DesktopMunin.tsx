@@ -4,6 +4,14 @@ import { ArrowLeft, Search, BookOpen } from 'lucide-react';
 import { LOGOS } from '../utils/logoCache';
 import disciplinesData from '../data/disciplines.json';
 
+interface Discipline {
+    id: string;
+    name: string;
+    description: string;
+    icon?: string;
+    entities?: any[];
+}
+
 const DesktopMunin = () => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
@@ -13,7 +21,9 @@ const DesktopMunin = () => {
         window.scrollTo(0, 0);
     }, []);
 
-    const filteredDisciplines = disciplinesData.disciplines.filter(discipline =>
+    const disciplines = disciplinesData as Discipline[];
+    
+    const filteredDisciplines = disciplines.filter((discipline: Discipline) =>
         discipline.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         discipline.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -116,7 +126,7 @@ const DesktopMunin = () => {
                 maxWidth: '1400px',
                 margin: '0 auto'
             }}>
-                {filteredDisciplines.map((discipline) => (
+                {filteredDisciplines.map((discipline: Discipline) => (
                     <div
                         key={discipline.id}
                         onClick={() => navigate(`/munin/${discipline.id}`)}
