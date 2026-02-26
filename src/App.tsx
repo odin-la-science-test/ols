@@ -11,6 +11,8 @@ import SplashScreen from './components/SplashScreen';
 import LandingPage from './pages/LandingPage';
 import Home from './pages/Home';
 import DesktopHome from './pages/DesktopHome';
+import DesktopMunin from './pages/DesktopMunin';
+import DesktopHugin from './pages/DesktopHugin';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import TermsOfService from './pages/TermsOfService';
@@ -381,6 +383,27 @@ function App() {
                 />
               </ProtectedRoute>
             } />
+            
+            {/* Routes Desktop dédiées */}
+            <Route path="/desktop-home" element={
+              <ProtectedRoute>
+                {isElectron ? <DesktopHome /> : <Navigate to="/home" replace />}
+              </ProtectedRoute>
+            } />
+            <Route path="/desktop-munin" element={
+              <ProtectedRoute>
+                {isElectron ? <DesktopMunin /> : <Navigate to="/munin" replace />}
+              </ProtectedRoute>
+            } />
+            <Route path="/desktop-hugin" element={
+              <ProtectedRoute>
+                {isElectron ? <DesktopHugin /> : <Navigate to="/hugin" replace />}
+              </ProtectedRoute>
+            } />
+            <Route path="/desktop-login" element={
+              isElectron ? <DesktopLogin /> : <Navigate to="/login" replace />
+            } />
+            
             <Route path="/munin" element={
               <ProtectedRoute module="munin">
                 <ResponsiveRoute 

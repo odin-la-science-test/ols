@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useEffect } from 'react';
 import './DesktopLayout.css';
 
 interface DesktopLayoutProps {
@@ -6,14 +7,14 @@ interface DesktopLayoutProps {
 }
 
 const DesktopLayout = ({ children }: DesktopLayoutProps) => {
+  // Scroll en haut à chaque changement de page
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [children]);
+
   return (
     <div className="desktop-layout">
-      {/* Header simple avec nom du site */}
-      <div className="desktop-header">
-        <h1 className="desktop-site-name">Odin La Science</h1>
-      </div>
-
-      {/* Main Content */}
+      {/* Pas d'en-tête - plein écran */}
       <div className="desktop-main">
         <div className="desktop-content">
           {children}
