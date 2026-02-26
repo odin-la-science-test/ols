@@ -19,8 +19,9 @@ const DesktopLogin = () => {
       if (email && password) {
         localStorage.setItem('currentUser', email);
         localStorage.setItem('isAuthenticated', 'true');
+        sessionStorage.setItem('fromDesktopLogin', 'true'); // Flag pour déclencher l'animation splash
         showToast('✅ Connexion réussie!', 'success');
-        navigate('/home');
+        navigate('/desktop-home'); // Navigation vers desktop-home au lieu de /home
       } else {
         showToast('❌ Email et mot de passe requis', 'error');
       }

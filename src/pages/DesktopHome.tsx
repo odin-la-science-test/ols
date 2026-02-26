@@ -6,18 +6,65 @@ import { LOGOS } from '../utils/logoCache';
 
 const DesktopHome = () => {
     const navigate = useNavigate();
-    const [showSplash, setShowSplash] = useState(true);
+    const [showSplash, setShowSplash] = useState(false);
     const [showContent, setShowContent] = useState(false);
 
     const username = localStorage.getItem('currentUser')?.split('@')[0] || 'Utilisateur';
 
+    // Vérifier si c'est la première visite après login (uniquement depuis desktop-login)
+    useEffect(() => {
+        const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
+        const fromLogin = sessionStorage.getItem('fromDesktopLogin');
+        
+        console.log('🔍 Debug splash:', { hasSeenSplash, fromLogin });
+        
+        // Animation uniquement si on vient du login ET qu'on n'a pas encore vu le splash
+        if (!hasSeenSplash && fromLogin === 'true') {
+            console.log('✅ Déclenchement animation splash');
+            setShowSplash(true);
+            setShowContent(false);
+            sessionStorage.setItem('hasSeenSplash', 'true');
+            sessionStorage.removeItem('fromDesktopLogin'); // Nettoyer le flag
+        } else {
+            console.log('❌ Pas d\'animation - affichage direct');
+            // Si pas de splash, afficher directement le contenu
+            setShowContent(true);
+        }
+    }, []);
+
     const handleSplashComplete = () => {
         setShowSplash(false);
-        setTimeout(() => setShowContent(true), 100);
+        // Attendre un instant pour que l'animation se termine complètement
+        setTimeout(() => {
+            setShowContent(true);
+        }, 50);
     };
 
     if (showSplash) {
-        return <SplashToHomeAnimation onComplete={handleSplashComplete} />;
+        return (
+            <SplashToHomeAnimation onComplete={handleSplashComplete}>
+                <div style={{
+                    minHeight: '100vh',
+                    background: '#0b1120',
+                    color: '#f8fafc',
+                    padding: '3rem'
+                }}>
+                    {/* Aperçu du contenu qui apparaîtra */}
+                    <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                        <h1 style={{
+                            fontSize: '3.5rem',
+                            fontWeight: 900,
+                            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            marginBottom: '1rem'
+                        }}>
+                            Bon retour, {username}
+                        </h1>
+                    </div>
+                </div>
+            </SplashToHomeAnimation>
+        );
     }
 
     return (
@@ -27,7 +74,11 @@ const DesktopHome = () => {
             color: '#f8fafc',
             padding: '3rem',
             opacity: showContent ? 1 : 0,
-            transition: 'opacity 0.5s ease-in'
+            transition: 'opacity 0.8s ease-in',
+            transform: showContent ? 'scale(1)' : 'scale(0.95)',
+            transitionProperty: 'opacity, transform',
+            transitionDuration: '0.8s',
+            transitionTimingFunction: 'ease-out'
         }}>
             {/* Bouton retour (vers login/logout) */}
             <button
@@ -64,6 +115,40 @@ const DesktopHome = () => {
             >
                 <ArrowLeft size={20} />
                 Déconnexion
+            </button>
+
+            {/* Bouton TEST pour forcer l'animation */}
+            <button
+                onClick={() => {
+                    sessionStorage.removeItem('hasSeenSplash');
+                    sessionStorage.setItem('fromDesktopLogin', 'true');
+                    window.location.reload();
+                }}
+                style={{
+                    position: 'fixed',
+                    top: '2rem',
+                    right: '2rem',
+                    padding: '0.75rem 1.5rem',
+                    background: 'rgba(59, 130, 246, 0.2)',
+                    border: '2px solid #3b82f6',
+                    borderRadius: '0.75rem',
+                    color: '#3b82f6',
+                    cursor: 'pointer',
+                    fontSize: '0.95rem',
+                    fontWeight: 700,
+                    transition: 'all 0.2s',
+                    zIndex: 100
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#3b82f6';
+                    e.currentTarget.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)';
+                    e.currentTarget.style.color = '#3b82f6';
+                }}
+            >
+                🎬 TEST ANIMATION
             </button>
 
             {/* Header */}
