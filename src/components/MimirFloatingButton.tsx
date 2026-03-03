@@ -252,7 +252,7 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
   };
 
   const buttonPosition = isMobile 
-    ? { bottom: '1rem', left: '50%', transform: 'translateX(-50%)' }
+    ? { bottom: '100px', right: '1rem' }
     : { bottom: '2rem', left: '2rem' };
 
   const chatPosition = isMobile
