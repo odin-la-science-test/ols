@@ -859,7 +859,7 @@ function App() {
           </Routes>
           </Suspense>
           <CookieConsent />
-          <MimirFloatingButton />
+          {location.pathname !== '/' && <MimirFloatingButton />}
         </ElectronWrapper>
       </ToastProvider>
     </ThemeProvider>
