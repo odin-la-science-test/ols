@@ -24,7 +24,7 @@ export const getLogoUrl = (logoName: string): string => {
  * URLs des logos avec cache-busting dynamique
  */
 export const LOGOS = {
-  get main() { return getLogoUrl('logo1.png'); },      // Logo principal Odin
+  get main() { return getLogoUrl('logoprincipal.png'); },      // Logo principal Odin
   get munin() { return getLogoUrl('logo6.png'); },     // Logo Munin Atlas
   get hugin() { return getLogoUrl('logo5.png'); },     // Logo Hugin Lab
   get alt() { return getLogoUrl('logo4.png'); }        // Logo alternatif
