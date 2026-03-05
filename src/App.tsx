@@ -14,7 +14,7 @@ import Home from './pages/Home';
 import DesktopHome from './pages/DesktopHome';
 import DesktopMunin from './pages/DesktopMunin';
 import DesktopHugin from './pages/DesktopHugin';
-import Login from './pages/Login';
+import LoginSimple from './pages/LoginSimple';
 import Register from './pages/Register';
 import TermsOfService from './pages/TermsOfService';
 import RGPD from './pages/RGPD';
@@ -147,7 +147,7 @@ const MobileAccount = lazy(() => import('./pages/mobile/AccountWrapper'));
 import ResponsiveRoute from './components/ResponsiveRoute';
 
 import type { ReactNode } from 'react';
-import { checkHasAccess, getAccessData } from './utils/ShieldUtils';
+import { checkHasAccess } from './utils/ShieldUtils';
 
 // Composant de chargement
 const LoadingFallback = () => (
@@ -179,18 +179,36 @@ const ProtectedRoute = ({ children, module }: { children: ReactNode, module?: st
   const { isAuthenticated, userRole, userProfile } = useSecurity();
   const location = useLocation();
 
-  if (!isAuthenticated) {
+  // FALLBACK : Vérifier localStorage directement si SecurityProvider n'est pas encore initialisé
+  const isLoggedInLocalStorage = localStorage.getItem('isLoggedIn') === 'true';
+  const currentUser = localStorage.getItem('currentUser');
+  const currentUserRole = localStorage.getItem('currentUserRole') || 'user';
+
+  // Si pas authentifié selon SecurityProvider ET pas de session dans localStorage
+  if (!isAuthenticated && !isLoggedInLocalStorage) {
+    console.log('🚫 Accès refusé - Redirection vers /login');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Si on est authentifié mais que le profil n'est pas encore chargé (ex: premier mount)
-  if (!userProfile && localStorage.getItem('currentUser')) {
+  // Si authentifié dans localStorage mais pas encore dans SecurityProvider
+  if (!isAuthenticated && isLoggedInLocalStorage && currentUser) {
+    console.log('⏳ Session valide dans localStorage, attente de SecurityProvider...');
+    // Déclencher un refresh du SecurityProvider
+    window.dispatchEvent(new Event('auth-change'));
     return <LoadingFallback />;
   }
 
+  // Si on est authentifié mais que le profil n'est pas encore chargé (ex: premier mount)
+  if (!userProfile && currentUser) {
+    return <LoadingFallback />;
+  }
+
+  // Vérification des modules
   if (module) {
-    const hasAccess = checkHasAccess(module, userProfile?.username || '', userProfile?.subscription || undefined, [], userRole);
-    if (!hasAccess && userRole !== 'super_admin') {
+    const effectiveRole = userRole || currentUserRole;
+    const hasAccess = checkHasAccess(module, userProfile?.username || currentUser || '', userProfile?.subscription || undefined, [], effectiveRole);
+    if (!hasAccess && effectiveRole !== 'super_admin') {
+      console.log('🚫 Accès refusé au module:', module);
       return <Navigate to="/hugin?denied=true" replace />;
     }
   }
@@ -206,6 +224,22 @@ function App() {
   const [tempSessionActive, setTempSessionActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [showSplash, setShowSplash] = useState(false); // Désactivé car le splash HTML natif le remplace
+  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('isLoggedIn') === 'true');
+
+  // Écouter les changements de connexion
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setIsLoggedIn(localStorage.getItem('isLoggedIn') === 'true');
+    };
+
+    window.addEventListener('auth-change', handleAuthChange);
+    window.addEventListener('storage', handleAuthChange);
+
+    return () => {
+      window.removeEventListener('auth-change', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
+    };
+  }, []);
 
   // Gérer le splash screen
   const handleSplashComplete = () => {
@@ -222,6 +256,10 @@ function App() {
     // Exécuter la migration des profils utilisateurs
     const initializeSecurity = async () => {
       await runMigrationIfNeeded();
+
+      // Initialiser les comptes de test
+      const { initializeTestAccounts } = await import('./utils/initTestAccounts');
+      await initializeTestAccounts();
 
       SecurityManager.initialize({
         enableClickjackingProtection: true,
@@ -244,16 +282,46 @@ function App() {
     const isProtectedRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
 
     if (isProtectedRoute && localStorage.getItem('isLoggedIn') === 'true') {
-      const handlePopState = (e: PopStateEvent) => {
-        const confirmLogout = window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
+      let isNavigating = false;
 
-        if (confirmLogout) {
-          localStorage.clear();
-          navigate('/login', { replace: true });
-        } else {
-          // Empêcher le retour arrière
-          window.history.pushState(null, '', window.location.href);
+      const handlePopState = (e: PopStateEvent) => {
+        // Si c'est une navigation programmatique (via navigate()), ne rien faire
+        if (isNavigating) {
+          isNavigating = false;
+          return;
         }
+
+        // Vérifier si on essaie de sortir de l'application (retour vers login ou landing)
+        const targetPath = window.location.pathname;
+        const isLeavingApp = targetPath === '/login' || targetPath === '/' || !protectedRoutes.some(route => targetPath.startsWith(route));
+
+        if (isLeavingApp) {
+          const confirmLogout = window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
+
+          if (confirmLogout) {
+            localStorage.clear();
+            window.dispatchEvent(new Event('auth-change'));
+            navigate('/login', { replace: true });
+          } else {
+            // Empêcher le retour arrière
+            window.history.pushState(null, '', window.location.href);
+          }
+        }
+        // Sinon, laisser la navigation se faire normalement entre les pages protégées
+      };
+
+      // Intercepter les navigations programmatiques
+      const originalPushState = window.history.pushState;
+      const originalReplaceState = window.history.replaceState;
+
+      window.history.pushState = function(...args) {
+        isNavigating = true;
+        return originalPushState.apply(window.history, args);
+      };
+
+      window.history.replaceState = function(...args) {
+        isNavigating = true;
+        return originalReplaceState.apply(window.history, args);
       };
 
       // Ajouter un état dans l'historique pour détecter le retour arrière
@@ -262,6 +330,9 @@ function App() {
 
       return () => {
         window.removeEventListener('popstate', handlePopState);
+        // Restaurer les fonctions originales
+        window.history.pushState = originalPushState;
+        window.history.replaceState = originalReplaceState;
       };
     }
   }, [location.pathname, navigate]);
@@ -316,6 +387,7 @@ function App() {
     } else if (timeLeft === 0 && tempSessionActive) {
       setTempSessionActive(false);
       localStorage.clear();
+      window.dispatchEvent(new Event('auth-change'));
       navigate('/');
       window.location.reload();
     }
@@ -327,10 +399,14 @@ function App() {
       <ToastProvider>
         <SecurityProvider>
           <ElectronWrapper>
-            <ShortcutManager />
-            <KeyboardShortcuts />
-            <CommandPalette />
-            {location.pathname !== '/' && <QuickNotes showFloatingButton={false} />}
+            {isLoggedIn && location.pathname !== '/' && location.pathname !== '/login' && (
+              <>
+                <ShortcutManager />
+                <KeyboardShortcuts />
+                <CommandPalette />
+                {location.pathname !== '/' && <QuickNotes showFloatingButton={false} />}
+              </>
+            )}
             <ScrollToTop />
             <BackToTop />
             {tempSessionActive && (
@@ -359,7 +435,7 @@ function App() {
                     mobile={<MobileLandingPage />}
                   />
                 } />
-                <Route path="/login" element={isElectron ? <DesktopLogin /> : <Login />} />
+                <Route path="/login" element={isElectron ? <DesktopLogin /> : <LoginSimple />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/rgpd" element={<RGPD />} />

@@ -64,15 +64,26 @@ const Admin = () => {
     `;
 
     useEffect(() => {
-        // Vérifier si l'utilisateur est un des trois super admins
+        // Vérifier si l'utilisateur est un super admin
         const currentUserEmail = localStorage.getItem('currentUser');
-        const superAdmins = ['ethan@OLS.com', 'bastien@OLS.com', 'issam@OLS.com'];
+        const currentUserRole = localStorage.getItem('currentUserRole');
+        const superAdmins = ['ethan@ols.com', 'bastien@ols.com', 'issam@ols.com', 'admin'];
         
-        if (!currentUserEmail || !superAdmins.includes(currentUserEmail)) {
+        // Autoriser l'accès si :
+        // 1. L'email est dans la liste des super admins (en minuscules)
+        // 2. OU le rôle est 'super_admin'
+        const isAuthorized = currentUserEmail && (
+            superAdmins.includes(currentUserEmail.toLowerCase()) || 
+            currentUserRole === 'super_admin'
+        );
+        
+        if (!isAuthorized) {
+            console.log('🚫 Accès refusé à /admin - Redirection vers /home');
             navigate('/home');
             return;
         }
 
+        console.log('✅ Accès autorisé à /admin pour:', currentUserEmail);
         // Charger tous les utilisateurs
         loadUsers();
     }, [navigate]);
