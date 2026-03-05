@@ -1,33 +1,85 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/ToastContext';
+import {
+  hashPassword,
+  SecureStorage,
+  MFAManager,
+  AuditLedger
+} from '../utils/encryption';
+import { useSecurity } from '../components/SecurityProvider';
 import { LOGOS } from '../utils/logoCache';
 import './DesktopLogin.css';
 
 const DesktopLogin = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { login } = useSecurity();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [mfaNeeded, setMfaNeeded] = useState(false);
+  const [mfaCode, setMfaCode] = useState('');
+  const [mfaSecret, setMfaSecret] = useState('');
+  const [expectedMfaCode, setExpectedMfaCode] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    const normalizedEmail = email.toLowerCase().trim();
 
-    // Simulation de connexion
-    setTimeout(() => {
-      if (email && password) {
-        localStorage.setItem('currentUser', email);
-        localStorage.setItem('isAuthenticated', 'true');
-        sessionStorage.setItem('fromDesktopLogin', 'true'); // Flag pour déclencher l'animation splash
-        showToast('✅ Connexion réussie!', 'success');
-        navigate('/desktop-home'); // Navigation vers desktop-home au lieu de /home
+    try {
+      const userProfile = await SecureStorage.getItem(`user_profile_${normalizedEmail}`);
+
+      if (userProfile) {
+        const hashedInputPassword = await hashPassword(password);
+
+        if (userProfile.password === hashedInputPassword) {
+          if (!mfaNeeded) {
+            const secret = userProfile.mfaSecret || await MFAManager.generateSecret();
+            if (!userProfile.mfaSecret) {
+              userProfile.mfaSecret = secret;
+              await SecureStorage.setItem(`user_profile_${normalizedEmail}`, userProfile);
+            }
+
+            setMfaSecret(secret);
+            setMfaNeeded(true);
+            const expected = (await hashPassword(secret)).slice(0, 6).toUpperCase();
+            setExpectedMfaCode(expected);
+            setIsLoading(false);
+            return;
+          }
+
+          // Verify MFA
+          const currentSecret = mfaSecret || userProfile.mfaSecret;
+          const isMfaValid = await MFAManager.verifyCode(currentSecret, mfaCode);
+
+          if (isMfaValid) {
+            await AuditLedger.log('auth_success_desktop', { identifier: normalizedEmail });
+            localStorage.setItem('currentUser', normalizedEmail);
+            localStorage.setItem('currentUserRole', userProfile.role || 'user');
+            localStorage.setItem('isAuthenticated', 'true');
+            localStorage.setItem('isLoggedIn', 'true');
+            sessionStorage.setItem('fromDesktopLogin', 'true');
+            await login(normalizedEmail);
+            showToast('✅ Connexion réussie!', 'success');
+            navigate('/desktop-home');
+          } else {
+            await AuditLedger.log('auth_failure_desktop', { reason: 'invalid_mfa', identifier: normalizedEmail });
+            showToast('❌ Code MFA invalide', 'error');
+          }
+        } else {
+          showToast('❌ Identifiants incorrects', 'error');
+        }
       } else {
-        showToast('❌ Email et mot de passe requis', 'error');
+        showToast('❌ Utilisateur non trouvé', 'error');
       }
+    } catch (error) {
+      console.error('Desktop Login Error:', error);
+      showToast('❌ Erreur technique lors de la connexion', 'error');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -65,8 +117,8 @@ const DesktopLogin = () => {
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="desktop-login-btn"
             disabled={isLoading}
           >
@@ -74,7 +126,7 @@ const DesktopLogin = () => {
           </button>
 
           <div className="desktop-login-footer">
-            <button 
+            <button
               type="button"
               onClick={() => navigate('/register')}
               className="desktop-link-btn"

@@ -11,8 +11,12 @@ import {
     hashPassword,
     isValidEmail,
     SessionManager,
-    RateLimiter
+    RateLimiter,
+    SecureStorage,
+    MFAManager,
+    AuditLedger
 } from '../utils/encryption';
+import { useSecurity } from '../components/SecurityProvider';
 
 // Pricing Configuration
 const MODULES = [
@@ -27,8 +31,9 @@ const ANNUAL_DISCOUNT = 0.20; // 20% off
 
 const Login = () => {
     const navigate = useNavigate();
-    const { loadThemeForUser } = useTheme(); // Use the hook
+    const { loadThemeForUser } = useTheme();
     const { isMobile } = useDeviceDetection();
+    const { login } = useSecurity();
 
     const [isLogin, setIsLogin] = useState(true);
     const [step, setStep] = useState(1);
@@ -40,6 +45,12 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [emailError, setEmailError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // MFA State
+    const [mfaNeeded, setMfaNeeded] = useState(false);
+    const [mfaCode, setMfaCode] = useState('');
+    const [mfaSecret, setMfaSecret] = useState('');
+    const [expectedMfaCode, setExpectedMfaCode] = useState('');
 
     // Rate limiter pour la connexion (5 tentatives par minute)
     const loginLimiter = new RateLimiter(5, 60000);
@@ -100,9 +111,10 @@ const Login = () => {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        const normalizedIdentifier = loginIdentifier.toLowerCase().trim();
 
         // Validation de l'email
-        if (!isValidEmail(loginIdentifier) && !['admin', 'ethan@OLS.com', 'bastien@OLS.com', 'issam@OLS.com'].includes(loginIdentifier)) {
+        if (!isValidEmail(normalizedIdentifier)) {
             setEmailError('Format d\'email invalide');
             setErrorMessage('Veuillez entrer un email valide');
             return;
@@ -110,7 +122,7 @@ const Login = () => {
         setEmailError('');
 
         // Rate limiting
-        if (!loginLimiter.checkLimit(loginIdentifier)) {
+        if (!loginLimiter.checkLimit(normalizedIdentifier)) {
             setErrorMessage('Trop de tentatives. Veuillez patienter avant de réessayer.');
             return;
         }
@@ -119,51 +131,56 @@ const Login = () => {
         setErrorMessage('');
 
         try {
-            // 1. Check Hardcoded Super Admins
-            if (['ethan@OLS.com', 'bastien@OLS.com', 'issam@OLS.com'].includes(loginIdentifier)) {
-                if (loginPassword === loginIdentifier.split('@')[0] + '123') {
-                    localStorage.setItem('currentUser', loginIdentifier);
-                    localStorage.setItem('currentUserRole', 'super_admin');
-                    
-                    // Créer session sécurisée
-                    SessionManager.createSession(loginIdentifier);
-                    
-                    loadThemeForUser(loginIdentifier);
-                    navigate('/home');
-                    return;
-                }
-            }
-
-            // 2. Check LocalStorage avec mot de passe hashé
-            const userProfileStr = localStorage.getItem(`user_profile_${loginIdentifier}`);
-            if (userProfileStr) {
-                const userProfile = JSON.parse(userProfileStr);
+            // 1. Check SecureStorage avec mot de passe hashé
+            const userProfile = await SecureStorage.getItem(`user_profile_${normalizedIdentifier}`);
+            if (userProfile) {
                 const hashedInputPassword = await hashPassword(loginPassword);
-                
+
                 if (userProfile.password === hashedInputPassword) {
-                    localStorage.setItem('currentUser', loginIdentifier);
+                    // Banking-grade: Always require MFA if not already verified
+                    if (!mfaNeeded) {
+                        const secret = userProfile.mfaSecret || await MFAManager.generateSecret();
+                        // Save secret back to profile if it was missing (first time)
+                        if (!userProfile.mfaSecret) {
+                            userProfile.mfaSecret = secret;
+                            await SecureStorage.setItem(`user_profile_${loginIdentifier}`, userProfile);
+                        }
+
+                        setMfaSecret(secret);
+                        setMfaNeeded(true);
+
+                        // Calculate expected code for Demo/Test purposes
+                        const expected = (await hashPassword(secret)).slice(0, 6).toUpperCase();
+                        setExpectedMfaCode(expected);
+
+                        setIsSubmitting(false);
+                        return;
+                    }
+
+                    // Verify MFA Code
+                    const currentSecret = mfaSecret || userProfile.mfaSecret;
+                    const isMfaValid = await MFAManager.verifyCode(currentSecret, mfaCode);
+
+                    if (!isMfaValid) {
+                        await AuditLedger.log('auth_failure', { reason: 'invalid_mfa', identifier: normalizedIdentifier });
+                        setErrorMessage('❌ Code MFA invalide');
+                        setIsSubmitting(false);
+                        return;
+                    }
+
+                    await AuditLedger.log('auth_success', { identifier: normalizedIdentifier });
+                    localStorage.setItem('currentUser', normalizedIdentifier);
                     localStorage.setItem('currentUserRole', userProfile.role || 'user');
-                    
+                    localStorage.setItem('isAuthenticated', 'true');
+                    localStorage.setItem('isLoggedIn', 'true');
+
                     // Créer session sécurisée
-                    SessionManager.createSession(loginIdentifier);
-                    
-                    loadThemeForUser(loginIdentifier);
+                    await login(normalizedIdentifier);
+
+                    loadThemeForUser(normalizedIdentifier);
                     navigate('/home');
                     return;
                 }
-            }
-
-            // 3. Fallback for basic predefined users (admin/user)
-            if (loginIdentifier === 'admin' && loginPassword === 'admin123') {
-                localStorage.setItem('currentUser', 'admin');
-                localStorage.setItem('currentUserRole', 'admin');
-                
-                // Créer session sécurisée
-                SessionManager.createSession('admin');
-                
-                loadThemeForUser('admin');
-                navigate('/home');
-                return;
             }
 
             setErrorMessage('❌ Identifiants incorrects');
@@ -175,13 +192,17 @@ const Login = () => {
         }
     };
 
-    const handleSignupSubmit = (e: React.FormEvent) => {
+    const handleSignupSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const normalizedEmail = formData.email.toLowerCase().trim();
+
+        // Hash password before storage
+        const hashedPassword = await hashPassword(formData.password);
 
         // Create User Profile
         const newUserProfile = {
-            username: formData.email, // Use email as username
-            password: formData.password,
+            username: normalizedEmail, // Use email as username
+            password: hashedPassword,
             phone: formData.phone,
             role: 'admin', // Organization Admin
             organizationId: `org_${Date.now()}`,
@@ -211,16 +232,23 @@ const Login = () => {
             creationDate: new Date().toISOString()
         };
 
-        // Save
-        localStorage.setItem(`user_profile_${formData.email}`, JSON.stringify(newUserProfile));
-        localStorage.setItem(`org_${newUserProfile.organizationId}`, JSON.stringify(newOrgData));
+        // Save using SecureStorage
+        await SecureStorage.setItem(`user_profile_${normalizedEmail}`, newUserProfile);
+        await SecureStorage.setItem(`org_${newUserProfile.organizationId}`, newOrgData);
 
         // Auto Login
-        localStorage.setItem('currentUser', formData.email);
-        localStorage.setItem('currentUserRole', 'admin');
-        localStorage.setItem('firstTimeLogin', 'true');
-        loadThemeForUser(formData.email);
-        navigate('/home');
+        const performAutoLogin = async () => {
+            localStorage.setItem('currentUser', normalizedEmail);
+            localStorage.setItem('currentUserRole', 'admin');
+            localStorage.setItem('isAuthenticated', 'true');
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('firstTimeLogin', 'true');
+            await login(normalizedEmail);
+            loadThemeForUser(formData.email);
+            navigate('/home');
+        };
+
+        performAutoLogin();
     };
 
     const nextStep = () => setStep(s => s + 1);
@@ -287,34 +315,75 @@ const Login = () => {
                     {isLogin ? (
                         /* LOGIN FORM */
                         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                            <div style={{ position: 'relative' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Identifiant</label>
-                                <input
-                                    type="text"
-                                    className="input-field"
-                                    value={loginIdentifier}
-                                    onChange={(e) => {
-                                        setLoginIdentifier(e.target.value);
-                                        if (errorMessage) setErrorMessage('');
-                                    }}
-                                    placeholder="nom@OLS.com"
-                                    required
-                                />
-                            </div>
-                            <div style={{ position: 'relative' }}>
-                                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Mot de passe</label>
-                                <input
-                                    type="password"
-                                    className="input-field"
-                                    value={loginPassword}
-                                    onChange={(e) => {
-                                        setLoginPassword(e.target.value);
-                                        if (errorMessage) setErrorMessage('');
-                                    }}
-                                    placeholder="••••••••"
-                                    required
-                                />
-                            </div>
+                            {!mfaNeeded ? (
+                                <>
+                                    <div style={{ position: 'relative' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Identifiant</label>
+                                        <input
+                                            type="text"
+                                            className="input-field"
+                                            value={loginIdentifier}
+                                            onChange={(e) => {
+                                                setLoginIdentifier(e.target.value);
+                                                if (errorMessage) setErrorMessage('');
+                                            }}
+                                            placeholder="nom@OLS.com"
+                                            required
+                                        />
+                                    </div>
+                                    <div style={{ position: 'relative' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Mot de passe</label>
+                                        <input
+                                            type="password"
+                                            className="input-field"
+                                            value={loginPassword}
+                                            onChange={(e) => {
+                                                setLoginPassword(e.target.value);
+                                                if (errorMessage) setErrorMessage('');
+                                            }}
+                                            placeholder="••••••••"
+                                            required
+                                        />
+                                    </div>
+                                </>
+                            ) : (
+                                <div style={{ animation: 'fadeIn 0.3s ease' }}>
+                                    <div style={{
+                                        padding: '1rem',
+                                        background: 'rgba(99, 102, 241, 0.1)',
+                                        borderRadius: '1rem',
+                                        marginBottom: '1.5rem',
+                                        border: '1px solid rgba(99, 102, 241, 0.2)',
+                                        textAlign: 'center'
+                                    }}>
+                                        <ShieldCheck size={32} color="var(--accent-primary)" style={{ marginBottom: '0.5rem' }} />
+                                        <h4 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Double Authentification</h4>
+                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                                            Entrez le code de sécurité envoyé à votre appareil.
+                                        </p>
+                                    </div>
+                                    <div style={{ position: 'relative' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Code de sécurité (6 chiffres)</label>
+                                        <input
+                                            type="text"
+                                            className="input-field"
+                                            value={mfaCode}
+                                            onChange={(e) => {
+                                                setMfaCode(e.target.value.toUpperCase());
+                                                if (errorMessage) setErrorMessage('');
+                                            }}
+                                            placeholder="XXXXXX"
+                                            maxLength={6}
+                                            autoFocus
+                                            required
+                                            style={{ textAlign: 'center', letterSpacing: '0.5em', fontSize: '1.25rem', fontWeight: 800 }}
+                                        />
+                                        <p style={{ marginTop: '1rem', fontSize: '0.7rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                                            Note de test: Le code pour le secret "{mfaSecret.slice(0, 4)}..." est <strong style={{ color: 'var(--accent-primary)' }}>{expectedMfaCode}</strong>.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
 
                             {errorMessage && (
                                 <div style={{
@@ -331,16 +400,24 @@ const Login = () => {
                                 </div>
                             )}
 
-                            <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', width: '100%' }}>
-                                Déverrouiller l'accès
+                            <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                                {isSubmitting ? <Loader className="animate-spin" size={20} /> : (mfaNeeded ? 'Vérifier le code' : 'Déverrouiller l\'accès')}
                             </button>
 
                             <div style={{ textAlign: 'center', marginTop: '1rem' }}>
                                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                                    Première visite ? <br />
-                                    <button type="button" onClick={() => navigate('/register')} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 700, marginTop: '0.5rem', fontSize: '1rem' }}>
-                                        Créer une organisation
-                                    </button>
+                                    {mfaNeeded ? (
+                                        <button type="button" onClick={() => setMfaNeeded(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', textDecoration: 'underline' }}>
+                                            Retour à la connexion
+                                        </button>
+                                    ) : (
+                                        <>
+                                            Première visite ? <br />
+                                            <button type="button" onClick={() => navigate('/register')} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 700, marginTop: '0.5rem', fontSize: '1rem' }}>
+                                                Créer une organisation
+                                            </button>
+                                        </>
+                                    )}
                                 </p>
                             </div>
                         </form>

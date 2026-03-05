@@ -1,8 +1,4 @@
-/**
- * Service d'intégration Groq AI - 100% GRATUIT
- * Ultra-rapide, pas de carte bancaire requise
- * Limite : 30 requêtes/minute (largement suffisant)
- */
+import { SecureStorage } from '../utils/encryption';
 
 export interface GroqMessage {
     role: 'user' | 'assistant' | 'system';
@@ -34,17 +30,17 @@ class GroqService {
     /**
      * Configure l'API key Groq
      */
-    setApiKey(apiKey: string) {
+    async setApiKey(apiKey: string) {
         this.apiKey = apiKey;
-        localStorage.setItem('groq_api_key', apiKey);
+        await SecureStorage.setItem('groq_api_key', apiKey);
     }
 
     /**
      * Récupère l'API key stockée
      */
-    getApiKey(): string {
+    async getApiKey(): Promise<string> {
         if (!this.apiKey) {
-            this.apiKey = localStorage.getItem('groq_api_key') || '';
+            this.apiKey = await SecureStorage.getItem('groq_api_key') || '';
         }
         return this.apiKey;
     }
@@ -52,8 +48,9 @@ class GroqService {
     /**
      * Vérifie si l'API key est configurée
      */
-    isConfigured(): boolean {
-        return this.getApiKey().length > 0;
+    async isConfigured(): Promise<boolean> {
+        const apiKey = await this.getApiKey();
+        return apiKey.length > 0;
     }
 
     /**
@@ -63,8 +60,8 @@ class GroqService {
         message: string,
         config?: GroqConfig
     ): Promise<GroqResponse> {
-        const apiKey = this.getApiKey();
-        
+        const apiKey = await this.getApiKey();
+
         if (!apiKey) {
             throw new Error('API Key Groq non configurée. Obtenez-en une gratuitement sur https://console.groq.com');
         }
@@ -97,7 +94,7 @@ class GroqService {
             }
 
             const data = await response.json();
-            
+
             const assistantMessage: GroqMessage = {
                 role: 'assistant',
                 content: data.choices[0].message.content
@@ -127,8 +124,8 @@ class GroqService {
         message: string,
         config?: GroqConfig
     ): AsyncGenerator<string, void, unknown> {
-        const apiKey = this.getApiKey();
-        
+        const apiKey = await this.getApiKey();
+
         if (!apiKey) {
             throw new Error('API Key Groq non configurée');
         }
@@ -224,7 +221,7 @@ class GroqService {
         }];
 
         const response = await this.sendMessage(data);
-        
+
         // Restaurer l'historique
         this.conversationHistory = tempHistory;
         this.conversationHistory.push(
@@ -333,20 +330,20 @@ Fournis uniquement le code, bien commenté et prêt à l'emploi. Pas d'explicati
     /**
      * Sauvegarde l'historique
      */
-    saveHistory(name: string) {
-        const saved = JSON.parse(localStorage.getItem('groq_histories') || '{}');
+    async saveHistory(name: string) {
+        const saved = await SecureStorage.getItem('groq_histories') || {};
         saved[name] = {
             messages: this.conversationHistory,
             timestamp: Date.now()
         };
-        localStorage.setItem('groq_histories', JSON.stringify(saved));
+        await SecureStorage.setItem('groq_histories', saved);
     }
 
     /**
      * Charge un historique sauvegardé
      */
-    loadHistory(name: string): boolean {
-        const saved = JSON.parse(localStorage.getItem('groq_histories') || '{}');
+    async loadHistory(name: string): Promise<boolean> {
+        const saved = await SecureStorage.getItem('groq_histories') || {};
         if (saved[name]) {
             this.conversationHistory = saved[name].messages;
             return true;
@@ -357,17 +354,17 @@ Fournis uniquement le code, bien commenté et prêt à l'emploi. Pas d'explicati
     /**
      * Supprime un historique
      */
-    deleteHistory(name: string) {
-        const saved = JSON.parse(localStorage.getItem('groq_histories') || '{}');
+    async deleteHistory(name: string) {
+        const saved = await SecureStorage.getItem('groq_histories') || {};
         delete saved[name];
-        localStorage.setItem('groq_histories', JSON.stringify(saved));
+        await SecureStorage.setItem('groq_histories', saved);
     }
 
     /**
      * Liste les historiques sauvegardés
      */
-    listHistories(): { id: string; name: string; timestamp: number; messageCount: number }[] {
-        const saved = JSON.parse(localStorage.getItem('groq_histories') || '{}');
+    async listHistories(): Promise<{ id: string; name: string; timestamp: number; messageCount: number }[]> {
+        const saved = await SecureStorage.getItem('groq_histories') || {};
         return Object.entries(saved).map(([name, data]: [string, any]) => ({
             id: name,
             name,

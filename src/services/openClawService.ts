@@ -1,3 +1,5 @@
+import { SecureStorage } from '../utils/encryption';
+
 /**
  * Service d'intégration OpenClaw AI
  * Aucune restriction - accès complet à toutes les fonctionnalités
@@ -36,19 +38,27 @@ class OpenClawService {
     /**
      * Configure l'API key
      */
-    setApiKey(apiKey: string) {
+    async setApiKey(apiKey: string) {
         this.apiKey = apiKey;
-        localStorage.setItem('openclaw_api_key', apiKey);
+        await SecureStorage.setItem('openclaw_api_key', apiKey);
     }
 
     /**
      * Récupère l'API key stockée
      */
-    getApiKey(): string {
+    async getApiKey(): Promise<string> {
         if (!this.apiKey) {
-            this.apiKey = localStorage.getItem('openclaw_api_key') || '';
+            this.apiKey = await SecureStorage.getItem('openclaw_api_key') || '';
         }
         return this.apiKey;
+    }
+
+    /**
+     * Vérifie si l'API key est configurée
+     */
+    async isConfigured(): Promise<boolean> {
+        const apiKey = await this.getApiKey();
+        return apiKey.length > 0;
     }
 
     /**
@@ -58,8 +68,8 @@ class OpenClawService {
         message: string,
         config?: OpenClawConfig
     ): Promise<OpenClawResponse> {
-        const apiKey = config?.apiKey || this.getApiKey();
-        
+        const apiKey = config?.apiKey || await this.getApiKey();
+
         if (!apiKey) {
             throw new Error('API Key OpenClaw non configurée');
         }
@@ -98,7 +108,7 @@ class OpenClawService {
             }
 
             const data = await response.json();
-            
+
             const assistantMessage: OpenClawMessage = {
                 role: 'assistant',
                 content: data.choices[0].message.content,
@@ -125,8 +135,8 @@ class OpenClawService {
         message: string,
         config?: OpenClawConfig
     ): AsyncGenerator<string, void, unknown> {
-        const apiKey = config?.apiKey || this.getApiKey();
-        
+        const apiKey = config?.apiKey || await this.getApiKey();
+
         if (!apiKey) {
             throw new Error('API Key OpenClaw non configurée');
         }
@@ -285,30 +295,32 @@ class OpenClawService {
     /**
      * Sauvegarde l'historique
      */
-    saveHistory(name: string) {
-        const saved = JSON.parse(localStorage.getItem('openclaw_histories') || '{}');
+    async saveHistory(name: string) {
+        const saved = await SecureStorage.getItem('openclaw_histories') || {};
         saved[name] = {
             messages: this.conversationHistory,
             timestamp: Date.now()
         };
-        localStorage.setItem('openclaw_histories', JSON.stringify(saved));
+        await SecureStorage.setItem('openclaw_histories', saved);
     }
 
     /**
      * Charge un historique sauvegardé
      */
-    loadHistory(name: string) {
-        const saved = JSON.parse(localStorage.getItem('openclaw_histories') || '{}');
+    async loadHistory(name: string): Promise<boolean> {
+        const saved = await SecureStorage.getItem('openclaw_histories') || {};
         if (saved[name]) {
             this.conversationHistory = saved[name].messages;
+            return true;
         }
+        return false;
     }
 
     /**
      * Liste les historiques sauvegardés
      */
-    listHistories(): { name: string; timestamp: number; messageCount: number }[] {
-        const saved = JSON.parse(localStorage.getItem('openclaw_histories') || '{}');
+    async listHistories(): Promise<{ name: string; timestamp: number; messageCount: number }[]> {
+        const saved = await SecureStorage.getItem('openclaw_histories') || {};
         return Object.entries(saved).map(([name, data]: [string, any]) => ({
             name,
             timestamp: data.timestamp,

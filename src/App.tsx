@@ -31,6 +31,7 @@ import BackToTop from './components/BackToTop';
 import CookieConsent from './components/CookieConsent';
 import ElectronWrapper from './components/ElectronWrapper';
 import DesktopLogin from './pages/DesktopLogin';
+import { SecurityProvider, useSecurity } from './components/SecurityProvider';
 
 // Lazy loading pour les composants moins critiques
 const Munin = lazy(() => import('./pages/Munin'));
@@ -175,14 +176,21 @@ const LoadingFallback = () => (
 
 // Enhanced protection wrapper with module check
 const ProtectedRoute = ({ children, module }: { children: ReactNode, module?: string }) => {
-  const userStr = localStorage.getItem('currentUser');
-  if (!userStr) return <Navigate to="/" replace />;
+  const { isAuthenticated, userRole, userProfile } = useSecurity();
+  const location = useLocation();
 
-  const { sub, hiddenTools } = getAccessData(userStr);
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Si on est authentifié mais que le profil n'est pas encore chargé (ex: premier mount)
+  if (!userProfile && localStorage.getItem('currentUser')) {
+    return <LoadingFallback />;
+  }
 
   if (module) {
-    const hasAccess = checkHasAccess(module, userStr, sub || undefined, hiddenTools);
-    if (!hasAccess) {
+    const hasAccess = checkHasAccess(module, userProfile?.username || '', userProfile?.subscription || undefined, [], userRole);
+    if (!hasAccess && userRole !== 'super_admin') {
       return <Navigate to="/hugin?denied=true" replace />;
     }
   }
@@ -212,29 +220,33 @@ function App() {
   // Initialiser le gestionnaire de sécurité
   useEffect(() => {
     // Exécuter la migration des profils utilisateurs
-    runMigrationIfNeeded();
-    
-    SecurityManager.initialize({
-      enableClickjackingProtection: true,
-      enableBotDetection: true,
-      enableDataExfiltrationProtection: true,
-      enableDevToolsDetection: false, // Désactivé pour ne pas gêner le développement
-      enableTabnabbingProtection: true,
-      onDevToolsDetect: () => {
-        console.warn('DevTools détecté - Activité surveillée');
-      }
-    });
+    const initializeSecurity = async () => {
+      await runMigrationIfNeeded();
+
+      SecurityManager.initialize({
+        enableClickjackingProtection: true,
+        enableBotDetection: true,
+        enableDataExfiltrationProtection: true,
+        enableDevToolsDetection: false, // Désactivé pour ne pas gêner le développement
+        enableTabnabbingProtection: true,
+        onDevToolsDetect: () => {
+          console.warn('DevTools détecté - Activité surveillée');
+        }
+      });
+    };
+
+    initializeSecurity();
   }, []);
 
   // Protection contre le retour arrière - déconnexion automatique
   useEffect(() => {
     const protectedRoutes = ['/home', '/munin', '/hugin', '/account', '/settings', '/admin'];
     const isProtectedRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
-    
+
     if (isProtectedRoute && localStorage.getItem('isLoggedIn') === 'true') {
       const handlePopState = (e: PopStateEvent) => {
         const confirmLogout = window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?');
-        
+
         if (confirmLogout) {
           localStorage.clear();
           navigate('/login', { replace: true });
@@ -276,33 +288,11 @@ function App() {
 
   useEffect(() => {
     let keys: string[] = [];
-    const secretCode = 'qczcqcz';
     const tutorialCode = '159357456852';
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // User requested "ctrl qczcqcz" for demo mode
-      if (e.ctrlKey) {
-        keys.push(e.key.toLowerCase());
-        keys = keys.slice(-secretCode.length);
-
-        if (keys.join('') === secretCode) {
-          setTempSessionActive(true);
-          // Simulate a full registered user
-          const demoUser = {
-            email: 'demo@ols-scientist.com',
-            name: 'Demo Admin',
-            role: 'admin',
-            firstName: 'Demo',
-            lastName: 'Admin',
-            isDemo: true
-          };
-          localStorage.setItem('currentUser', JSON.stringify(demoUser));
-          localStorage.setItem('isLoggedIn', 'true');
-          localStorage.setItem('currentUserRole', 'admin');
-          navigate('/');
-        }
-      } else {
-        // Tutorial code without Ctrl
+      // Tutorial code without Ctrl
+      if (!e.ctrlKey) {
         keys.push(e.key);
         keys = keys.slice(-tutorialCode.length);
 
@@ -335,532 +325,534 @@ function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
-        <ElectronWrapper>
-          <ShortcutManager />
-          <KeyboardShortcuts />
-          <CommandPalette />
-          {location.pathname !== '/' && <QuickNotes showFloatingButton={false} />}
-          <ScrollToTop />
-          <BackToTop />
-          {tempSessionActive && (
-            <div style={{
-              position: 'fixed', top: 0, left: 0, right: 0, height: '3px',
-              background: 'red', zIndex: 10000, width: `${(timeLeft / 60) * 100}%`,
-              transition: 'width 1s linear'
-            }} />
-          )}
-          {tempSessionActive && (
-            <div style={{
-              position: 'fixed', bottom: '20px', right: '20px',
-              background: 'rgba(255,0,0,0.8)', color: 'white', padding: '10px 20px',
-              borderRadius: '30px', zIndex: 10000, fontWeight: 800,
-              backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.5)', pointerEvents: 'none'
-            }}>
-              SESSION DEMO : {timeLeft}s RESTANTES
-            </div>
-          )}
-          <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-            <Route path="/" element={
-              <ResponsiveRoute 
-                desktop={<LandingPage />}
-                mobile={<MobileLandingPage />}
-              />
-            } />
-            <Route path="/login" element={isElectron ? <DesktopLogin /> : <Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/terms-of-service" element={<TermsOfService />} />
-            <Route path="/rgpd" element={<RGPD />} />
-            <Route path="/why-odin" element={<WhyOdin />} />
-            <Route path="/enterprise" element={<Enterprise />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/mobile-apps" element={<MobileApps />} />
-            <Route path="/support" element={<Support />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/company" element={<Company />} />
-            <Route path="/careers" element={<Careers />} />
-            <Route path="/congratulations" element={<Congratulations />} />
-            <Route path="/documentation" element={<Documentation />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/cookies" element={<Cookies />} />
-            <Route path="/opensource-tools" element={<OpenSourceTools />} />
-            <Route path="/tutorial" element={<Tutorial />} />
-            <Route path="/home" element={
-              <ProtectedRoute>
-                <ResponsiveRoute 
-                  desktop={isElectron ? <DesktopHome /> : <Home />}
-                  mobile={<MobileHome />}
-                />
-              </ProtectedRoute>
-            } />
-            
-            {/* Routes Desktop dédiées */}
-            <Route path="/desktop-home" element={
-              <ProtectedRoute>
-                {isElectron ? <DesktopHome /> : <Navigate to="/home" replace />}
-              </ProtectedRoute>
-            } />
-            <Route path="/desktop-munin" element={
-              <ProtectedRoute>
-                {isElectron ? <DesktopMunin /> : <Navigate to="/munin" replace />}
-              </ProtectedRoute>
-            } />
-            <Route path="/desktop-hugin" element={
-              <ProtectedRoute>
-                {isElectron ? <DesktopHugin /> : <Navigate to="/hugin" replace />}
-              </ProtectedRoute>
-            } />
-            <Route path="/desktop-login" element={
-              isElectron ? <DesktopLogin /> : <Navigate to="/login" replace />
-            } />
-            
-            <Route path="/munin" element={
-              <ProtectedRoute module="munin">
-                <ResponsiveRoute 
-                  desktop={<Munin />}
-                  mobile={<MobileMunin />}
-                />
-              </ProtectedRoute>
-            } />
-            <Route path="/munin/:id" element={
-              <ProtectedRoute module="munin">
-                <ResponsiveRoute 
-                  desktop={<Discipline />}
-                  mobile={<MobileDiscipline />}
-                />
-              </ProtectedRoute>
-            } />
-            <Route path="/munin/:disciplineId/:entityId" element={
-              <ProtectedRoute module="munin">
-                <ResponsiveRoute 
-                  desktop={<EntityDetail />}
-                  mobile={<MobileEntityDetail />}
-                />
-              </ProtectedRoute>
-            } />
-            <Route path="/munin/:id/compare" element={
-              <ProtectedRoute module="munin">
-                <CompareEntities />
-              </ProtectedRoute>
-            } />
-            <Route path="/discipline/:id" element={
-              <ProtectedRoute module="munin">
-                <Discipline />
-              </ProtectedRoute>
-            } />
-            <Route path="/entity/:id" element={
-              <ProtectedRoute module="munin">
-                <EntityDetail />
-              </ProtectedRoute>
-            } />
-            <Route path="/property/:id" element={
-              <ProtectedRoute module="munin">
-                <PropertyDetail />
-              </ProtectedRoute>
-            } />
-            <Route path="/compare" element={
-              <ProtectedRoute module="munin">
-                <CompareEntities />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin" element={
-              <ProtectedRoute>
-                <ResponsiveRoute 
-                  desktop={<Hugin />}
-                  mobile={<MobileHugin />}
-                />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/messaging" element={
-              <ProtectedRoute module="hugin_core">
-                <ResponsiveRoute 
-                  desktop={<Messaging />}
-                  mobile={<MobileMessaging />}
-                />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/inventory" element={
-              <ProtectedRoute module="hugin_core">
-                <Inventory />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/planning" element={
-              <ProtectedRoute module="hugin_core">
-                <ResponsiveRoute 
-                  desktop={<Planning />}
-                  mobile={<MobilePlanning />}
-                />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/documents" element={
-              <ProtectedRoute module="hugin_core">
-                <Documents />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/culture" element={
-              <ProtectedRoute module="hugin_lab">
-                <CultureTracking />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/culture-cells" element={
-              <ProtectedRoute module="hugin_lab">
-                <CultureCells />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/it-archive" element={
-              <ProtectedRoute module="hugin_core">
-                <ITArchive />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/meetings" element={
-              <ProtectedRoute module="hugin_core">
-                <Meetings />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/research" element={
-              <ProtectedRoute module="hugin_lab">
-                <ScientificResearch />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/tableur" element={
-              <ProtectedRoute module="hugin_core">
-                <TableurLab />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/bibliography" element={
-              <ProtectedRoute module="hugin_lab">
-                <Bibliography />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/notebook" element={
-              <ProtectedRoute module="hugin_lab">
-                <LabNotebook />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/stock" element={<Navigate to="/hugin" replace />} />
-            <Route path="/hugin/cryo" element={
-              <ProtectedRoute module="hugin_lab">
-                <CryoKeeper />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/equip" element={
-              <ProtectedRoute module="hugin_lab">
-                <EquipFlow />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/budget" element={
-              <ProtectedRoute module="hugin_lab">
-                <GrantBudget />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/sop" element={
-              <ProtectedRoute module="hugin_lab">
-                <SOPLibrary />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/biotools" element={
-              <Suspense fallback={<div>Chargement...</div>}>
-                <ProtectedRoute module="hugin_analysis">
-                  <BioTools />
-                </ProtectedRoute>
-              </Suspense>
-            } />
-            <Route path="/hugin/ai-assistant" element={
-              <Suspense fallback={<div>Chargement...</div>}>
-                <ProtectedRoute module="hugin_analysis">
-                  <AIAssistant />
-                </ProtectedRoute>
-              </Suspense>
-            } />
-            <Route path="/hugin/sequence" element={
-              <Suspense fallback={<div>Chargement...</div>}>
-                <ProtectedRoute module="hugin_analysis">
-                  <SequenceLens />
-                </ProtectedRoute>
-              </Suspense>
-            } />
-            <Route path="/hugin/colony" element={
-              <ProtectedRoute module="hugin_analysis">
-                <ColonyVision />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/projects" element={
-              <ProtectedRoute module="hugin_core">
-                <ProjectMind />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/safety" element={
-              <ProtectedRoute module="hugin_lab">
-                <ResponsiveRoute 
-                  desktop={<SafetyHub />}
-                  mobile={<MobileSafetyHub />}
-                />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/flow" element={
-              <ProtectedRoute module="hugin_analysis">
-                <FlowAnalyzer />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/spectrum" element={
-              <ProtectedRoute module="hugin_analysis">
-                <SpectrumViewer />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/gel" element={
-              <ProtectedRoute module="hugin_analysis">
-                <GelPro />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/phylo" element={
-              <ProtectedRoute module="hugin_analysis">
-                <PhyloGen />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/molecules" element={
-              <ProtectedRoute module="hugin_analysis">
-                <MoleculeBox />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/kinetics" element={
-              <ProtectedRoute module="hugin_analysis">
-                <KineticsLab />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/plates" element={
-              <ProtectedRoute module="hugin_analysis">
-                <PlateMapper />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/mixer" element={
-              <ProtectedRoute module="hugin_analysis">
-                <SolutionMixer />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/primers" element={
-              <ProtectedRoute module="hugin_analysis">
-                <PrimerStep />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/cells" element={
-              <ProtectedRoute module="hugin_analysis">
-                <CellTracker />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/blast" element={
-              <ProtectedRoute>
-                <BlastNCBI />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/mega" element={
-              <ProtectedRoute>
-                <PhyloMega />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/bionumerics" element={
-              <ProtectedRoute>
-                <BioNumerics />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/artemis" element={
-              <ProtectedRoute>
-                <Artemis />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/qiime2" element={
-              <ProtectedRoute>
-                <Qiime2 />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/whonet" element={
-              <ProtectedRoute>
-                <Whonet />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/bioanalyzer" element={
-              <ProtectedRoute module="bioanalyzer">
-                <BioAnalyzer />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/imageanalyzer" element={
-              <ProtectedRoute module="imageanalyzer">
-                <ImageAnalyzer />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/statistics" element={
-              <ProtectedRoute module="statistics">
-                <StatisticsLab />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/poster-maker" element={
-              <ProtectedRoute module="hugin_core">
-                <PosterMaker />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/word-processor" element={
-              <ProtectedRoute module="hugin_core">
-                <WordProcessor />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/protein-fold" element={
-              <ProtectedRoute module="hugin_core">
-                <ProteinFold />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/PredictiveDashboard" element={
-              <ProtectedRoute module="hugin_core">
-                <PredictiveDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/lab-timer" element={
-              <ProtectedRoute module="hugin_core">
-                <LabTimer />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/buffer-calc" element={
-              <ProtectedRoute module="hugin_core">
-                <BufferCalc />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/pcr-designer" element={
-              <ProtectedRoute module="hugin_analysis">
-                <PCRDesigner />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/gel-simulator" element={
-              <ProtectedRoute module="hugin_analysis">
-                <GelSimulator />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/protein-calculator" element={
-              <ProtectedRoute module="hugin_analysis">
-                <ProteinCalculator />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/restriction-mapper" element={
-              <ProtectedRoute module="hugin_analysis">
-                <RestrictionMapper />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/cloning-assistant" element={
-              <ProtectedRoute module="hugin_analysis">
-                <CloningAssistant />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/bacterial-growth" element={
-              <ProtectedRoute module="hugin_analysis">
-                <BacterialGrowthPredictor />
-              </ProtectedRoute>
-            } />
-            
-            {/* Hugin Scholar Modules - Nouveaux modules éducatifs avancés */}
-            <Route path="/hugin/resistance-phenotypes" element={
-              <ProtectedRoute module="hugin_analysis">
-                <ResistancePhenotypes />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/lab-equipment" element={
-              <ProtectedRoute module="hugin_core">
-                <LabEquipment />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/qcm-multi-disciplines" element={
-              <ProtectedRoute module="hugin_core">
-                <QCMMultiDisciplines />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/learning-management" element={
-              <ProtectedRoute module="hugin_core">
-                <LearningManagement />
-              </ProtectedRoute>
-            } />
-            <Route path="/hugin/cloud-storage" element={
-              <ProtectedRoute module="hugin_core">
-                <CloudStorage />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/hugin/biotools" element={
-              <ProtectedRoute module="hugin_analysis">
-                <BioTools />
-              </ProtectedRoute>
-            } />
-            <Route path="/account" element={
-              <ProtectedRoute>
-                <ResponsiveRoute 
-                  desktop={<Account />}
-                  mobile={<MobileAccount />}
-                />
-              </ProtectedRoute>
-            } />
-            <Route path="/license-management" element={
-              <ProtectedRoute>
-                <LicenseManagement />
-              </ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <ResponsiveRoute 
-                  desktop={<Settings />}
-                  mobile={<MobileSettings />}
-                />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin" element={
-              <ProtectedRoute>
-                <Admin />
-              </ProtectedRoute>
-            } />
-            
-            {/* Beta Test Routes - Accès restreint aux super admins */}
-            <Route path="/beta-hub" element={
-              <ProtectedRoute>
-                <BetaHub />
-              </ProtectedRoute>
-            } />
-            <Route path="/beta/lab-notebook" element={
-              <ProtectedRoute>
-                <BetaLabNotebook />
-              </ProtectedRoute>
-            } />
-            <Route path="/beta/protocol-builder" element={
-              <ProtectedRoute>
-                <BetaProtocolBuilder />
-              </ProtectedRoute>
-            } />
-            <Route path="/beta/chemical-inventory" element={
-              <ProtectedRoute>
-                <BetaChemicalInventory />
-              </ProtectedRoute>
-            } />
-            <Route path="/beta/backup-manager" element={
-              <ProtectedRoute>
-                <BetaBackupManager />
-              </ProtectedRoute>
-            } />
-            <Route path="/beta/gel-simulator" element={
-              <ProtectedRoute>
-                <BetaGelSimulator />
-              </ProtectedRoute>
-            } />
-            <Route path="/beta/equipment-booking" element={
-              <ProtectedRoute>
-                <BetaEquipmentBooking />
-              </ProtectedRoute>
-            } />
-            <Route path="/beta/experiment-planner" element={
-              <ProtectedRoute>
-                <BetaExperimentPlanner />
-              </ProtectedRoute>
-            } />
-          </Routes>
-          </Suspense>
-          <CookieConsent />
-          {location.pathname !== '/' && <MimirFloatingButton />}
-        </ElectronWrapper>
+        <SecurityProvider>
+          <ElectronWrapper>
+            <ShortcutManager />
+            <KeyboardShortcuts />
+            <CommandPalette />
+            {location.pathname !== '/' && <QuickNotes showFloatingButton={false} />}
+            <ScrollToTop />
+            <BackToTop />
+            {tempSessionActive && (
+              <div style={{
+                position: 'fixed', top: 0, left: 0, right: 0, height: '3px',
+                background: 'red', zIndex: 10000, width: `${(timeLeft / 60) * 100}%`,
+                transition: 'width 1s linear'
+              }} />
+            )}
+            {tempSessionActive && (
+              <div style={{
+                position: 'fixed', bottom: '20px', right: '20px',
+                background: 'rgba(255,0,0,0.8)', color: 'white', padding: '10px 20px',
+                borderRadius: '30px', zIndex: 10000, fontWeight: 800,
+                backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.5)', pointerEvents: 'none'
+              }}>
+                SESSION DEMO : {timeLeft}s RESTANTES
+              </div>
+            )}
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={
+                  <ResponsiveRoute
+                    desktop={<LandingPage />}
+                    mobile={<MobileLandingPage />}
+                  />
+                } />
+                <Route path="/login" element={isElectron ? <DesktopLogin /> : <Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/rgpd" element={<RGPD />} />
+                <Route path="/why-odin" element={<WhyOdin />} />
+                <Route path="/enterprise" element={<Enterprise />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/mobile-apps" element={<MobileApps />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/company" element={<Company />} />
+                <Route path="/careers" element={<Careers />} />
+                <Route path="/congratulations" element={<Congratulations />} />
+                <Route path="/documentation" element={<Documentation />} />
+                <Route path="/features" element={<Features />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/cookies" element={<Cookies />} />
+                <Route path="/opensource-tools" element={<OpenSourceTools />} />
+                <Route path="/tutorial" element={<Tutorial />} />
+                <Route path="/home" element={
+                  <ProtectedRoute>
+                    <ResponsiveRoute
+                      desktop={isElectron ? <DesktopHome /> : <Home />}
+                      mobile={<MobileHome />}
+                    />
+                  </ProtectedRoute>
+                } />
+
+                {/* Routes Desktop dédiées */}
+                <Route path="/desktop-home" element={
+                  <ProtectedRoute>
+                    {isElectron ? <DesktopHome /> : <Navigate to="/home" replace />}
+                  </ProtectedRoute>
+                } />
+                <Route path="/desktop-munin" element={
+                  <ProtectedRoute>
+                    {isElectron ? <DesktopMunin /> : <Navigate to="/munin" replace />}
+                  </ProtectedRoute>
+                } />
+                <Route path="/desktop-hugin" element={
+                  <ProtectedRoute>
+                    {isElectron ? <DesktopHugin /> : <Navigate to="/hugin" replace />}
+                  </ProtectedRoute>
+                } />
+                <Route path="/desktop-login" element={
+                  isElectron ? <DesktopLogin /> : <Navigate to="/login" replace />
+                } />
+
+                <Route path="/munin" element={
+                  <ProtectedRoute module="munin">
+                    <ResponsiveRoute
+                      desktop={<Munin />}
+                      mobile={<MobileMunin />}
+                    />
+                  </ProtectedRoute>
+                } />
+                <Route path="/munin/:id" element={
+                  <ProtectedRoute module="munin">
+                    <ResponsiveRoute
+                      desktop={<Discipline />}
+                      mobile={<MobileDiscipline />}
+                    />
+                  </ProtectedRoute>
+                } />
+                <Route path="/munin/:disciplineId/:entityId" element={
+                  <ProtectedRoute module="munin">
+                    <ResponsiveRoute
+                      desktop={<EntityDetail />}
+                      mobile={<MobileEntityDetail />}
+                    />
+                  </ProtectedRoute>
+                } />
+                <Route path="/munin/:id/compare" element={
+                  <ProtectedRoute module="munin">
+                    <CompareEntities />
+                  </ProtectedRoute>
+                } />
+                <Route path="/discipline/:id" element={
+                  <ProtectedRoute module="munin">
+                    <Discipline />
+                  </ProtectedRoute>
+                } />
+                <Route path="/entity/:id" element={
+                  <ProtectedRoute module="munin">
+                    <EntityDetail />
+                  </ProtectedRoute>
+                } />
+                <Route path="/property/:id" element={
+                  <ProtectedRoute module="munin">
+                    <PropertyDetail />
+                  </ProtectedRoute>
+                } />
+                <Route path="/compare" element={
+                  <ProtectedRoute module="munin">
+                    <CompareEntities />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin" element={
+                  <ProtectedRoute>
+                    <ResponsiveRoute
+                      desktop={<Hugin />}
+                      mobile={<MobileHugin />}
+                    />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/messaging" element={
+                  <ProtectedRoute module="hugin_core">
+                    <ResponsiveRoute
+                      desktop={<Messaging />}
+                      mobile={<MobileMessaging />}
+                    />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/inventory" element={
+                  <ProtectedRoute module="hugin_core">
+                    <Inventory />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/planning" element={
+                  <ProtectedRoute module="hugin_core">
+                    <ResponsiveRoute
+                      desktop={<Planning />}
+                      mobile={<MobilePlanning />}
+                    />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/documents" element={
+                  <ProtectedRoute module="hugin_core">
+                    <Documents />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/culture" element={
+                  <ProtectedRoute module="hugin_lab">
+                    <CultureTracking />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/culture-cells" element={
+                  <ProtectedRoute module="hugin_lab">
+                    <CultureCells />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/it-archive" element={
+                  <ProtectedRoute module="hugin_core">
+                    <ITArchive />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/meetings" element={
+                  <ProtectedRoute module="hugin_core">
+                    <Meetings />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/research" element={
+                  <ProtectedRoute module="hugin_lab">
+                    <ScientificResearch />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/tableur" element={
+                  <ProtectedRoute module="hugin_core">
+                    <TableurLab />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/bibliography" element={
+                  <ProtectedRoute module="hugin_lab">
+                    <Bibliography />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/notebook" element={
+                  <ProtectedRoute module="hugin_lab">
+                    <LabNotebook />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/stock" element={<Navigate to="/hugin" replace />} />
+                <Route path="/hugin/cryo" element={
+                  <ProtectedRoute module="hugin_lab">
+                    <CryoKeeper />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/equip" element={
+                  <ProtectedRoute module="hugin_lab">
+                    <EquipFlow />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/budget" element={
+                  <ProtectedRoute module="hugin_lab">
+                    <GrantBudget />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/sop" element={
+                  <ProtectedRoute module="hugin_lab">
+                    <SOPLibrary />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/biotools" element={
+                  <Suspense fallback={<div>Chargement...</div>}>
+                    <ProtectedRoute module="hugin_analysis">
+                      <BioTools />
+                    </ProtectedRoute>
+                  </Suspense>
+                } />
+                <Route path="/hugin/ai-assistant" element={
+                  <Suspense fallback={<div>Chargement...</div>}>
+                    <ProtectedRoute module="hugin_analysis">
+                      <AIAssistant />
+                    </ProtectedRoute>
+                  </Suspense>
+                } />
+                <Route path="/hugin/sequence" element={
+                  <Suspense fallback={<div>Chargement...</div>}>
+                    <ProtectedRoute module="hugin_analysis">
+                      <SequenceLens />
+                    </ProtectedRoute>
+                  </Suspense>
+                } />
+                <Route path="/hugin/colony" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <ColonyVision />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/projects" element={
+                  <ProtectedRoute module="hugin_core">
+                    <ProjectMind />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/safety" element={
+                  <ProtectedRoute module="hugin_lab">
+                    <ResponsiveRoute
+                      desktop={<SafetyHub />}
+                      mobile={<MobileSafetyHub />}
+                    />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/flow" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <FlowAnalyzer />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/spectrum" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <SpectrumViewer />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/gel" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <GelPro />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/phylo" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <PhyloGen />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/molecules" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <MoleculeBox />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/kinetics" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <KineticsLab />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/plates" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <PlateMapper />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/mixer" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <SolutionMixer />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/primers" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <PrimerStep />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/cells" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <CellTracker />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/blast" element={
+                  <ProtectedRoute>
+                    <BlastNCBI />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/mega" element={
+                  <ProtectedRoute>
+                    <PhyloMega />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/bionumerics" element={
+                  <ProtectedRoute>
+                    <BioNumerics />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/artemis" element={
+                  <ProtectedRoute>
+                    <Artemis />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/qiime2" element={
+                  <ProtectedRoute>
+                    <Qiime2 />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/whonet" element={
+                  <ProtectedRoute>
+                    <Whonet />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/bioanalyzer" element={
+                  <ProtectedRoute module="bioanalyzer">
+                    <BioAnalyzer />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/imageanalyzer" element={
+                  <ProtectedRoute module="imageanalyzer">
+                    <ImageAnalyzer />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/statistics" element={
+                  <ProtectedRoute module="statistics">
+                    <StatisticsLab />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/poster-maker" element={
+                  <ProtectedRoute module="hugin_core">
+                    <PosterMaker />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/word-processor" element={
+                  <ProtectedRoute module="hugin_core">
+                    <WordProcessor />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/protein-fold" element={
+                  <ProtectedRoute module="hugin_core">
+                    <ProteinFold />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/PredictiveDashboard" element={
+                  <ProtectedRoute module="hugin_core">
+                    <PredictiveDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/lab-timer" element={
+                  <ProtectedRoute module="hugin_core">
+                    <LabTimer />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/buffer-calc" element={
+                  <ProtectedRoute module="hugin_core">
+                    <BufferCalc />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/pcr-designer" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <PCRDesigner />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/gel-simulator" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <GelSimulator />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/protein-calculator" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <ProteinCalculator />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/restriction-mapper" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <RestrictionMapper />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/cloning-assistant" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <CloningAssistant />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/bacterial-growth" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <BacterialGrowthPredictor />
+                  </ProtectedRoute>
+                } />
+
+                {/* Hugin Scholar Modules - Nouveaux modules éducatifs avancés */}
+                <Route path="/hugin/resistance-phenotypes" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <ResistancePhenotypes />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/lab-equipment" element={
+                  <ProtectedRoute module="hugin_core">
+                    <LabEquipment />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/qcm-multi-disciplines" element={
+                  <ProtectedRoute module="hugin_core">
+                    <QCMMultiDisciplines />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/learning-management" element={
+                  <ProtectedRoute module="hugin_core">
+                    <LearningManagement />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/cloud-storage" element={
+                  <ProtectedRoute module="hugin_core">
+                    <CloudStorage />
+                  </ProtectedRoute>
+                } />
+
+                <Route path="/hugin/biotools" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <BioTools />
+                  </ProtectedRoute>
+                } />
+                <Route path="/account" element={
+                  <ProtectedRoute>
+                    <ResponsiveRoute
+                      desktop={<Account />}
+                      mobile={<MobileAccount />}
+                    />
+                  </ProtectedRoute>
+                } />
+                <Route path="/license-management" element={
+                  <ProtectedRoute>
+                    <LicenseManagement />
+                  </ProtectedRoute>
+                } />
+                <Route path="/settings" element={
+                  <ProtectedRoute>
+                    <ResponsiveRoute
+                      desktop={<Settings />}
+                      mobile={<MobileSettings />}
+                    />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin" element={
+                  <ProtectedRoute>
+                    <Admin />
+                  </ProtectedRoute>
+                } />
+
+                {/* Beta Test Routes - Accès restreint aux super admins */}
+                <Route path="/beta-hub" element={
+                  <ProtectedRoute>
+                    <BetaHub />
+                  </ProtectedRoute>
+                } />
+                <Route path="/beta/lab-notebook" element={
+                  <ProtectedRoute>
+                    <BetaLabNotebook />
+                  </ProtectedRoute>
+                } />
+                <Route path="/beta/protocol-builder" element={
+                  <ProtectedRoute>
+                    <BetaProtocolBuilder />
+                  </ProtectedRoute>
+                } />
+                <Route path="/beta/chemical-inventory" element={
+                  <ProtectedRoute>
+                    <BetaChemicalInventory />
+                  </ProtectedRoute>
+                } />
+                <Route path="/beta/backup-manager" element={
+                  <ProtectedRoute>
+                    <BetaBackupManager />
+                  </ProtectedRoute>
+                } />
+                <Route path="/beta/gel-simulator" element={
+                  <ProtectedRoute>
+                    <BetaGelSimulator />
+                  </ProtectedRoute>
+                } />
+                <Route path="/beta/equipment-booking" element={
+                  <ProtectedRoute>
+                    <BetaEquipmentBooking />
+                  </ProtectedRoute>
+                } />
+                <Route path="/beta/experiment-planner" element={
+                  <ProtectedRoute>
+                    <BetaExperimentPlanner />
+                  </ProtectedRoute>
+                } />
+              </Routes>
+            </Suspense>
+            <CookieConsent />
+            {location.pathname !== '/' && location.pathname !== '/login' && location.pathname !== '/register' && <MimirFloatingButton />}
+          </ElectronWrapper>
+        </SecurityProvider>
       </ToastProvider>
     </ThemeProvider>
   );

@@ -7,6 +7,7 @@ import NotificationCenter from './NotificationCenter';
 import Avatar from './Avatar';
 import QuickNotes from './QuickNotes';
 import StudentViewToggle from './StudentViewToggle';
+import { useSecurity } from './SecurityProvider';
 import { LOGOS } from '../utils/logoCache';
 
 const Navbar = () => {
@@ -21,16 +22,15 @@ const Navbar = () => {
 
     const languages: { code: string; label: string; flag: string }[] = [];
 
+    const { userProfile, userRole, isAuthenticated: isLoggedIn } = useSecurity();
+
     const currentUser = localStorage.getItem('currentUser');
-    const profileStr = currentUser ? localStorage.getItem(`user_profile_${currentUser}`) : null;
-    const profile = profileStr ? JSON.parse(profileStr) : null;
+    const profile = userProfile;
     const currentUserEmail = profile?.email || currentUser || '';
     const username = currentUser || 'User';
-    const isLoggedIn = !!currentUser;
-    
-    // Vérifier si l'utilisateur est super admin
-    const superAdmins = ['ethan@ols.com', 'bastien@ols.com', 'issam@ols.com'];
-    const isSuperAdmin = currentUserEmail && superAdmins.includes(currentUserEmail.toLowerCase().trim());
+
+    // Vérifier si l'utilisateur est super admin via le contexte
+    const isSuperAdmin = userRole === 'super_admin';
 
     const handleLogout = () => {
         localStorage.removeItem('currentUser');
@@ -103,7 +103,7 @@ const Navbar = () => {
                         </div>
                     </Link>
 
-                    {(localStorage.getItem('currentUserRole') === 'admin' || localStorage.getItem('currentUserRole') === 'super_admin') &&
+                    {(userRole === 'admin' || userRole === 'super_admin') &&
                         !['/', '/login', '/register', '/why-odin', '/enterprise', '/pricing', '/mobile-apps', '/support', '/blog', '/careers', '/company', '/congratulations'].includes(location.pathname) && (
                             <Link to="/admin" style={{
                                 textDecoration: 'none',
@@ -202,7 +202,7 @@ const Navbar = () => {
                                     }}
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <Avatar 
+                                        <Avatar
                                             email={currentUserEmail || ''}
                                             name={username}
                                             size={28}
@@ -212,40 +212,40 @@ const Navbar = () => {
                                     <ChevronDown size={14} style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                                 </button>
 
-                            {isDropdownOpen && (
-                                <div style={{
-                                    position: 'absolute',
-                                    top: 'calc(100% + 0.5rem)',
-                                    right: 0,
-                                    width: '280px',
-                                    background: 'var(--bg-secondary)',
-                                    border: '1px solid var(--border-color)',
-                                    borderRadius: '1rem',
-                                    boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
-                                    padding: '0.75rem',
-                                    zIndex: 1001,
-                                    animation: 'fadeIn 0.2s ease'
-                                }}>
-                                    <div style={{ padding: '0.5rem 0.75rem 1rem', borderBottom: '1px solid var(--border-color)', marginBottom: '0.5rem' }}>
-                                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Compte</p>
-                                        <p style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{username}</p>
+                                {isDropdownOpen && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: 'calc(100% + 0.5rem)',
+                                        right: 0,
+                                        width: '280px',
+                                        background: 'var(--bg-secondary)',
+                                        border: '1px solid var(--border-color)',
+                                        borderRadius: '1rem',
+                                        boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
+                                        padding: '0.75rem',
+                                        zIndex: 1001,
+                                        animation: 'fadeIn 0.2s ease'
+                                    }}>
+                                        <div style={{ padding: '0.5rem 0.75rem 1rem', borderBottom: '1px solid var(--border-color)', marginBottom: '0.5rem' }}>
+                                            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Compte</p>
+                                            <p style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{username}</p>
+                                        </div>
+
+                                        <button onClick={() => { navigate('/account'); setIsDropdownOpen(false); }} style={dropdownItemStyle}>
+                                            <User size={16} /> Profil
+                                        </button>
+                                        <button onClick={() => { navigate('/settings'); setIsDropdownOpen(false); }} style={dropdownItemStyle}>
+                                            <Settings size={16} /> Paramètres
+                                        </button>
+
+                                        <div style={{ margin: '0.5rem 0', borderBottom: '1px solid var(--border-color)' }}></div>
+
+                                        <button onClick={handleLogout} style={{ ...dropdownItemStyle, color: '#ef4444' }}>
+                                            <LogOut size={16} /> Déconnexion
+                                        </button>
                                     </div>
-
-                                    <button onClick={() => { navigate('/account'); setIsDropdownOpen(false); }} style={dropdownItemStyle}>
-                                        <User size={16} /> Profil
-                                    </button>
-                                    <button onClick={() => { navigate('/settings'); setIsDropdownOpen(false); }} style={dropdownItemStyle}>
-                                        <Settings size={16} /> Paramètres
-                                    </button>
-
-                                    <div style={{ margin: '0.5rem 0', borderBottom: '1px solid var(--border-color)' }}></div>
-
-                                    <button onClick={handleLogout} style={{ ...dropdownItemStyle, color: '#ef4444' }}>
-                                        <LogOut size={16} /> Déconnexion
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
                         </>
                     ) : (
                         <div style={{ display: 'flex', gap: '1rem' }}>
@@ -380,7 +380,7 @@ const Navbar = () => {
                             cursor: 'pointer'
                         }}
                     >
-                        <Avatar 
+                        <Avatar
                             email={currentUserEmail || ''}
                             name={username}
                             size={32}

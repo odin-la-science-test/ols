@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
     Mail, Send, Trash2, Plus, Search, Inbox,
     FileText, Trash, Archive, MoreVertical, Reply,
-    Forward, ArrowLeft, Paperclip
+    Forward, ArrowLeft, Paperclip, Save
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../components/ToastContext';
@@ -41,6 +41,10 @@ const Messaging = () => {
     const [isComposing, setIsComposing] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
 
+    // Confirmation brouillon
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+    const [isSending, setIsSending] = useState(false);
+
     const [composeData, setComposeData] = useState<{ to: string, subject: string, body: string, attachments: Attachment[] }>({
         to: '',
         subject: '',
@@ -48,16 +52,15 @@ const Messaging = () => {
         attachments: []
     });
 
-    // Formater la date ISO en format lisible
     const formatDate = (dateString: string): string => {
         try {
             const date = new Date(dateString);
-            return date.toLocaleString('fr-FR', { 
-                day: '2-digit', 
+            return date.toLocaleString('fr-FR', {
+                day: '2-digit',
                 month: '2-digit',
                 year: 'numeric',
-                hour: '2-digit', 
-                minute: '2-digit' 
+                hour: '2-digit',
+                minute: '2-digit'
             });
         } catch (error) {
             return dateString;
@@ -67,8 +70,8 @@ const Messaging = () => {
     const formatDateShort = (dateString: string): string => {
         try {
             const date = new Date(dateString);
-            return date.toLocaleDateString('fr-FR', { 
-                day: '2-digit', 
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
                 month: '2-digit'
             });
         } catch (error) {
@@ -78,7 +81,7 @@ const Messaging = () => {
 
     useEffect(() => {
         loadMessages();
-        const interval = setInterval(loadMessages, 30000); // 30 secondes au lieu de 5
+        const interval = setInterval(loadMessages, 30000);
         return () => clearInterval(interval);
     }, []);
 
@@ -123,7 +126,16 @@ const Messaging = () => {
 
     const loadMessages = async () => {
         const data = await fetchModuleData('messaging');
-        if (data) setMessages(data);
+        if (data && Array.isArray(data)) {
+            // Dédupliquer par ID pour éviter les doublons
+            const seen = new Set<string>();
+            const unique = data.filter((m: Message) => {
+                if (seen.has(m.id)) return false;
+                seen.add(m.id);
+                return true;
+            });
+            setMessages(unique);
+        }
     };
 
     const handleSend = async () => {
@@ -131,6 +143,8 @@ const Messaging = () => {
             showToast('Destinataire et sujet requis', 'error');
             return;
         }
+        if (isSending) return; // Protection anti double-clic
+        setIsSending(true);
 
         let messageBody = composeData.body;
         if (hasOLSSignature(currentUser)) {
@@ -175,7 +189,8 @@ const Messaging = () => {
         try {
             await saveModuleItem('messaging', recipientMessage);
             await saveModuleItem('messaging', senderMessage);
-            setMessages([recipientMessage, senderMessage, ...messages]);
+            // Recharger depuis la persistence (pas d'ajout local optimiste = pas de duplication)
+            await loadMessages();
             setIsComposing(false);
             setComposeData({ to: '', subject: '', body: '', attachments: [] });
             showToast('Message envoyé', 'success');
@@ -183,7 +198,49 @@ const Messaging = () => {
         } catch (error) {
             console.error('Send error:', error);
             showToast('Erreur d\'envoi', 'error');
+        } finally {
+            setIsSending(false);
         }
+    };
+
+    // Gestion de l'annulation avec choix brouillon / supprimer
+    const handleCancelCompose = () => {
+        if (composeData.to || composeData.subject || composeData.body) {
+            setShowCancelConfirm(true);
+        } else {
+            setIsComposing(false);
+        }
+    };
+
+    const saveDraft = async () => {
+        const draft: Message = {
+            id: `draft_${Date.now()}`,
+            sender: currentUser.trim(),
+            recipient: composeData.to.trim(),
+            subject: composeData.subject.trim() || '(sans objet)',
+            preview: composeData.body.substring(0, 50) + '...',
+            date: new Date().toISOString(),
+            read: true,
+            body: composeData.body,
+            folder: 'drafts',
+            attachments: composeData.attachments
+        };
+        try {
+            await saveModuleItem('messaging', draft);
+            await loadMessages();
+            showToast('Brouillon sauvegardé', 'success');
+        } catch (e) {
+            showToast('Erreur sauvegarde brouillon', 'error');
+        }
+        setShowCancelConfirm(false);
+        setIsComposing(false);
+        setComposeData({ to: '', subject: '', body: '', attachments: [] });
+    };
+
+    const discardDraft = () => {
+        setShowCancelConfirm(false);
+        setIsComposing(false);
+        setComposeData({ to: '', subject: '', body: '', attachments: [] });
     };
 
     const moveToTrash = async (id: string) => {
@@ -212,11 +269,9 @@ const Messaging = () => {
         const msg = messages.find(m => m.id === id);
         if (!msg) return;
 
-        // Always update to read=true, even if already read (to fix sync issues)
         const updated = { ...msg, read: true };
         try {
             await saveModuleItem('messaging', updated);
-            // Force state update
             setMessages(prevMessages => prevMessages.map(m => m.id === id ? updated : m));
         } catch (e) {
             console.error('Error marking message as read:', e);
@@ -260,8 +315,8 @@ const Messaging = () => {
                 return activeFolder === 'trash' && (isSender || isRecipient);
             }
 
-            if (activeFolder === 'inbox') return isRecipient;
-            if (activeFolder === 'sent') return isSender;
+            if (activeFolder === 'inbox') return isRecipient && m.folder === 'inbox';
+            if (activeFolder === 'sent') return isSender && m.folder === 'sent';
             if (activeFolder === 'drafts') return isSender && m.folder === 'drafts';
 
             return false;
@@ -271,12 +326,73 @@ const Messaging = () => {
             m.sender.toLowerCase().includes(searchQuery.toLowerCase()) ||
             m.recipient.toLowerCase().includes(searchQuery.toLowerCase())
         )
-        .sort((a, b) => Number(b.id) - Number(a.id));
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     const selectedMessage = messages.find(m => m.id === selectedId);
 
     return (
         <div style={{ height: 'calc(100vh - 80px)', display: 'flex', background: 'var(--bg-primary)', overflow: 'hidden' }}>
+
+            {/* Modal confirmation brouillon */}
+            {showCancelConfirm && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999,
+                    background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                    <div style={{
+                        background: 'var(--bg-secondary)', borderRadius: '1rem',
+                        padding: '2rem', maxWidth: '400px', width: '90%',
+                        border: '1px solid var(--border-color)'
+                    }}>
+                        <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem' }}>
+                            Que faire de ce message ?
+                        </h3>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+                            Votre message n'a pas été envoyé. Voulez-vous le sauvegarder comme brouillon ou le supprimer ?
+                        </p>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <button
+                                onClick={saveDraft}
+                                style={{
+                                    flex: 1, padding: '0.75rem',
+                                    background: 'var(--accent-hugin)', border: 'none',
+                                    borderRadius: '0.5rem', color: 'white', fontWeight: 600,
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center',
+                                    justifyContent: 'center', gap: '0.5rem'
+                                }}
+                            >
+                                <Save size={16} /> Brouillon
+                            </button>
+                            <button
+                                onClick={discardDraft}
+                                style={{
+                                    flex: 1, padding: '0.75rem',
+                                    background: 'rgba(239,68,68,0.1)',
+                                    border: '1px solid rgba(239,68,68,0.3)',
+                                    borderRadius: '0.5rem', color: '#ef4444', fontWeight: 600,
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center',
+                                    justifyContent: 'center', gap: '0.5rem'
+                                }}
+                            >
+                                <Trash2 size={16} /> Supprimer
+                            </button>
+                            <button
+                                onClick={() => setShowCancelConfirm(false)}
+                                style={{
+                                    padding: '0.75rem 1rem',
+                                    background: 'transparent',
+                                    border: '1px solid var(--border-color)',
+                                    borderRadius: '0.5rem', color: 'var(--text-secondary)',
+                                    cursor: 'pointer', fontWeight: 500
+                                }}
+                            >
+                                Continuer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Column 1: Navigation Sidebar */}
             <aside style={{ width: '240px', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', background: 'rgba(0,0,0,0.02)' }}>
@@ -313,6 +429,11 @@ const Messaging = () => {
                             {folder.id === 'inbox' && messages.filter(m => !m.read && m.recipient.trim().toLowerCase() === normalizedUser && m.folder !== 'trash').length > 0 && (
                                 <span style={{ background: 'var(--accent-hugin)', color: 'white', fontSize: '0.7rem', padding: '0.1rem 0.4rem', borderRadius: '10px' }}>
                                     {messages.filter(m => !m.read && m.recipient.trim().toLowerCase() === normalizedUser && m.folder !== 'trash').length}
+                                </span>
+                            )}
+                            {folder.id === 'drafts' && messages.filter(m => m.sender.trim().toLowerCase() === normalizedUser && m.folder === 'drafts').length > 0 && (
+                                <span style={{ background: '#f59e0b', color: 'white', fontSize: '0.7rem', padding: '0.1rem 0.4rem', borderRadius: '10px' }}>
+                                    {messages.filter(m => m.sender.trim().toLowerCase() === normalizedUser && m.folder === 'drafts').length}
                                 </span>
                             )}
                         </button>
@@ -384,9 +505,9 @@ const Messaging = () => {
                         <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <h3 style={{ fontSize: '1.2rem', margin: 0 }}>Nouveau message</h3>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <button onClick={() => setIsComposing(false)} className="btn" style={{ background: 'transparent', color: 'var(--text-primary)' }}>Annuler</button>
-                                <button onClick={handleSend} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    Envoyer <Send size={16} />
+                                <button onClick={handleCancelCompose} className="btn" style={{ background: 'transparent', color: 'var(--text-primary)' }}>Annuler</button>
+                                <button onClick={handleSend} disabled={isSending} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: isSending ? 0.6 : 1 }}>
+                                    {isSending ? 'Envoi...' : 'Envoyer'} <Send size={16} />
                                 </button>
                             </div>
                         </div>
@@ -525,17 +646,8 @@ const Messaging = () => {
                                                     gap: '0.75rem',
                                                     transition: 'all 0.2s'
                                                 }}
-                                                className="attachment-item"
                                             >
-                                                <div style={{
-                                                    width: '32px',
-                                                    height: '32px',
-                                                    borderRadius: '4px',
-                                                    background: 'rgba(59, 130, 246, 0.1)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                }}>
+                                                <div style={{ width: '32px', height: '32px', borderRadius: '4px', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                     <FileText size={18} />
                                                 </div>
                                                 <div style={{ flex: 1, minWidth: 0 }}>

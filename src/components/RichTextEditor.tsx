@@ -5,6 +5,7 @@ import {
   Heading3, Code, Quote, Minus, Table, ChevronDown
 } from 'lucide-react';
 import { ImageEditor } from './ImageEditor';
+import { sanitizeHTML } from '../utils/encryption';
 
 interface RichTextEditorProps {
   value: string;
@@ -394,7 +395,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         ref={editorRef}
         contentEditable={!disabled}
         onInput={handleInput}
-        dangerouslySetInnerHTML={{ __html: value }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHTML(value) }}
         style={{
           minHeight: '400px',
           padding: '1.5rem',

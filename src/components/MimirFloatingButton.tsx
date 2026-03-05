@@ -3,6 +3,7 @@ import { Bot, X, Send, Loader, Minimize2, Maximize2, Settings } from 'lucide-rea
 import { groqService } from '../services/groqService';
 import type { GroqMessage } from '../services/groqService';
 import { useLocation } from 'react-router-dom';
+import { sanitizeHTML } from '../utils/encryption';
 
 interface Message {
   id: string;
@@ -42,11 +43,14 @@ const MimirFloatingButton = () => {
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
-    // Vérifier la clé API
-    const apiKey = groqService.getApiKey();
-    setHasApiKey(!!apiKey);
-    
+
+    // Vérifier la clé API de manière asynchrone
+    const checkApiKey = async () => {
+      const apiKey = await groqService.getApiKey();
+      setHasApiKey(!!apiKey);
+    };
+    checkApiKey();
+
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -58,14 +62,14 @@ const MimirFloatingButton = () => {
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container;
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-      
+
       // Détecter si l'utilisateur scroll manuellement vers le haut
       if (scrollTop < lastScrollTopRef.current) {
         isUserScrollingRef.current = true;
       } else if (isNearBottom) {
         isUserScrollingRef.current = false;
       }
-      
+
       lastScrollTopRef.current = scrollTop;
     };
 
@@ -88,10 +92,10 @@ const MimirFloatingButton = () => {
     text = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) => {
       return `<pre style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 0.5rem 0;"><code style="white-space: pre-wrap;">${code.trim()}</code></pre>`;
     });
-    
+
     // Code inline
     text = text.replace(/`([^`]+)`/g, '<code style="background: rgba(0,0,0,0.3); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-family: monospace;">$1</code>');
-    
+
     // Tableaux Markdown
     text = text.replace(/\|(.+)\|\n\|[-:\s|]+\|\n((?:\|.+\|\n?)+)/g, (match, header, rows) => {
       const headers = header.split('|').filter((h: string) => h.trim()).map((h: string) => `<th style="padding: 0.5rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(99, 102, 241, 0.2); font-weight: 600;">${h.trim()}</th>`).join('');
@@ -101,30 +105,30 @@ const MimirFloatingButton = () => {
       }).join('');
       return `<div style="overflow-x: auto; margin: 1rem 0;"><table style="width: 100%; border-collapse: collapse; border: 1px solid rgba(255,255,255,0.2);"><thead><tr>${headers}</tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
     });
-    
+
     // Titres
     text = text.replace(/^### (.+)$/gm, '<h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 0.5rem; margin-bottom: 0.25rem;">$1</h3>');
     text = text.replace(/^## (.+)$/gm, '<h2 style="font-size: 1.3rem; font-weight: 600; margin-top: 0.75rem; margin-bottom: 0.5rem; color: var(--accent-hugin);">$1</h2>');
     text = text.replace(/^# (.+)$/gm, '<h1 style="font-size: 1.5rem; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; color: var(--accent-hugin);">$1</h1>');
-    
+
     // Gras et italique
     text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
-    
+
     // Listes
     text = text.replace(/^- (.+)$/gm, '<li style="margin-left: 1.5rem;">$1</li>');
     text = text.replace(/^(\d+)\. (.+)$/gm, '<li style="margin-left: 1.5rem;">$2</li>');
-    
+
     // Citations
     text = text.replace(/^> (.+)$/gm, '<blockquote style="border-left: 4px solid var(--accent-hugin); padding-left: 1rem; margin-left: 0; font-style: italic; opacity: 0.9;">$1</blockquote>');
-    
+
     // Liens
     text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color: var(--accent-hugin); text-decoration: underline;">$1</a>');
-    
+
     // Sauts de ligne
     text = text.replace(/\n/g, '<br/>');
-    
-    return text;
+
+    return sanitizeHTML(text);
   };
 
   const handleSendMessage = async () => {
@@ -187,7 +191,7 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
         role: m.role as 'user' | 'assistant' | 'system',
         content: m.content
       }));
-      
+
       const groqMessages: GroqMessage[] = [
         systemPrompt,
         ...recentMessages,
@@ -201,7 +205,7 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
         content: '',
         timestamp: new Date()
       };
-      
+
       setMessages(prev => [...prev, assistantMessage]);
 
       // Streaming avec historique limité
@@ -219,7 +223,7 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
           }
           return newMessages;
         });
-        
+
         // Scroll automatique pendant le streaming
         if (messagesContainerRef.current) {
           const container = messagesContainerRef.current;
@@ -251,15 +255,15 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
     }
   };
 
-  const buttonPosition = isMobile 
+  const buttonPosition = isMobile
     ? { bottom: '100px', right: '1rem' }
     : { bottom: '2rem', left: '2rem' };
 
   const chatPosition = isMobile
     ? { top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', borderRadius: 0 }
     : isMinimized
-    ? { top: '2rem', left: '2rem', width: '350px', height: '60px' }
-    : { bottom: '2rem', left: '2rem', width: '450px', height: '650px' };
+      ? { top: '2rem', left: '2rem', width: '350px', height: '60px' }
+      : { bottom: '2rem', left: '2rem', width: '450px', height: '650px' };
 
   // Ne pas afficher le bouton sur la page AI Assistant
   if (isOnAIAssistantPage) {
@@ -439,7 +443,7 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
                     maxWidth: '85%',
                     padding: '0.75rem 1rem',
                     borderRadius: '1rem',
-                    background: message.role === 'user' 
+                    background: message.role === 'user'
                       ? 'linear-gradient(135deg, var(--accent-hugin), #818cf8)'
                       : 'rgba(255, 255, 255, 0.05)',
                     color: 'white',
@@ -467,7 +471,7 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
                 </span>
               </div>
             ))}
-            
+
             {isLoading && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-hugin)' }}>
                 <Loader size={16} style={{ animation: 'spin 1s linear infinite' }} />
@@ -523,7 +527,7 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
                 disabled={!inputMessage.trim() || isLoading}
                 style={{
                   padding: '0.75rem 1rem',
-                  background: inputMessage.trim() && !isLoading 
+                  background: inputMessage.trim() && !isLoading
                     ? 'linear-gradient(135deg, var(--accent-hugin), #818cf8)'
                     : 'rgba(255, 255, 255, 0.1)',
                   border: 'none',

@@ -14,9 +14,9 @@ import Navbar from '../components/Navbar';
 import { checkHasAccess, getAccessData } from '../utils/ShieldUtils';
 import { LOGOS } from '../utils/logoCache';
 import HuginEditMode from '../components/HuginEditMode';
-import { 
-    getHuginModulesOrder, 
-    applySortOrder, 
+import {
+    getHuginModulesOrder,
+    applySortOrder,
     filterVisibleModules,
     getCurrentUserEmail
 } from '../utils/huginCustomization';
@@ -35,14 +35,14 @@ const Hugin = () => {
     const [activeCategory, setActiveCategory] = useState('Tout');
     const [editMode, setEditMode] = useState(false);
     const [customOrder, setCustomOrder] = useState<ModuleOrder[]>(() => getHuginModulesOrder());
-    
+
     // Tracking prédictif
     const { trackToolUse, trackSearch } = usePredictiveTracking();
 
     // Subscription Check logic
     const userStr = localStorage.getItem('currentUser');
     const { sub, hiddenTools } = getAccessData(userStr);
-    
+
     // Détection de la vue étudiante
     const profileStr = userStr ? localStorage.getItem(`user_profile_${userStr}`) : null;
     const profile = profileStr ? JSON.parse(profileStr) : null;
@@ -147,7 +147,7 @@ const Hugin = () => {
         'lms',                    // Plateforme d'Apprentissage
         'cloud-storage'           // Stockage Cloud
     ];
-    
+
     // Modules Scholar à exclure pour les professionnels
     const scholarOnlyModules = [
         'resistance-phenotypes',
@@ -158,25 +158,25 @@ const Hugin = () => {
     ];
 
     // Filtrer les modules selon la vue
-    const baseModules = isStudentView 
+    const baseModules = isStudentView
         ? modules.filter(m => studentAllowedModules.includes(m.id))
         : modules.filter(m => !scholarOnlyModules.includes(m.id)); // Exclure Scholar pour les pros
 
     // Charger les modules beta et les fusionner avec les modules standards
     const allModules = useMemo(() => {
         const standardModules: any[] = [...baseModules];
-        
+
         if (!isUserSuperAdmin) {
             console.log('👤 Utilisateur standard, modules:', standardModules.length);
             return standardModules;
         }
-        
+
         const betaFeatures = getBetaFeatures();
-        
+
         console.log('🔄 Recalcul allModules');
         console.log('📋 customOrder:', customOrder);
         console.log('🧪 betaFeatures disponibles:', betaFeatures.map(f => f.id));
-        
+
         // Ajouter les modules beta qui sont dans customOrder
         customOrder.forEach(orderItem => {
             if (orderItem.id.startsWith('beta_')) {
@@ -198,12 +198,22 @@ const Hugin = () => {
                 }
             }
         });
-        
+
         console.log('📦 Total modules (avec beta):', standardModules.length);
         return standardModules;
     }, [isUserSuperAdmin, customOrder, baseModules]);
 
     const categories = ['Tout', 'Core', 'Lab', 'Research', 'Analysis', 'Scholar'];
+
+    // Traduction des catégories en français
+    const catLabels: Record<string, string> = {
+        'Tout': 'Tout',
+        'Core': 'Essentiels',
+        'Lab': 'Laboratoire',
+        'Research': 'Recherche',
+        'Analysis': 'Analyse',
+        'Scholar': 'Éducation'
+    };
 
     const accessibleModules = allModules.filter(m => hasAccess(m.id));
 
@@ -244,7 +254,7 @@ const Hugin = () => {
                     <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem' }}>
                         {platformDescription}
                     </p>
-                    
+
                     {isStudentView && (
                         <div style={{
                             display: 'inline-flex',
@@ -322,12 +332,12 @@ const Hugin = () => {
                                 {cat === 'Research' && <Brain size={16} />}
                                 {cat === 'Analysis' && <Activity size={16} />}
                                 {cat === 'Scholar' && <GraduationCap size={16} />}
-                                {cat}
+                                {catLabels[cat] || cat}
                             </button>
                         ))}
-                        
+
                         <div style={{ width: '1px', height: '24px', background: 'rgba(255, 255, 255, 0.2)', margin: '0 0.5rem' }}></div>
-                        
+
                         <button
                             onClick={() => setEditMode(true)}
                             style={{
@@ -383,7 +393,7 @@ const Hugin = () => {
                         <div key={cat} style={{ marginBottom: '3rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                                 <div style={{ height: '1px', flex: 1, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.1))' }}></div>
-                                <h2 style={{ fontSize: '1.25rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent-hugin)', fontWeight: 700 }}>{cat}</h2>
+                                <h2 style={{ fontSize: '1.25rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent-hugin)', fontWeight: 700 }}>{catLabels[cat] || cat}</h2>
                                 <div style={{ height: '1px', flex: 1, background: 'linear-gradient(to left, transparent, rgba(255,255,255,0.1))' }}></div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
@@ -431,10 +441,10 @@ const Hugin = () => {
                                                 </div>
                                             )}
                                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-                                                <div style={{ 
-                                                    padding: '0.75rem', 
-                                                    background: isBeta ? 'rgba(245, 158, 11, 0.2)' : 'rgba(99, 102, 241, 0.15)', 
-                                                    borderRadius: '0.75rem', 
+                                                <div style={{
+                                                    padding: '0.75rem',
+                                                    background: isBeta ? 'rgba(245, 158, 11, 0.2)' : 'rgba(99, 102, 241, 0.15)',
+                                                    borderRadius: '0.75rem',
                                                     color: isBeta ? '#f59e0b' : 'var(--accent-hugin)',
                                                     flexShrink: 0
                                                 }}>

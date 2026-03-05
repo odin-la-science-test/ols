@@ -110,9 +110,9 @@ const QCMMultiDisciplines = () => {
 
   if (!quizStarted && !showResult) {
     return (
-      <div style={{ minHeight: '100vh', paddingBottom: '4rem' }}>
+      <div style={{ minHeight: '100vh', paddingBottom: '4rem', background: 'var(--bg-primary)', color: 'white' }}>
         <Navbar />
-        
+
         <div className="container" style={{ paddingTop: '2rem', color: 'white' }}>
           <header style={{ marginBottom: '2rem' }}>
             <h1 className="text-gradient" style={{ fontSize: '2.5rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -178,13 +178,13 @@ const QCMMultiDisciplines = () => {
   if (showResult && !quizStarted) {
     const score = calculateScore();
     return (
-      <div style={{ minHeight: '100vh', paddingBottom: '4rem' }}>
+      <div style={{ minHeight: '100vh', paddingBottom: '4rem', background: 'var(--bg-primary)', color: 'white' }}>
         <Navbar />
-        
+
         <div className="container" style={{ paddingTop: '2rem', textAlign: 'center', color: 'white' }}>
           <Trophy size={80} style={{ color: '#10b981', marginBottom: '1rem' }} />
           <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Quiz terminé !</h1>
-          
+
           <div className="card glass-panel" style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto', color: 'white' }}>
             <h2 style={{ fontSize: '3rem', color: 'var(--accent-hugin)', marginBottom: '1rem' }}>
               {score.percentage.toFixed(0)}%
@@ -211,9 +211,9 @@ const QCMMultiDisciplines = () => {
   const currentQuestion = currentQuestions[currentQuestionIndex];
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: '4rem' }}>
+    <div style={{ minHeight: '100vh', paddingBottom: '4rem', background: 'var(--bg-primary)', color: 'white' }}>
       <Navbar />
-      
+
       <div className="container" style={{ paddingTop: '2rem', color: 'white' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div>
@@ -224,6 +224,20 @@ const QCMMultiDisciplines = () => {
           {quizMode === 'exam' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: timeLeft < 60 ? '#ef4444' : 'var(--accent-hugin)' }}>
               <Clock size={20} />
+              <div style={{ position: 'relative', width: '150px', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  height: '100%',
+                  width: '100%',
+                  background: timeLeft < 60 ? '#ef4444' : 'var(--accent-hugin)',
+                  transform: `scaleX(${timeLeft / (currentQuestions.length * 60)})`,
+                  transformOrigin: 'left',
+                  transition: 'transform 1s linear',
+                  willChange: 'transform'
+                }} />
+              </div>
               <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>
                 {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
               </span>
@@ -248,16 +262,16 @@ const QCMMultiDisciplines = () => {
                     ? idx === currentQuestion.correctAnswer
                       ? '#10b981'
                       : userAnswers[currentQuestionIndex] === idx
-                      ? '#ef4444'
-                      : 'rgba(255, 255, 255, 0.1)'
+                        ? '#ef4444'
+                        : 'rgba(255, 255, 255, 0.1)'
                     : 'rgba(255, 255, 255, 0.1)',
                   borderRadius: '0.75rem',
                   background: showResult
                     ? idx === currentQuestion.correctAnswer
                       ? 'rgba(16, 185, 129, 0.1)'
                       : userAnswers[currentQuestionIndex] === idx
-                      ? 'rgba(239, 68, 68, 0.1)'
-                      : 'rgba(255, 255, 255, 0.05)'
+                        ? 'rgba(239, 68, 68, 0.1)'
+                        : 'rgba(255, 255, 255, 0.05)'
                     : 'rgba(255, 255, 255, 0.05)',
                   cursor: showResult ? 'default' : 'pointer',
                   transition: 'all 0.2s',
@@ -273,7 +287,7 @@ const QCMMultiDisciplines = () => {
             <div style={{ marginTop: '2rem', padding: '1rem', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '0.75rem', color: 'white' }}>
               <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--accent-hugin)' }}>Explication</h3>
               <p style={{ color: 'white' }}>{currentQuestion.explanation}</p>
-              
+
               <button
                 onClick={() => {
                   if (currentQuestionIndex < currentQuestions.length - 1) {

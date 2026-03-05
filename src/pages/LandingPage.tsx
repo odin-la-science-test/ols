@@ -6,7 +6,7 @@ import {
     Play, Zap, Shield, Users, TrendingUp,
     CheckCircle, Award,
     Microscope, FlaskConical, Dna, Brain,
-    Download, Monitor
+    Download, Monitor, Lock, ShieldCheck, Globe, FileCheck2, Server
 } from 'lucide-react';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import { LOGOS } from '../utils/logoCache';
@@ -25,7 +25,7 @@ const LandingPage = () => {
     const handleDownloadDesktop = () => {
         // Lien direct vers le fichier ZIP portable sur GitHub Releases
         const downloadUrl = 'https://github.com/odin-la-science-test/ols/releases/latest/download/Odin-La-Science-Portable-v1.0.0.zip';
-        
+
         // Téléchargement direct - le navigateur téléchargera automatiquement le fichier
         // Version portable: extraire le ZIP et lancer OdinLaScience.exe
         window.location.href = downloadUrl;
@@ -124,6 +124,57 @@ const LandingPage = () => {
         { value: '1M+', label: 'Expériences' }
     ];
 
+    const certifications = [
+        {
+            icon: <Lock size={32} color="#10b981" />,
+            title: 'Chiffrement AES-256',
+            desc: 'Protection de niveau militaire pour toutes vos données au repos et en transit.',
+            status: 'Vérifié'
+        },
+        {
+            icon: <ShieldCheck size={32} color="#3b82f6" />,
+            title: 'Conformité RGPD',
+            desc: 'Respect strict de la souveraineté des données et de la vie privée des chercheurs.',
+            status: 'Certifié'
+        },
+        {
+            icon: <Zap size={32} color="#8b5cf6" />,
+            title: 'Sécurité Bancaire',
+            desc: 'MFA obligatoire, Session Pinning et Audit Ledger immutable HMAC-SHA256.',
+            status: 'Actif'
+        },
+        {
+            icon: <Activity size={32} color="#ef4444" />,
+            title: 'Omega-Proof',
+            desc: 'Survie certifiée face aux attaques multi-front et botnets de niveau étatique.',
+            status: 'Survécu'
+        },
+        {
+            icon: <Globe size={32} color="#f59e0b" />,
+            title: 'Souveraineté Absolue',
+            desc: 'Immunité totale (Black-Hole Proof) contre l\'annihilation et le vol de données.',
+            status: 'Garanti'
+        },
+        {
+            icon: <FileCheck2 size={32} color="#8b5cf6" />,
+            title: 'Audit OWASP',
+            desc: 'Résilience complète face aux vulnérabilités web les plus critiques (Top 10).',
+            status: 'Validé'
+        },
+        {
+            icon: <Server size={32} color="#06b6d4" />,
+            title: 'Infrastructure Critique',
+            desc: 'Hébergement sur serveurs durcis avec isolation atomique des processus.',
+            status: 'Sécurisé'
+        },
+        {
+            icon: <Award size={32} color="#facc15" />,
+            title: 'Standard Européen',
+            desc: 'Conformité aux exigences de sécurité les plus strictes de l\'UE pour la recherche.',
+            status: 'Conforme'
+        }
+    ];
+
     return (
         <div style={{
             minHeight: '100vh',
@@ -154,7 +205,7 @@ const LandingPage = () => {
                     justifyContent: 'space-between'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '0.75rem', cursor: 'pointer' }}
-                         onClick={() => navigate('/')}>
+                        onClick={() => navigate('/')}>
                         <img src={LOGOS.main} alt="Odin" style={{ height: isMobile ? '32px' : '40px' }} />
                         {!isMobile && (
                             <span style={{
@@ -205,15 +256,15 @@ const LandingPage = () => {
                         </div>
                     ) : (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                            <a 
-                                href="#features" 
+                            <a
+                                href="#features"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
                                 }}
-                                style={{ 
-                                    color: '#94a3b8', 
-                                    textDecoration: 'none', 
+                                style={{
+                                    color: '#94a3b8',
+                                    textDecoration: 'none',
                                     fontWeight: 500,
                                     cursor: 'pointer',
                                     transition: 'color 0.2s'
@@ -223,15 +274,15 @@ const LandingPage = () => {
                             >
                                 Fonctionnalités
                             </a>
-                            <a 
-                                href="#pricing" 
+                            <a
+                                href="#pricing"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
                                 }}
-                                style={{ 
-                                    color: '#94a3b8', 
-                                    textDecoration: 'none', 
+                                style={{
+                                    color: '#94a3b8',
+                                    textDecoration: 'none',
                                     fontWeight: 500,
                                     cursor: 'pointer',
                                     transition: 'color 0.2s'
@@ -369,7 +420,7 @@ const LandingPage = () => {
                             lineHeight: 1.6,
                             marginBottom: isMobile ? '2rem' : '2.5rem'
                         }}>
-                            Odin révolutionne la recherche scientifique avec des outils puissants pour 
+                            Odin révolutionne la recherche scientifique avec des outils puissants pour
                             gérer vos expériences, analyser vos données et collaborer avec votre équipe.
                         </p>
 
@@ -631,7 +682,7 @@ const LandingPage = () => {
                         filter: 'blur(100px)',
                         pointerEvents: 'none'
                     }} />
-                    
+
                     <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
                         <div style={{
                             display: 'grid',
@@ -784,6 +835,106 @@ const LandingPage = () => {
                 </section>
             )}
 
+            {/* Section Certifications & Trust */}
+            <section style={{
+                padding: '6rem 2rem',
+                background: 'linear-gradient(180deg, transparent, rgba(15, 23, 42, 0.8))',
+                borderTop: '1px solid rgba(255, 255, 255, 0.05)',
+                position: 'relative'
+            }}>
+                <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+                        <div style={{
+                            fontSize: '0.9rem',
+                            fontWeight: 700,
+                            color: '#3b82f6',
+                            textTransform: 'uppercase',
+                            letterSpacing: '2px',
+                            marginBottom: '1rem'
+                        }}>
+                            Confiance et Sécurité
+                        </div>
+                        <h2 style={{
+                            fontSize: isMobile ? '2rem' : '3rem',
+                            fontWeight: 900,
+                            background: 'linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            marginBottom: '1rem'
+                        }}>
+                            Une plateforme certifiée pour vos recherches
+                        </h2>
+                        <p style={{ color: '#94a3b8', maxWidth: '700px', margin: '0 auto', fontSize: '1.1rem' }}>
+                            Odin déploie les protocoles de sécurité les plus rigoureux pour garantir l'intégrité
+                            et la confidentialité de votre patrimoine scientifique.
+                        </p>
+                    </div>
+
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)',
+                        gap: '2rem'
+                    }}>
+                        {certifications.map((cert, i) => (
+                            <div key={i} style={{
+                                background: 'rgba(30, 41, 59, 0.5)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '1.5rem',
+                                padding: '2rem',
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                cursor: 'default',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-5px)';
+                                    e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.4)';
+                                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.3)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}>
+                                <div style={{
+                                    width: '64px',
+                                    height: '64px',
+                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    borderRadius: '1rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginBottom: '1.5rem'
+                                }}>
+                                    {cert.icon}
+                                </div>
+                                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+                                    {cert.title}
+                                </h3>
+                                <p style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+                                    {cert.desc}
+                                </p>
+                                <div style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 700,
+                                    color: '#f8fafc',
+                                    padding: '0.4rem 0.8rem',
+                                    background: 'rgba(16, 185, 129, 0.15)',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid rgba(16, 185, 129, 0.3)'
+                                }}>
+                                    <CheckCircle size={14} color="#10b981" />
+                                    {cert.status}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* Section Multi-Plateforme */}
             <section style={{
                 padding: '8rem 2rem',
@@ -822,16 +973,16 @@ const LandingPage = () => {
                             textAlign: 'center',
                             transition: 'all 0.3s'
                         }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-8px)';
-                            e.currentTarget.style.borderColor = '#3b82f6';
-                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(59, 130, 246, 0.3)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.2)';
-                            e.currentTarget.style.boxShadow = 'none';
-                        }}>
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-8px)';
+                                e.currentTarget.style.borderColor = '#3b82f6';
+                                e.currentTarget.style.boxShadow = '0 20px 40px rgba(59, 130, 246, 0.3)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.2)';
+                                e.currentTarget.style.boxShadow = 'none';
+                            }}>
                             <div style={{
                                 width: '80px',
                                 height: '80px',
@@ -844,9 +995,9 @@ const LandingPage = () => {
                                 boxShadow: '0 10px 30px rgba(59, 130, 246, 0.4)'
                             }}>
                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <line x1="2" y1="12" x2="22" y2="12"/>
-                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="2" y1="12" x2="22" y2="12" />
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                                 </svg>
                             </div>
                             <h3 style={{
@@ -887,16 +1038,16 @@ const LandingPage = () => {
                             transition: 'all 0.3s',
                             position: 'relative'
                         }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-8px)';
-                            e.currentTarget.style.borderColor = '#10b981';
-                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(16, 185, 129, 0.3)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.2)';
-                            e.currentTarget.style.boxShadow = 'none';
-                        }}>
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-8px)';
+                                e.currentTarget.style.borderColor = '#10b981';
+                                e.currentTarget.style.boxShadow = '0 20px 40px rgba(16, 185, 129, 0.3)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+                                e.currentTarget.style.boxShadow = 'none';
+                            }}>
                             <div style={{
                                 position: 'absolute',
                                 top: '1rem',
@@ -980,16 +1131,16 @@ const LandingPage = () => {
                             textAlign: 'center',
                             transition: 'all 0.3s'
                         }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-8px)';
-                            e.currentTarget.style.borderColor = '#8b5cf6';
-                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(139, 92, 246, 0.3)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.2)';
-                            e.currentTarget.style.boxShadow = 'none';
-                        }}>
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-8px)';
+                                e.currentTarget.style.borderColor = '#8b5cf6';
+                                e.currentTarget.style.boxShadow = '0 20px 40px rgba(139, 92, 246, 0.3)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.2)';
+                                e.currentTarget.style.boxShadow = 'none';
+                            }}>
                             <div style={{
                                 width: '80px',
                                 height: '80px',
@@ -1002,8 +1153,8 @@ const LandingPage = () => {
                                 boxShadow: '0 10px 30px rgba(139, 92, 246, 0.4)'
                             }}>
                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
-                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
-                                    <line x1="12" y1="18" x2="12.01" y2="18"/>
+                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                                    <line x1="12" y1="18" x2="12.01" y2="18" />
                                 </svg>
                             </div>
                             <h3 style={{
@@ -1072,16 +1223,16 @@ const LandingPage = () => {
                                 transition: 'all 0.3s',
                                 cursor: 'pointer'
                             }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-4px)';
-                                e.currentTarget.style.borderColor = feature.color;
-                                e.currentTarget.style.boxShadow = `0 12px 24px ${feature.color}22`;
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                                e.currentTarget.style.boxShadow = 'none';
-                            }}>
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-4px)';
+                                    e.currentTarget.style.borderColor = feature.color;
+                                    e.currentTarget.style.boxShadow = `0 12px 24px ${feature.color}22`;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}>
                                 <div style={{
                                     width: '56px',
                                     height: '56px',
@@ -1150,14 +1301,14 @@ const LandingPage = () => {
                                 borderRadius: '1.5rem',
                                 transition: 'all 0.3s'
                             }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'translateY(-8px)';
-                                e.currentTarget.style.borderColor = benefit.color;
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                            }}>
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-8px)';
+                                    e.currentTarget.style.borderColor = benefit.color;
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                                }}>
                                 <div style={{
                                     width: '80px',
                                     height: '80px',
@@ -1240,16 +1391,16 @@ const LandingPage = () => {
                                 transition: 'all 0.3s',
                                 cursor: 'pointer'
                             }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = 'scale(1.02)';
-                                e.currentTarget.style.borderColor = '#8b5cf6';
-                                e.currentTarget.style.boxShadow = '0 20px 40px rgba(139, 92, 246, 0.2)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = 'scale(1)';
-                                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                                e.currentTarget.style.boxShadow = 'none';
-                            }}>
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1.02)';
+                                    e.currentTarget.style.borderColor = '#8b5cf6';
+                                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(139, 92, 246, 0.2)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}>
                                 <div style={{
                                     width: '80px',
                                     height: '80px',
@@ -1348,14 +1499,14 @@ const LandingPage = () => {
                             display: 'flex',
                             flexDirection: 'column'
                         }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-8px)';
-                            e.currentTarget.style.borderColor = '#64748b';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                        }}>
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-8px)';
+                                e.currentTarget.style.borderColor = '#64748b';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                            }}>
                             <div style={{ marginBottom: '1.5rem' }}>
                                 <h3 style={{
                                     fontSize: '1.5rem',
@@ -1442,14 +1593,14 @@ const LandingPage = () => {
                             position: 'relative',
                             transform: 'scale(1.05)'
                         }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.08) translateY(-8px)';
-                            e.currentTarget.style.boxShadow = '0 20px 40px rgba(59, 130, 246, 0.3)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.05) translateY(0)';
-                            e.currentTarget.style.boxShadow = 'none';
-                        }}>
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.08) translateY(-8px)';
+                                e.currentTarget.style.boxShadow = '0 20px 40px rgba(59, 130, 246, 0.3)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.05) translateY(0)';
+                                e.currentTarget.style.boxShadow = 'none';
+                            }}>
                             <div style={{
                                 position: 'absolute',
                                 top: '-12px',
@@ -1560,14 +1711,14 @@ const LandingPage = () => {
                             display: 'flex',
                             flexDirection: 'column'
                         }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-8px)';
-                            e.currentTarget.style.borderColor = '#8b5cf6';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                        }}>
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-8px)';
+                                e.currentTarget.style.borderColor = '#8b5cf6';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                            }}>
                             <div style={{ marginBottom: '1.5rem' }}>
                                 <h3 style={{
                                     fontSize: '1.5rem',

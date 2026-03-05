@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, Settings, Trash2, Plus, Search, Bot, Sparkles, Code, FileText, Lightbulb } from 'lucide-react';
 import { groqService } from '../../services/groqService';
 import type { GroqMessage } from '../../services/groqService';
+import { sanitizeHTML, SecureStorage } from '../../utils/encryption';
 
 interface Conversation {
   id: string;
@@ -30,18 +31,25 @@ const AIAssistant = () => {
   const lastScrollTopRef = useRef(0);
 
   useEffect(() => {
-    const key = groqService.getApiKey();
-    setApiKey(key);
-    setTempApiKey(key);
-    loadConversations();
-    
-    // Charger la conversation par défaut
-    const saved = localStorage.getItem('mimir_current_conversation');
-    if (saved) {
-      const history = JSON.parse(saved);
-      setMessages(history);
-      groqService.setHistory(history);
-    }
+    const init = async () => {
+      const key = await groqService.getApiKey();
+      setApiKey(key);
+      setTempApiKey(key);
+      await loadConversations();
+
+      // Charger la conversation par défaut depuis SecureStorage
+      const saved = await SecureStorage.getItem('mimir_current_conversation');
+      if (saved) {
+        setMessages(saved);
+        groqService.setHistory(saved);
+      }
+
+      // Ouvrir automatiquement les paramètres si pas de clé API
+      if (!key) {
+        setShowSettings(true);
+      }
+    };
+    init();
   }, []);
 
   // Gestion intelligente du scroll
@@ -52,14 +60,14 @@ const AIAssistant = () => {
     const handleScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container;
       const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-      
+
       // Détecter si l'utilisateur scroll manuellement vers le haut
       if (scrollTop < lastScrollTopRef.current) {
         isUserScrollingRef.current = true;
       } else if (isNearBottom) {
         isUserScrollingRef.current = false;
       }
-      
+
       lastScrollTopRef.current = scrollTop;
     };
 
@@ -76,8 +84,8 @@ const AIAssistant = () => {
     }
   }, [messages]);
 
-  const loadConversations = () => {
-    const convs = groqService.listHistories();
+  const loadConversations = async () => {
+    const convs = await groqService.listHistories();
     setConversations(convs);
   };
 
@@ -126,7 +134,7 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
 
       // Préparer l'historique avec le prompt système
       const historyWithSystem = [systemPrompt, ...newMessages];
-      
+
       // Limiter l'historique à 10 derniers messages pour éviter l'erreur 413
       const recentMessages = newMessages.slice(-10);
       groqService.setHistory(recentMessages);
@@ -152,10 +160,10 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
         setMessages([...newMessages, { role: 'assistant', content: fullResponse }]);
       }
 
-      // Sauvegarder la conversation
+      // Sauvegarder la conversation dans SecureStorage
       const finalMessages = [...newMessages, { role: 'assistant', content: fullResponse }];
-      localStorage.setItem('mimir_current_conversation', JSON.stringify(finalMessages));
-      
+      await SecureStorage.setItem('mimir_current_conversation', finalMessages);
+
     } catch (error: any) {
       console.error('Erreur:', error);
       setMessages([...newMessages, {
@@ -167,47 +175,47 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
     }
   };
 
-  const handleSaveApiKey = () => {
-    groqService.setApiKey(tempApiKey);
+  const handleSaveApiKey = async () => {
+    await groqService.setApiKey(tempApiKey);
     setApiKey(tempApiKey);
     setShowSettings(false);
   };
 
-  const handleClearConversation = () => {
+  const handleClearConversation = async () => {
     if (confirm('Effacer toute la conversation ?')) {
       setMessages([]);
       groqService.clearHistory();
-      localStorage.removeItem('mimir_current_conversation');
+      await SecureStorage.removeItem('mimir_current_conversation');
     }
   };
 
-  const handleNewConversation = () => {
+  const handleNewConversation = async () => {
     if (messages.length > 0) {
       const name = prompt('Nom de la conversation ?') || `Conversation ${Date.now()}`;
-      groqService.saveHistory(name);
-      loadConversations();
+      await groqService.saveHistory(name);
+      await loadConversations();
     }
     setMessages([]);
     groqService.clearHistory();
-    localStorage.removeItem('mimir_current_conversation');
+    await SecureStorage.removeItem('mimir_current_conversation');
     setCurrentConversationId('default');
   };
 
-  const handleLoadConversation = (name: string) => {
-    if (groqService.loadHistory(name)) {
+  const handleLoadConversation = async (name: string) => {
+    if (await groqService.loadHistory(name)) {
       const history = groqService.getHistory();
       setMessages(history);
       setCurrentConversationId(name);
-      localStorage.setItem('mimir_current_conversation', JSON.stringify(history));
+      await SecureStorage.setItem('mimir_current_conversation', history);
     }
   };
 
-  const handleDeleteConversation = (name: string) => {
+  const handleDeleteConversation = async (name: string) => {
     if (confirm(`Supprimer "${name}" ?`)) {
-      groqService.deleteHistory(name);
-      loadConversations();
+      await groqService.deleteHistory(name);
+      await loadConversations();
       if (currentConversationId === name) {
-        handleNewConversation();
+        await handleNewConversation();
       }
     }
   };
@@ -235,7 +243,7 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
     formatted = formatted.replace(tableRegex, (match) => {
       const lines = match.trim().split('\n');
       const headers = lines[0].split('|').filter(cell => cell.trim());
-      const rows = lines.slice(2).map(line => 
+      const rows = lines.slice(2).map(line =>
         line.split('|').filter(cell => cell.trim())
       );
 
@@ -532,7 +540,7 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
         </div>
 
         {/* Messages */}
-        <div 
+        <div
           ref={messagesContainerRef}
           style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}
         >
@@ -608,7 +616,7 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
                 <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
                   {msg.role === 'user' ? 'Vous' : 'Mímir'}
                 </div>
-                <div 
+                <div
                   style={{
                     fontSize: '0.9375rem',
                     lineHeight: 1.6,
@@ -616,7 +624,7 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
                     whiteSpace: 'pre-wrap',
                     wordBreak: 'break-word'
                   }}
-                  dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHTML(formatMessage(msg.content)) }}
                 />
               </div>
             </div>
@@ -737,8 +745,24 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <Settings size={24} style={{ color: 'var(--accent-hugin)' }} />
               Configuration
+              <button
+                onClick={() => setShowSettings(false)}
+                style={{
+                  marginLeft: 'auto',
+                  padding: '0.4rem',
+                  background: 'rgba(239,68,68,0.1)',
+                  border: '1px solid rgba(239,68,68,0.3)',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: '#ef4444'
+                }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
             </h2>
-            
+
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>
                 Clé API Groq

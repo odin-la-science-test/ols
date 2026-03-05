@@ -3,6 +3,7 @@ import { BookOpen, Plus, Save, Download, Search, Calendar, Tag, Lock, Image, Fil
 import { showToast } from '../../components/ToastNotification';
 import { useAutoSave } from '../../hooks/useAutoSave';
 import { RichTextEditor } from '../../components/RichTextEditor';
+import { sanitizeHTML } from '../../utils/encryption';
 import { TableOfContents } from '../../components/TableOfContents';
 import '../../styles/rich-text-editor.css';
 
@@ -97,7 +98,7 @@ export const LabNotebook: React.FC = () => {
 
   const duplicateEntry = () => {
     if (!currentEntry) return;
-    
+
     const duplicate: NotebookEntry = {
       ...currentEntry,
       id: Date.now().toString(),
@@ -108,7 +109,7 @@ export const LabNotebook: React.FC = () => {
       version: 1,
       lastModified: new Date().toISOString()
     };
-    
+
     const newEntries = [duplicate, ...entries];
     saveEntries(newEntries);
     setCurrentEntry(duplicate);
@@ -117,12 +118,12 @@ export const LabNotebook: React.FC = () => {
 
   const deleteEntry = () => {
     if (!currentEntry) return;
-    
+
     if (currentEntry.signed) {
       showToast('error', '❌ Impossible de supprimer une entrée signée');
       return;
     }
-    
+
     if (confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) {
       const newEntries = entries.filter(e => e.id !== currentEntry.id);
       saveEntries(newEntries);
@@ -133,12 +134,12 @@ export const LabNotebook: React.FC = () => {
 
   const addTag = () => {
     if (!currentEntry || !newTag.trim()) return;
-    
+
     if (currentEntry.tags.includes(newTag.trim())) {
       showToast('warning', '⚠️ Ce tag existe déjà');
       return;
     }
-    
+
     setCurrentEntry({
       ...currentEntry,
       tags: [...currentEntry.tags, newTag.trim()]
@@ -149,7 +150,7 @@ export const LabNotebook: React.FC = () => {
 
   const removeTag = (tag: string) => {
     if (!currentEntry || currentEntry.signed) return;
-    
+
     setCurrentEntry({
       ...currentEntry,
       tags: currentEntry.tags.filter(t => t !== tag)
@@ -167,15 +168,15 @@ export const LabNotebook: React.FC = () => {
     const currentUser = localStorage.getItem('currentUser') || 'Utilisateur';
     const signature = `${currentUser}_${new Date().toISOString()}_${Math.random().toString(36).substr(2, 9)}`;
     const signedEntry = { ...currentEntry, signed: true, signature };
-    
+
     const newEntries = entries.map(e => e.id === signedEntry.id ? signedEntry : e);
     if (!entries.find(e => e.id === signedEntry.id)) {
       newEntries.unshift(signedEntry);
     }
-    
+
     saveEntries(newEntries);
     setCurrentEntry(signedEntry);
-    
+
     showToast('success', '🔒 Entrée signée et verrouillée par ' + currentUser);
   };
 
@@ -184,7 +185,7 @@ export const LabNotebook: React.FC = () => {
       showToast('warning', '⚠️ Sélectionnez une entrée à exporter');
       return;
     }
-    
+
     const content = `
 CAHIER DE LABORATOIRE
 =====================
@@ -202,7 +203,7 @@ ${currentEntry.content}
 
 ${currentEntry.signed ? '\n\n[DOCUMENT SIGNÉ - NE PAS MODIFIER]' : ''}
     `.trim();
-    
+
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -210,7 +211,7 @@ ${currentEntry.signed ? '\n\n[DOCUMENT SIGNÉ - NE PAS MODIFIER]' : ''}
     a.download = `lab-notebook-${currentEntry.title.replace(/[^a-z0-9]/gi, '-')}-${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
-    
+
     showToast('success', '📄 Entrée exportée');
   };
 
@@ -230,11 +231,11 @@ ${currentEntry.signed ? '\n\n[DOCUMENT SIGNÉ - NE PAS MODIFIER]' : ''}
 
   let filteredEntries = entries.filter(entry => {
     const matchesSearch = entry.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         entry.content.toLowerCase().includes(searchTerm.toLowerCase());
+      entry.content.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTag = !selectedTag || entry.tags.includes(selectedTag);
-    const matchesSigned = filterSigned === 'all' || 
-                         (filterSigned === 'signed' && entry.signed) ||
-                         (filterSigned === 'unsigned' && !entry.signed);
+    const matchesSigned = filterSigned === 'all' ||
+      (filterSigned === 'signed' && entry.signed) ||
+      (filterSigned === 'unsigned' && !entry.signed);
     return matchesSearch && matchesTag && matchesSigned;
   });
 
@@ -314,8 +315,8 @@ ${currentEntry.signed ? '\n\n[DOCUMENT SIGNÉ - NE PAS MODIFIER]' : ''}
         <div>
           <div style={{ marginBottom: '1.5rem' }}>
             <div style={{ position: 'relative' }}>
-              <Search 
-                size={20} 
+              <Search
+                size={20}
                 style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }}
               />
               <input
@@ -463,9 +464,9 @@ ${currentEntry.signed ? '\n\n[DOCUMENT SIGNÉ - NE PAS MODIFIER]' : ''}
                         Table des matières
                       </button>
                     </div>
-                    
+
                     {showTOC && <TableOfContents content={currentEntry.content} />}
-                    
+
                     <RichTextEditor
                       value={currentEntry.content}
                       onChange={(value) => setCurrentEntry({ ...currentEntry, content: value })}
@@ -474,7 +475,7 @@ ${currentEntry.signed ? '\n\n[DOCUMENT SIGNÉ - NE PAS MODIFIER]' : ''}
                     />
                   </div>
                 )}
-                
+
                 {/* Preview Mode */}
                 {viewMode === 'preview' && (
                   <div style={{
@@ -485,8 +486,8 @@ ${currentEntry.signed ? '\n\n[DOCUMENT SIGNÉ - NE PAS MODIFIER]' : ''}
                     minHeight: '400px'
                   }}>
                     {showTOC && <TableOfContents content={currentEntry.content} />}
-                    <div 
-                      dangerouslySetInnerHTML={{ __html: currentEntry.content }}
+                    <div
+                      dangerouslySetInnerHTML={{ __html: sanitizeHTML(currentEntry.content) }}
                       style={{
                         color: '#f8fafc',
                         fontSize: '0.95rem',
@@ -552,7 +553,7 @@ ${currentEntry.signed ? '\n\n[DOCUMENT SIGNÉ - NE PAS MODIFIER]' : ''}
                   <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
                     {new Date(currentEntry.date).toLocaleString('fr-FR')}
                   </span>
-                  
+
                   {/* Mode Toggle */}
                   <div style={{
                     display: 'flex',
@@ -718,7 +719,7 @@ ${currentEntry.signed ? '\n\n[DOCUMENT SIGNÉ - NE PAS MODIFIER]' : ''}
           )}
         </div>
       </div>
-      
+
       <style>{`
         .preview-content img {
           max-width: 100%;

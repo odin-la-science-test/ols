@@ -4,6 +4,7 @@ import {
     LayoutDashboard, Users, CreditCard,
     CheckCircle, XCircle, AlertTriangle, Plus, Trash2, Edit
 } from 'lucide-react';
+import { useSecurity } from '../components/SecurityProvider';
 import Navbar from '../components/Navbar';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 
@@ -23,25 +24,22 @@ interface OrgData {
 }
 
 const AdminDashboard = () => {
-    const [currentUser, setCurrentUser] = useState<string>('');
-    const [role, setRole] = useState<string>('');
     const { showToast } = useToast();
     const { isMobile } = useDeviceDetection();
 
     // Data States
+    const { userRole: role, userProfile, refreshProfile } = useSecurity();
+    const [currentUser, setCurrentUser] = useState<string>('');
     const [orgUsers, setOrgUsers] = useState<UserData[]>([]);
     const [allOrgs, setAllOrgs] = useState<OrgData[]>([]);
-    const [activeTab, setActiveTab] = useState<'users' | 'payments'>('users');
+    const [activeTab, setActiveTab] = useState('users');
 
     useEffect(() => {
-        const user = localStorage.getItem('currentUser');
-        const userRole = localStorage.getItem('currentUserRole');
-
-        if (user) setCurrentUser(user);
-        if (userRole) setRole(userRole);
-
-        loadData(userRole || '', user || '');
-    }, [activeTab]);
+        if (userProfile) {
+            setCurrentUser(userProfile.username || '');
+            loadData(role, userProfile.username || '');
+        }
+    }, [activeTab, role, userProfile]);
 
     const loadData = (userRole: string, currentUsername: string) => {
         // Load Users
@@ -60,7 +58,8 @@ const AdminDashboard = () => {
             }
         } else {
             // Regular Admin: See users in their Organization
-            const myProfileStr = localStorage.getItem(`user_profile_${currentUsername}`);
+            const normalizedCurrent = currentUsername.toLowerCase().trim();
+            const myProfileStr = localStorage.getItem(`user_profile_${normalizedCurrent} `);
             if (myProfileStr) {
                 const myProfile = JSON.parse(myProfileStr);
                 const myOrgId = myProfile.organizationId;
@@ -114,7 +113,7 @@ const AdminDashboard = () => {
         }
 
         // Check if exists
-        if (localStorage.getItem(`user_profile_${username}`)) {
+        if (localStorage.getItem(`user_profile_${username} `)) {
             showToast('Utilisateur existant', 'error');
             return;
         }
@@ -122,7 +121,7 @@ const AdminDashboard = () => {
         // Get Current Admin Org ID & Subscription base
         let orgId = 'default_org';
         let planType = 'per_module';
-        const myProfileStr = localStorage.getItem(`user_profile_${currentUser}`);
+        const myProfileStr = localStorage.getItem(`user_profile_${currentUser} `);
         if (myProfileStr) {
             const myProfile = JSON.parse(myProfileStr);
             orgId = myProfile.organizationId;
@@ -132,8 +131,9 @@ const AdminDashboard = () => {
             planType = 'full';
         }
 
+        const normalizedNewUsername = username.toLowerCase().trim();
         const newUser = {
-            username,
+            username: normalizedNewUsername,
             password,
             role: userRole,
             permissions: userRole === 'admin' ? ['all'] : ['read'],
@@ -146,12 +146,14 @@ const AdminDashboard = () => {
             }
         };
 
-        localStorage.setItem(`user_profile_${username}`, JSON.stringify(newUser));
+        localStorage.setItem(`user_profile_${normalizedNewUsername} `, JSON.stringify(newUser));
         showToast('Utilisateur créé avec succès', 'success');
 
         // Refresh data
+        refreshProfile(); // Refresh local provider state if needed
         loadData(role, currentUser);
-        form.reset();
+        (form.elements.namedItem('username') as HTMLInputElement).value = '';
+        (form.elements.namedItem('password') as HTMLInputElement).value = '';
         setSelectedModules(['hugin_core']);
     };
 
@@ -160,8 +162,9 @@ const AdminDashboard = () => {
     };
 
     const handleDeleteUser = (usernameToDelete: string) => {
-        if (window.confirm(`Supprimer l'utilisateur ${usernameToDelete} ?`)) {
-            localStorage.removeItem(`user_profile_${usernameToDelete}`);
+        const normalizedDelete = usernameToDelete.toLowerCase().trim();
+        if (window.confirm(`Supprimer l'utilisateur ${normalizedDelete} ?`)) {
+            localStorage.removeItem(`user_profile_${normalizedDelete}`);
             showToast('Utilisateur supprimé', 'success');
             loadData(role, currentUser);
         }

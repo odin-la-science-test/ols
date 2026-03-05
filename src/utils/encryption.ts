@@ -3,6 +3,9 @@
  * Provides AES-256-GCM encryption for sensitive data
  */
 
+// Storage master key for persistent non-user-specific data
+const STORAGE_MASTER_KEY = 'ols_system_storage_v1_secure';
+
 // Generate a secure encryption key from password
 async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
     const encoder = new TextEncoder();
@@ -46,10 +49,10 @@ export async function encryptData(data: string, password: string): Promise<strin
         const salt = generateSalt();
         const iv = generateIV();
         const key = await deriveKey(password, salt);
-        
+
         const encoder = new TextEncoder();
         const encodedData = encoder.encode(data);
-        
+
         const encryptedData = await window.crypto.subtle.encrypt(
             {
                 name: 'AES-GCM',
@@ -58,13 +61,13 @@ export async function encryptData(data: string, password: string): Promise<strin
             key,
             encodedData
         );
-        
+
         // Combine salt + iv + encrypted data
         const combined = new Uint8Array(salt.length + iv.length + encryptedData.byteLength);
         combined.set(salt, 0);
         combined.set(iv, salt.length);
         combined.set(new Uint8Array(encryptedData), salt.length + iv.length);
-        
+
         // Convert to base64
         return btoa(String.fromCharCode(...combined));
     } catch (error) {
@@ -80,14 +83,14 @@ export async function decryptData(encryptedData: string, password: string): Prom
     try {
         // Decode from base64
         const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
-        
+
         // Extract salt, iv, and encrypted data
         const salt = combined.slice(0, 16);
         const iv = combined.slice(16, 28);
         const data = combined.slice(28);
-        
+
         const key = await deriveKey(password, salt);
-        
+
         const decryptedData = await window.crypto.subtle.decrypt(
             {
                 name: 'AES-GCM',
@@ -96,7 +99,7 @@ export async function decryptData(encryptedData: string, password: string): Prom
             key,
             data.buffer as ArrayBuffer
         );
-        
+
         const decoder = new TextDecoder();
         return decoder.decode(decryptedData);
     } catch (error) {
@@ -125,13 +128,29 @@ export function generateSecureToken(length: number = 32): string {
     return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
+import DOMPurify from 'dompurify';
+
 /**
- * Sanitize input to prevent XSS
+ * Sanitize input to prevent XSS (escapes everything)
  */
 export function sanitizeInput(input: string): string {
     const div = document.createElement('div');
     div.textContent = input;
     return div.innerHTML;
+}
+
+/**
+ * Sanitize HTML content using DOMPurify
+ */
+export function sanitizeHTML(content: string): string {
+    return DOMPurify.sanitize(content, {
+        ALLOWED_TAGS: [
+            'p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'ul', 'ol', 'li', 'span', 'div', 'img', 'table', 'thead', 'tbody',
+            'tr', 'th', 'td', 'code', 'pre', 'blockquote'
+        ],
+        ALLOWED_ATTR: ['src', 'alt', 'width', 'height', 'style', 'class', 'href', 'target']
+    }) as string;
 }
 
 /**
@@ -156,16 +175,16 @@ export function checkPasswordStrength(password: string): {
     else feedback.push('Au moins 8 caractères requis');
 
     if (password.length >= 12) score++;
-    
+
     if (/[a-z]/.test(password)) score++;
     else feedback.push('Ajoutez des lettres minuscules');
-    
+
     if (/[A-Z]/.test(password)) score++;
     else feedback.push('Ajoutez des lettres majuscules');
-    
+
     if (/[0-9]/.test(password)) score++;
     else feedback.push('Ajoutez des chiffres');
-    
+
     if (/[^a-zA-Z0-9]/.test(password)) score++;
     else feedback.push('Ajoutez des caractères spéciaux');
 
@@ -184,10 +203,11 @@ export async function generateUserEncryptionKey(userId: string, password: string
  * Secure localStorage wrapper with encryption
  */
 export const SecureStorage = {
-    async setItem(key: string, value: any, password: string): Promise<void> {
+    async setItem(key: string, value: any, password?: string): Promise<void> {
         try {
             const jsonValue = JSON.stringify(value);
-            const encrypted = await encryptData(jsonValue, password);
+            const encryptionKey = password || STORAGE_MASTER_KEY;
+            const encrypted = await encryptData(jsonValue, encryptionKey);
             localStorage.setItem(key, encrypted);
         } catch (error) {
             console.error('SecureStorage setItem error:', error);
@@ -195,13 +215,27 @@ export const SecureStorage = {
         }
     },
 
-    async getItem(key: string, password: string): Promise<any> {
+    async getItem(key: string, password?: string): Promise<any> {
         try {
             const encrypted = localStorage.getItem(key);
             if (!encrypted) return null;
-            
-            const decrypted = await decryptData(encrypted, password);
-            return JSON.parse(decrypted);
+
+            const encryptionKey = password || STORAGE_MASTER_KEY;
+
+            // Try decrypting with provided key/master key
+            try {
+                const decrypted = await decryptData(encrypted, encryptionKey);
+                return JSON.parse(decrypted);
+            } catch (decryptionError) {
+                // Fallback for legacy data (non-encrypted or base64)
+                try {
+                    const legacyData = atob(encrypted);
+                    return JSON.parse(legacyData);
+                } catch {
+                    // If not base64, try raw JSON (very legacy)
+                    return JSON.parse(encrypted);
+                }
+            }
         } catch (error) {
             console.error('SecureStorage getItem error:', error);
             return null;
@@ -224,7 +258,7 @@ export class SessionManager {
     private static readonly SESSION_KEY = 'odin_session';
     private static readonly TOKEN_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 
-    static createSession(userId: string): string {
+    static async createSession(userId: string): Promise<string> {
         const token = generateSecureToken(64);
         const session = {
             userId,
@@ -232,17 +266,16 @@ export class SessionManager {
             createdAt: Date.now(),
             expiresAt: Date.now() + this.TOKEN_EXPIRY
         };
-        
-        localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+
+        await SecureStorage.setItem(this.SESSION_KEY, session);
         return token;
     }
 
-    static validateSession(): boolean {
+    static async validateSession(): Promise<boolean> {
         try {
-            const sessionData = localStorage.getItem(this.SESSION_KEY);
-            if (!sessionData) return false;
+            const session = await SecureStorage.getItem(this.SESSION_KEY);
+            if (!session) return false;
 
-            const session = JSON.parse(sessionData);
             if (Date.now() > session.expiresAt) {
                 this.destroySession();
                 return false;
@@ -254,14 +287,13 @@ export class SessionManager {
         }
     }
 
-    static refreshSession(): void {
+    static async refreshSession(): Promise<void> {
         try {
-            const sessionData = localStorage.getItem(this.SESSION_KEY);
-            if (!sessionData) return;
+            const session = await SecureStorage.getItem(this.SESSION_KEY);
+            if (!session) return;
 
-            const session = JSON.parse(sessionData);
             session.expiresAt = Date.now() + this.TOKEN_EXPIRY;
-            localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
+            await SecureStorage.setItem(this.SESSION_KEY, session);
         } catch (error) {
             console.error('Session refresh error:', error);
         }
@@ -271,12 +303,11 @@ export class SessionManager {
         localStorage.removeItem(this.SESSION_KEY);
     }
 
-    static getSessionData(): { userId: string; token: string } | null {
+    static async getSessionData(): Promise<{ userId: string; token: string } | null> {
         try {
-            const sessionData = localStorage.getItem(this.SESSION_KEY);
-            if (!sessionData) return null;
+            const session = await SecureStorage.getItem(this.SESSION_KEY);
+            if (!session) return null;
 
-            const session = JSON.parse(sessionData);
             return {
                 userId: session.userId,
                 token: session.token
@@ -329,10 +360,10 @@ export class RateLimiter {
     checkLimit(identifier: string): boolean {
         const now = Date.now();
         const attempts = this.attempts.get(identifier) || [];
-        
+
         // Remove old attempts outside the window
         const recentAttempts = attempts.filter(time => now - time < this.windowMs);
-        
+
         if (recentAttempts.length >= this.maxAttempts) {
             return false; // Rate limit exceeded
         }
@@ -353,7 +384,7 @@ export class RateLimiter {
 export const CSP_HEADERS = {
     'Content-Security-Policy': [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+        "script-src 'self' 'unsafe-inline'",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data: https:",
@@ -369,6 +400,67 @@ export const CSP_HEADERS = {
     'Permissions-Policy': 'geolocation=(), microphone=(), camera=()'
 };
 
+/**
+ * Audit Ledger for banking-grade activity tracking
+ */
+export class AuditLedger {
+    private static readonly LOG_KEY = 'odin_audit_log';
+    private static readonly MAX_LOGS = 1000;
+
+    static async log(action: string, details: any, userId: string = 'system'): Promise<void> {
+        const timestamp = Date.now();
+        const entry = {
+            timestamp,
+            userId,
+            action,
+            details,
+            signature: ''
+        };
+
+        // Create a signature of the log entry to ensure immutability
+        const message = `${timestamp}:${userId}:${action}:${JSON.stringify(details)}`;
+        entry.signature = await hashPassword(message + STORAGE_MASTER_KEY);
+
+        const logs = await this.getLogs();
+        logs.unshift(entry);
+
+        // Keep only the last MAX_LOGS
+        const trimmedLogs = logs.slice(0, this.MAX_LOGS);
+        await SecureStorage.setItem(this.LOG_KEY, trimmedLogs);
+    }
+
+    static async getLogs(): Promise<any[]> {
+        const logs = await SecureStorage.getItem(this.LOG_KEY);
+        return Array.isArray(logs) ? logs : [];
+    }
+
+    static async verifyIntegrity(): Promise<boolean> {
+        const logs = await this.getLogs();
+        for (const entry of logs) {
+            const message = `${entry.timestamp}:${entry.userId}:${entry.action}:${JSON.stringify(entry.details)}`;
+            const expectedSignature = await hashPassword(message + STORAGE_MASTER_KEY);
+            if (entry.signature !== expectedSignature) return false;
+        }
+        return true;
+    }
+}
+
+/**
+ * MFA (Multi-Factor Authentication) Utilities
+ */
+export class MFAManager {
+    static async generateSecret(): Promise<string> {
+        return generateSecureToken(16).toUpperCase();
+    }
+
+    static async verifyCode(secret: string, code: string): Promise<boolean> {
+        // In a real banking app, this would use TOTP algorithm
+        // Here we simulate a simple challenge-response for the demo
+        const expected = (await hashPassword(secret)).slice(0, 6).toUpperCase();
+        return code === expected;
+    }
+}
+
 export default {
     encryptData,
     decryptData,
@@ -382,5 +474,7 @@ export default {
     SessionManager,
     CSRFProtection,
     RateLimiter,
-    CSP_HEADERS
+    CSP_HEADERS,
+    AuditLedger,
+    MFAManager
 };

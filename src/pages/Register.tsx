@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../components/ThemeContext';
 import { useToast } from '../components/ToastContext';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
-import { 
-    checkPasswordStrength, 
-    isValidEmail, 
+import {
+    checkPasswordStrength,
+    isValidEmail,
     hashPassword,
     SessionManager,
-    RateLimiter
+    RateLimiter,
+    SecureStorage
 } from '../utils/encryption';
+import { useSecurity } from '../components/SecurityProvider';
 import { InputValidator, AnomalyDetector } from '../utils/securityEnhancements';
 import { SecurityLogger } from '../utils/securityConfig';
 import { createLicense } from '../utils/licenseManagement';
@@ -48,6 +50,7 @@ const Register = () => {
     const { theme, loadThemeForUser } = useTheme();
     const { showToast } = useToast();
     const { isMobile } = useDeviceDetection();
+    const { login } = useSecurity();
     const [step, setStep] = useState(1);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -61,31 +64,31 @@ const Register = () => {
     const [formData, setFormData] = useState({
         // ÉTAPE 1: Type de compte
         accountCategory: '' as 'personal' | 'enterprise' | '',
-        
+
         // Si personnel
         isStudent: false,
         studentCardImage: null as File | null,
         studentCardPreview: '',
-        
+
         // Si entreprise  
         enterpriseType: '' as 'private' | 'public' | '',
         publicJustification: null as File | null,
         publicJustificationPreview: '',
         numberOfEmployees: 1,
         companyName: '',
-        
+
         // ÉTAPE 2: Choix abonnement
         billingCycle: 'monthly' as 'monthly' | 'annual',
         subscriptionType: 'full' as 'full' | 'modules',
         selectedModules: [] as string[],
-        
+
         // ÉTAPE 3: Infos personnelles
         fullName: '',
         email: '',
         password: '',
         confirmPassword: '',
         phone: '',
-        
+
         // ÉTAPE 4: Paiement
         cardHolder: '',
         cardNumber: '',
@@ -100,12 +103,12 @@ const Register = () => {
 
     const calculatePrice = () => {
         let pricePerSeat = 0;
-        
+
         // Prix de base par siège selon abonnement
         if (formData.subscriptionType === 'full') {
             pricePerSeat = 499; // Plan Pro complet
         } else {
-            const prices: { [key: string]: number } = { 
+            const prices: { [key: string]: number } = {
                 munin: 0,        // Gratuit
                 hugin_core: 49,  // Standard
                 hugin_lab: 99,   // Standard+
@@ -113,12 +116,12 @@ const Register = () => {
             };
             pricePerSeat = formData.selectedModules.reduce((sum, mod) => sum + (prices[mod] || 0), 0);
         }
-        
+
         // Réduction étudiant (50%)
         if (formData.accountCategory === 'personal' && formData.isStudent) {
             pricePerSeat = pricePerSeat * 0.5;
         }
-        
+
         // Pour les entreprises
         let totalPrice = pricePerSeat;
         if (formData.accountCategory === 'enterprise') {
@@ -126,12 +129,12 @@ const Register = () => {
             totalPrice = pricePerSeat * formData.numberOfEmployees;
             // TODO: Ajouter tarif Enterprise (999€) pour >500 employés plus tard
         }
-        
+
         const monthlyPrice = Math.round(totalPrice);
-        const annualPrice = formData.billingCycle === 'annual' 
+        const annualPrice = formData.billingCycle === 'annual'
             ? Math.round(monthlyPrice * 12 * 0.9)  // 10% de réduction
             : monthlyPrice * 12;
-        
+
         return {
             basePrice: Math.round(pricePerSeat),
             monthly: monthlyPrice,
@@ -148,7 +151,7 @@ const Register = () => {
             showToast('Le fichier ne doit pas dépasser 5 Mo', 'error');
             return;
         }
-        
+
         const reader = new FileReader();
         reader.onloadend = () => {
             if (type === 'student') {
@@ -240,7 +243,7 @@ const Register = () => {
     // Validation en temps réel de l'email
     const handleEmailChange = (email: string) => {
         setFormData({ ...formData, email });
-        
+
         // Validation de sécurité
         const validation = InputValidator.validateInput(email, 'email');
         if (email && !validation.valid) {
@@ -296,10 +299,11 @@ const Register = () => {
             });
 
             // Save Mock Profile
+            const normalizedEmail = formData.email.toLowerCase().trim();
             const userProfile = {
-                email: emailValidation.sanitized,
+                email: normalizedEmail,
                 password: hashedPassword,
-                username: emailValidation.sanitized.split('@')[0],
+                username: normalizedEmail.split('@')[0],
                 fullName: sanitizedData.fullName || emailValidation.sanitized.split('@')[0],
                 phone: sanitizedData.phone,
                 role: formData.accountCategory === 'enterprise' ? 'admin' : 'user',
@@ -319,16 +323,19 @@ const Register = () => {
                 createdAt: new Date().toISOString()
             };
 
-            localStorage.setItem(`user_profile_${formData.email}`, JSON.stringify(userProfile));
-            localStorage.setItem('currentUser', formData.email);
+            // Save Mock Profile using SecureStorage
+            await SecureStorage.setItem(`user_profile_${normalizedEmail}`, userProfile);
+            localStorage.setItem('currentUser', normalizedEmail);
             localStorage.setItem('currentUserRole', userProfile.role);
+            localStorage.setItem('isAuthenticated', 'true');
+            localStorage.setItem('isLoggedIn', 'true');
 
             // Créer une licence si compte entreprise
             if (formData.accountCategory === 'enterprise' && formData.numberOfEmployees > 0) {
                 // cost.basePrice contient déjà le prix par siège
                 const pricePerSeat = cost.basePrice;
                 createLicense(
-                    formData.email,
+                    normalizedEmail,
                     formData.numberOfEmployees,
                     formData.subscriptionType,
                     formData.billingCycle,
@@ -337,15 +344,15 @@ const Register = () => {
             }
 
             // Créer une session sécurisée
-            SessionManager.createSession(formData.email);
+            await login(normalizedEmail);
 
             // Enregistrer le comportement
-            AnomalyDetector.recordBehavior(formData.email, 'registration');
-            SecurityLogger.log('registration_success', formData.email);
+            AnomalyDetector.recordBehavior(normalizedEmail, 'registration');
+            SecurityLogger.log('registration_success', normalizedEmail);
 
             showToast('🚀 Inscription réussie ! Bienvenue sur Odin la Science.', 'success');
-            loadThemeForUser(formData.email);
-            
+            loadThemeForUser(normalizedEmail);
+
             setTimeout(() => {
                 navigate('/home');
             }, 1500);
@@ -530,15 +537,15 @@ const Register = () => {
                                                 </label>
                                                 {formData.studentCardPreview && (
                                                     <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                                                        <img 
-                                                            src={formData.studentCardPreview} 
-                                                            alt="Aperçu carte étudiante" 
-                                                            style={{ 
-                                                                maxWidth: '100%', 
-                                                                maxHeight: '200px', 
+                                                        <img
+                                                            src={formData.studentCardPreview}
+                                                            alt="Aperçu carte étudiante"
+                                                            style={{
+                                                                maxWidth: '100%',
+                                                                maxHeight: '200px',
                                                                 borderRadius: '0.5rem',
                                                                 border: `1px solid ${c.borderColor}`
-                                                            }} 
+                                                            }}
                                                         />
                                                     </div>
                                                 )}
@@ -927,18 +934,18 @@ const Register = () => {
                                         <div style={{ position: 'relative' }}>
                                             <input
                                                 type="email" required placeholder="contact@lab.com"
-                                                style={{ 
-                                                    width: '100%', padding: '16px', borderRadius: '1rem', 
-                                                    border: `2px solid ${emailError ? '#ef4444' : c.borderColor}`, 
-                                                    background: c.bgSecondary, color: c.textPrimary 
+                                                style={{
+                                                    width: '100%', padding: '16px', borderRadius: '1rem',
+                                                    border: `2px solid ${emailError ? '#ef4444' : c.borderColor}`,
+                                                    background: c.bgSecondary, color: c.textPrimary
                                                 }}
                                                 value={formData.email}
                                                 onChange={e => handleEmailChange(e.target.value)}
                                             />
                                             {emailError && (
-                                                <div style={{ 
-                                                    position: 'absolute', right: '12px', top: '50%', 
-                                                    transform: 'translateY(-50%)', color: '#ef4444' 
+                                                <div style={{
+                                                    position: 'absolute', right: '12px', top: '50%',
+                                                    transform: 'translateY(-50%)', color: '#ef4444'
                                                 }}>
                                                     <AlertCircle size={20} />
                                                 </div>
@@ -971,13 +978,13 @@ const Register = () => {
                                         </label>
                                         <div style={{ position: 'relative' }}>
                                             <input
-                                                type={showPassword ? 'text' : 'password'} 
-                                                required 
+                                                type={showPassword ? 'text' : 'password'}
+                                                required
                                                 placeholder="••••••••"
-                                                style={{ 
-                                                    width: '100%', padding: '16px', paddingRight: '50px', borderRadius: '1rem', 
-                                                    border: `2px solid ${passwordError ? '#ef4444' : c.borderColor}`, 
-                                                    background: c.bgSecondary, color: c.textPrimary 
+                                                style={{
+                                                    width: '100%', padding: '16px', paddingRight: '50px', borderRadius: '1rem',
+                                                    border: `2px solid ${passwordError ? '#ef4444' : c.borderColor}`,
+                                                    background: c.bgSecondary, color: c.textPrimary
                                                 }}
                                                 value={formData.password}
                                                 onChange={e => handlePasswordChange(e.target.value)}
@@ -1007,8 +1014,8 @@ const Register = () => {
                                                                 borderRadius: '2px',
                                                                 background: passwordStrength.score >= level
                                                                     ? passwordStrength.score <= 2 ? '#ef4444'
-                                                                    : passwordStrength.score <= 4 ? '#f59e0b'
-                                                                    : '#10b981'
+                                                                        : passwordStrength.score <= 4 ? '#f59e0b'
+                                                                            : '#10b981'
                                                                     : 'rgba(255,255,255,0.1)',
                                                                 transition: 'all 0.3s'
                                                             }}
@@ -1018,8 +1025,8 @@ const Register = () => {
                                                 <div style={{ fontSize: '0.75rem', color: c.textSecondary }}>
                                                     Force: {
                                                         passwordStrength.score <= 2 ? '❌ Faible' :
-                                                        passwordStrength.score <= 4 ? '⚠️ Moyen' :
-                                                        '✅ Fort'
+                                                            passwordStrength.score <= 4 ? '⚠️ Moyen' :
+                                                                '✅ Fort'
                                                     }
                                                 </div>
                                                 {passwordStrength.feedback.length > 0 && (
@@ -1285,10 +1292,10 @@ const Register = () => {
                                                 <div style={{ color: '#10b981', fontSize: '0.85rem', fontWeight: 700, marginTop: '0.5rem' }}>
                                                     💰 Économie de {cost.savings}€ incluse
                                                 </div>
-                                                <div style={{ 
-                                                    marginTop: '1rem', 
-                                                    padding: '0.75rem', 
-                                                    background: 'rgba(16, 185, 129, 0.1)', 
+                                                <div style={{
+                                                    marginTop: '1rem',
+                                                    padding: '0.75rem',
+                                                    background: 'rgba(16, 185, 129, 0.1)',
                                                     borderRadius: '0.5rem',
                                                     fontSize: '0.85rem'
                                                 }}>
@@ -1299,10 +1306,10 @@ const Register = () => {
                                                 </div>
                                             </>
                                         ) : (
-                                            <div style={{ 
-                                                marginTop: '1rem', 
-                                                padding: '0.75rem', 
-                                                background: 'rgba(59, 130, 246, 0.1)', 
+                                            <div style={{
+                                                marginTop: '1rem',
+                                                padding: '0.75rem',
+                                                background: 'rgba(59, 130, 246, 0.1)',
                                                 borderRadius: '0.5rem',
                                                 fontSize: '0.85rem'
                                             }}>
@@ -1438,26 +1445,26 @@ const Register = () => {
                                     Suivant <ChevronRight size={18} />
                                 </button>
                             ) : (
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     disabled={isSubmitting || !formData.acceptTerms || !formData.acceptPrivacy}
                                     style={{
-                                        padding: isMobile ? '16px 40px' : '16px 40px', 
-                                        borderRadius: '1.25rem', 
+                                        padding: isMobile ? '16px 40px' : '16px 40px',
+                                        borderRadius: '1.25rem',
                                         border: 'none',
-                                        background: isSubmitting || !formData.acceptTerms || !formData.acceptPrivacy 
-                                            ? 'rgba(16, 185, 129, 0.3)' 
-                                            : '#10b981', 
-                                        color: '#fff', 
-                                        fontWeight: 800, 
+                                        background: isSubmitting || !formData.acceptTerms || !formData.acceptPrivacy
+                                            ? 'rgba(16, 185, 129, 0.3)'
+                                            : '#10b981',
+                                        color: '#fff',
+                                        fontWeight: 800,
                                         cursor: isSubmitting || !formData.acceptTerms || !formData.acceptPrivacy ? 'not-allowed' : 'pointer',
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        gap: '10px', 
-                                        boxShadow: isSubmitting || !formData.acceptTerms || !formData.acceptPrivacy 
-                                            ? 'none' 
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px',
+                                        boxShadow: isSubmitting || !formData.acceptTerms || !formData.acceptPrivacy
+                                            ? 'none'
                                             : '0 8px 20px rgba(16, 185, 129, 0.4)',
-                                        flex: isMobile ? 1 : 'none', 
+                                        flex: isMobile ? 1 : 'none',
                                         marginLeft: isMobile ? '10px' : '0',
                                         justifyContent: 'center',
                                         opacity: isSubmitting || !formData.acceptTerms || !formData.acceptPrivacy ? 0.5 : 1
@@ -1485,7 +1492,7 @@ const Register = () => {
                         </div>
                     </form>
                 </div>
-            </div>
+            </div >
 
             <style>{`
                 @keyframes fadeInUp {
@@ -1505,7 +1512,7 @@ const Register = () => {
                     transform: scale(0.98);
                 }
             `}</style>
-        </div>
+        </div >
     );
 };
 

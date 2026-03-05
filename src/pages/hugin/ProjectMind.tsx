@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../components/ToastContext';
 import { fetchModuleData, saveModuleItem, deleteModuleItem } from '../../utils/persistence';
+import Navbar from '../../components/Navbar';
 
 interface Task {
     id: string;
@@ -66,15 +67,15 @@ const ProjectMind = () => {
                 const data = await fetchModuleData('hugin_projects');
                 if (Array.isArray(data) && data.length > 0) {
                     // Vérifier que les données ont la bonne structure
-                    const validProjects = data.filter(p => 
-                        p && 
-                        p.id && 
-                        p.name && 
+                    const validProjects = data.filter(p =>
+                        p &&
+                        p.id &&
+                        p.name &&
                         Array.isArray(p.milestones) &&
                         Array.isArray(p.team) &&
                         Array.isArray(p.tags)
                     );
-                    
+
                     if (validProjects.length > 0) {
                         setProjects(validProjects);
                         setSelectedProjectId(validProjects[0].id);
@@ -82,7 +83,7 @@ const ProjectMind = () => {
                         return;
                     }
                 }
-                
+
                 // Si pas de données valides, créer un projet initial
                 const initial: Project[] = [{
                     id: "p1",
@@ -357,23 +358,23 @@ const ProjectMind = () => {
 
     return (
         <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', color: 'white', display: 'flex', flexDirection: 'column' }}>
-            {/* Header */}
-            <header className="glass-panel" style={{ padding: '1.5rem 2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <Navbar />
+            {/* Barre d'outils interne */}
+            <div style={{ padding: '1rem 2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <button onClick={() => navigate('/hugin')} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'inherit', padding: '0.6rem', borderRadius: '0.75rem', cursor: 'pointer' }}>
                         <ChevronLeft size={20} />
                     </button>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ padding: '0.75rem', background: 'rgba(167, 139, 250, 0.2)', borderRadius: '1rem', color: '#a78bfa' }}>
-                            <Layers size={24} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ padding: '0.5rem', background: 'rgba(167, 139, 250, 0.2)', borderRadius: '0.75rem', color: '#a78bfa' }}>
+                            <Layers size={20} />
                         </div>
                         <div>
-                            <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>ProjectMind</h1>
-                            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Gestion avancée de projets scientifiques</p>
+                            <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>ProjectMind</h2>
+                            <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Gestion de projets scientifiques</p>
                         </div>
                     </div>
                 </div>
-
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     <div style={{ position: 'relative' }}>
                         <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
@@ -398,7 +399,7 @@ const ProjectMind = () => {
                         <Plus size={18} /> Nouveau Projet
                     </button>
                 </div>
-            </header>
+            </div>
 
             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '320px 1fr', gap: '2rem', padding: '2rem' }}>
                 {/* Sidebar */}
@@ -1016,7 +1017,7 @@ const ProjectMind = () => {
                             <Plus size={24} style={{ color: 'var(--accent-hugin)' }} />
                             Nouveau Projet
                         </h2>
-                        
+
                         <form onSubmit={(e) => {
                             e.preventDefault();
                             const formData = new FormData(e.currentTarget);
@@ -1240,7 +1241,7 @@ const ProjectMind = () => {
                             <Flag size={24} style={{ color: 'var(--accent-hugin)' }} />
                             Nouveau Jalon
                         </h2>
-                        
+
                         <form onSubmit={(e) => {
                             e.preventDefault();
                             const formData = new FormData(e.currentTarget);
@@ -1413,7 +1414,7 @@ const ProjectMind = () => {
                             <CheckCircle2 size={24} style={{ color: 'var(--accent-hugin)' }} />
                             Nouvelle Tâche
                         </h2>
-                        
+
                         <form onSubmit={(e) => {
                             e.preventDefault();
                             const formData = new FormData(e.currentTarget);
@@ -1604,7 +1605,7 @@ const ProjectMind = () => {
                             <Edit2 size={24} style={{ color: 'var(--accent-hugin)' }} />
                             Modifier le Projet
                         </h2>
-                        
+
                         <form onSubmit={(e) => {
                             e.preventDefault();
                             const formData = new FormData(e.currentTarget);
@@ -1834,7 +1835,7 @@ const ProjectMind = () => {
                             <Edit2 size={24} style={{ color: 'var(--accent-hugin)' }} />
                             Modifier le Jalon
                         </h2>
-                        
+
                         <form onSubmit={(e) => {
                             e.preventDefault();
                             const formData = new FormData(e.currentTarget);
@@ -2009,7 +2010,7 @@ const ProjectMind = () => {
                             <Edit2 size={24} style={{ color: 'var(--accent-hugin)' }} />
                             Modifier la Tâche
                         </h2>
-                        
+
                         <form onSubmit={(e) => {
                             e.preventDefault();
                             const formData = new FormData(e.currentTarget);
