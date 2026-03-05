@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Transition Etapes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0a0a0f;
+            color: white;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #1a1a1f;
+            padding: 2rem;
+            border-radius: 1rem;
+        }
+        
+        .step {
+            display: none;
+        }
+        
+        .step.active {
+            display: block;
+        }
+        
+        input {
+            width: 100%;
+            padding: 1rem;
+            margin: 1rem 0;
+            background: #2a2a2f;
+            border: 2px solid #3a3a3f;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 0.5rem;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+        }
+        
+        .code-input {
+            text-align: center;
+            font-size: 2rem;
+            letter-spacing: 1rem;
+        }
+        
+        .info {
+            background: #2a4a2a;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .error {
+            background: #4a2a2a;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Transition Etapes Login</h1>
+        
+        <!-- Etape 1: Credentials -->
+        <div id="step1" class="step active">
+            <h2>Etape 1: Identifiants</h2>
+            <input type="text" id="email" placeholder="Email" value="ethan@ols.com">
+            <input type="password" id="password" placeholder="Mot de passe" value="ethan123">
+            <button onclick="goToStep2()">Continuer vers Etape 2</button>
+            <div class="info">
+                <strong>Test:</strong> Cliquez sur "Continuer" pour passer à l'étape 2
+            </div>
+        </div>
+        
+        <!-- Etape 2: Security Code -->
+        <div id="step2" class="step">
+            <h2>Etape 2: Code de sécurité</h2>
+            <input type="text" id="code" class="code-input" placeholder="0000" maxlength="4">
+            <button onclick="validateCode()">Se connecter</button>
+            <button onclick="goBackToStep1()" style="background: #555; margin-top: 0.5rem;">Retour</button>
+            <div class="info">
+                <strong>Codes de test:</strong><br>
+                1234 (Ethan)<br>
+                5678 (Bastien)<br>
+                9012 (Issam)<br>
+                0000 (Admin)
+            </div>
+        </div>
+        
+        <!-- Resultat -->
+        <div id="result" style="margin-top: 1rem;"></div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        
+        function goToStep2() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showResult('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+            
+            // Cacher etape 1
+            document.getElementById('step1').classList.remove('active');
+            
+            // Afficher etape 2
+            document.getElementById('step2').classList.add('active');
+            
+            currentStep = 2;
+            showResult('Transition vers etape 2 reussie!', 'info');
+            
+            // Focus sur le champ code
+            setTimeout(() => {
+                document.getElementById('code').focus();
+            }, 100);
+        }
+        
+        function goBackToStep1() {
+            // Cacher etape 2
+            document.getElementById('step2').classList.remove('active');
+            
+            // Afficher etape 1
+            document.getElementById('step1').classList.add('active');
+            
+            currentStep = 1;
+            document.getElementById('code').value = '';
+            showResult('Retour a l\'etape 1', 'info');
+        }
+        
+        function validateCode() {
+            const code = document.getElementById('code').value;
+            
+            if (code.length !== 4) {
+                showResult('Le code doit contenir 4 chiffres', 'error');
+                return;
+            }
+            
+            const validCodes = ['1234', '5678', '9012', '0000'];
+            if (validCodes.includes(code)) {
+                showResult('Code valide! Connexion reussie!', 'info');
+            } else {
+                showResult('Code incorrect', 'error');
+            }
+        }
+        
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            result.className = type;
+            result.textContent = message;
+        }
+        
+        // Permettre Enter pour soumettre
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                goToStep2();
+            }
+        });
+        
+        document.getElementById('code').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                validateCode();
+            }
+        });
+        
+        // Limiter le code a 4 chiffres
+        document.getElementById('code').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').slice(0, 4);
+        });
+        
+        console.log('Test page loaded. Current step:', currentStep);
+    </script>
+</body>
+</html>

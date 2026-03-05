@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réinitialisation et Initialisation des Comptes</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        .success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #667eea;
+            padding-left: 10px;
+        }
+        .log-entry.success {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+        .log-entry.error {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        .log-entry.info {
+            border-left-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .accounts {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .account-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+        .account-item strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Réinitialisation et Initialisation</h1>
+        <p class="subtitle">🔒 Système de chiffrement AES-256</p>
+
+        <div class="accounts">
+            <h3>📋 Comptes de test disponibles :</h3>
+            <div class="account-item">
+                <strong>ethan@ols.com</strong> / ethan123 (super_admin)
+            </div>
+            <div class="account-item">
+                <strong>bastien@ols.com</strong> / bastien123 (super_admin)
+            </div>
+            <div class="account-item">
+                <strong>issam@ols.com</strong> / issam123 (super_admin)
+            </div>
+            <div class="account-item">
+                <strong>admin</strong> / admin123 (admin)
+            </div>
+            <div class="account-item">
+                <strong>trinity@ols.com</strong> / trinity123 (student)
+            </div>
+        </div>
+
+        <div style="margin: 20px 0;">
+            <button class="danger" onclick="clearAll()">🗑️ Nettoyer tout le localStorage</button>
+            <button class="success" onclick="initAccounts()">✨ Initialiser les comptes (AES-256)</button>
+            <button onclick="viewStorage()">👁️ Voir le localStorage</button>
+        </div>
+
+        <div id="log" class="log"></div>
+    </div>
+
+    <script type="module">
+        import { hashPassword, SecureStorage } from '/src/utils/encryption.ts';
+
+        window.hashPassword = hashPassword;
+        window.SecureStorage = SecureStorage;
+
+        window.log = function(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+        };
+
+        window.clearAll = function() {
+            if (confirm('⚠️ Êtes-vous sûr de vouloir supprimer TOUTES les données du localStorage ?')) {
+                localStorage.clear();
+                log('✅ localStorage complètement nettoyé', 'success');
+                log('ℹ️ Vous pouvez maintenant initialiser les comptes', 'info');
+            }
+        };
+
+        window.initAccounts = async function() {
+            log('🚀 Début de l\'initialisation des comptes...', 'info');
+
+            const testAccounts = [
+                { email: 'ethan@ols.com', password: 'ethan123', role: 'super_admin', firstName: 'Ethan', lastName: 'Admin' },
+                { email: 'bastien@ols.com', password: 'bastien123', role: 'super_admin', firstName: 'Bastien', lastName: 'Admin' },
+                { email: 'issam@ols.com', password: 'issam123', role: 'super_admin', firstName: 'Issam', lastName: 'Admin' },
+                { email: 'admin', password: 'admin123', role: 'admin', firstName: 'Admin', lastName: 'User' },
+                { email: 'trinity@ols.com', password: 'trinity123', role: 'student', firstName: 'Trinity', lastName: 'Student' }
+            ];
+
+            for (const account of testAccounts) {
+                try {
+                    const normalizedEmail = account.email.toLowerCase().trim();
+                    const profileKey = `user_profile_${normalizedEmail}`;
+                    
+                    // Vérifier si le compte existe déjà
+                    const existingProfile = await SecureStorage.getItem(profileKey);
+                    
+                    if (existingProfile) {
+                        log(`ℹ️ Compte déjà existant : ${account.email}`, 'info');
+                        continue;
+                    }
+
+                    // Créer le profil utilisateur
+                    const hashedPassword = await hashPassword(account.password);
+                    
+                    const userProfile = {
+                        username: normalizedEmail,
+                        email: normalizedEmail,
+                        password: hashedPassword,
+                        role: account.role,
+                        firstName: account.firstName,
+                        lastName: account.lastName,
+                        organizationId: `org_test_${Date.now()}`,
+                        permissions: account.role === 'super_admin' ? ['all_access'] : ['basic_access'],
+                        subscription: {
+                            status: 'active',
+                            planType: 'full',
+                            modules: 'all'
+                        },
+                        createdAt: new Date().toISOString()
+                    };
+
+                    // Stocker avec chiffrement AES-256
+                    await SecureStorage.setItem(profileKey, userProfile);
+                    log(`✅ Compte créé avec chiffrement : ${account.email} (${account.role})`, 'success');
+                } catch (error) {
+                    log(`❌ Erreur lors de la création de ${account.email}: ${error.message}`, 'error');
+                }
+            }
+
+            log('🎉 Initialisation terminée ! Vous pouvez maintenant vous connecter.', 'success');
+        };
+
+        window.viewStorage = function() {
+            log('📦 Contenu du localStorage :', 'info');
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                const preview = value.length > 100 ? value.substring(0, 100) + '...' : value;
+                log(`  ${key}: ${preview}`, 'info');
+            }
+            log(`📊 Total : ${localStorage.length} entrées`, 'info');
+        };
+
+        // Log initial
+        log('✨ Outil de réinitialisation prêt', 'success');
+        log('ℹ️ Cliquez sur "Nettoyer" puis "Initialiser" pour recréer les comptes', 'info');
+    </script>
+</body>
+</html>

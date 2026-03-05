@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Système de Connexion AES-256</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .result.success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        .result.error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        .result.info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status.ok {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 Test Système de Connexion AES-256</h1>
+
+        <div class="test-section">
+            <h3>1️⃣ Test de Chiffrement/Déchiffrement</h3>
+            <button onclick="testEncryption()">Tester le chiffrement</button>
+            <div id="encryption-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2️⃣ Test de Hash de Mot de Passe</h3>
+            <button onclick="testPasswordHash()">Tester le hash</button>
+            <div id="hash-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3️⃣ Test de Création de Compte</h3>
+            <button onclick="testAccountCreation()">Créer un compte test</button>
+            <div id="account-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4️⃣ Test de Lecture de Compte</h3>
+            <button onclick="testAccountRead()">Lire le compte test</button>
+            <div id="read-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5️⃣ Test de Connexion Complète</h3>
+            <button onclick="testFullLogin()">Tester la connexion</button>
+            <div id="login-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>6️⃣ Vérifier les Comptes Existants</h3>
+            <button onclick="checkExistingAccounts()">Vérifier les comptes</button>
+            <div id="check-result"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { hashPassword, SecureStorage, encryptData, decryptData } from '/src/utils/encryption.ts';
+
+        window.testEncryption = async function() {
+            const resultDiv = document.getElementById('encryption-result');
+            resultDiv.innerHTML = '<div class="result info">⏳ Test en cours...</div>';
+
+            try {
+                const testData = 'Hello, AES-256!';
+                const password = 'test_password_123';
+
+                // Chiffrer
+                const encrypted = await encryptData(testData, password);
+                console.log('Encrypted:', encrypted);
+
+                // Déchiffrer
+                const decrypted = await decryptData(encrypted, password);
+                console.log('Decrypted:', decrypted);
+
+                if (decrypted === testData) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+✅ Test réussi !
+Données originales : "${testData}"
+Données chiffrées : ${encrypted.substring(0, 50)}...
+Données déchiffrées : "${decrypted}"
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ Erreur : Les données ne correspondent pas</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Erreur : ${error.message}</div>`;
+            }
+        };
+
+        window.testPasswordHash = async function() {
+            const resultDiv = document.getElementById('hash-result');
+            resultDiv.innerHTML = '<div class="result info">⏳ Test en cours...</div>';
+
+            try {
+                const password = 'test123';
+                const hash1 = await hashPassword(password);
+                const hash2 = await hashPassword(password);
+
+                console.log('Hash 1:', hash1);
+                console.log('Hash 2:', hash2);
+
+                if (hash1 === hash2 && hash1.length === 64) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+✅ Test réussi !
+Mot de passe : "${password}"
+Hash SHA-256 : ${hash1}
+Longueur : ${hash1.length} caractères
+Reproductible : ${hash1 === hash2 ? 'Oui' : 'Non'}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ Erreur : Hash invalide ou non reproductible</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Erreur : ${error.message}</div>`;
+            }
+        };
+
+        window.testAccountCreation = async function() {
+            const resultDiv = document.getElementById('account-result');
+            resultDiv.innerHTML = '<div class="result info">⏳ Création du compte...</div>';
+
+            try {
+                const email = 'test@example.com';
+                const password = 'test123';
+                const hashedPassword = await hashPassword(password);
+
+                const userProfile = {
+                    username: email,
+                    email: email,
+                    password: hashedPassword,
+                    role: 'user',
+                    firstName: 'Test',
+                    lastName: 'User',
+                    subscription: {
+                        status: 'active',
+                        planType: 'full',
+                        modules: 'all'
+                    },
+                    createdAt: new Date().toISOString()
+                };
+
+                await SecureStorage.setItem(`user_profile_${email}`, userProfile);
+
+                resultDiv.innerHTML = `
+                    <div class="result success">
+✅ Compte créé avec succès !
+Email : ${email}
+Mot de passe : ${password}
+Hash : ${hashedPassword.substring(0, 20)}...
+Stocké avec chiffrement AES-256
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Erreur : ${error.message}</div>`;
+            }
+        };
+
+        window.testAccountRead = async function() {
+            const resultDiv = document.getElementById('read-result');
+            resultDiv.innerHTML = '<div class="result info">⏳ Lecture du compte...</div>';
+
+            try {
+                const email = 'test@example.com';
+                const profile = await SecureStorage.getItem(`user_profile_${email}`);
+
+                if (profile) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+✅ Compte lu avec succès !
+Email : ${profile.email}
+Rôle : ${profile.role}
+Nom : ${profile.firstName} ${profile.lastName}
+Hash du mot de passe : ${profile.password.substring(0, 20)}...
+Subscription : ${profile.subscription.planType}
+Créé le : ${new Date(profile.createdAt).toLocaleString()}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">❌ Compte non trouvé. Créez-le d'abord avec le test 3.</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Erreur : ${error.message}</div>`;
+            }
+        };
+
+        window.testFullLogin = async function() {
+            const resultDiv = document.getElementById('login-result');
+            resultDiv.innerHTML = '<div class="result info">⏳ Test de connexion...</div>';
+
+            try {
+                const email = 'test@example.com';
+                const password = 'test123';
+
+                // Récupérer le profil
+                const profile = await SecureStorage.getItem(`user_profile_${email}`);
+
+                if (!profile) {
+                    resultDiv.innerHTML = `<div class="result error">❌ Compte non trouvé. Créez-le d'abord avec le test 3.</div>`;
+                    return;
+                }
+
+                // Hasher le mot de passe entré
+                const hashedInputPassword = await hashPassword(password);
+
+                // Comparer
+                if (profile.password === hashedInputPassword) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+✅ Connexion réussie !
+Email : ${email}
+Mot de passe : ${password}
+Hash entré : ${hashedInputPassword.substring(0, 20)}...
+Hash stocké : ${profile.password.substring(0, 20)}...
+Match : Oui ✓
+Rôle : ${profile.role}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+❌ Mot de passe incorrect
+Hash entré : ${hashedInputPassword.substring(0, 20)}...
+Hash stocké : ${profile.password.substring(0, 20)}...
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Erreur : ${error.message}</div>`;
+            }
+        };
+
+        window.checkExistingAccounts = async function() {
+            const resultDiv = document.getElementById('check-result');
+            resultDiv.innerHTML = '<div class="result info">⏳ Vérification des comptes...</div>';
+
+            try {
+                const testEmails = [
+                    'ethan@ols.com',
+                    'bastien@ols.com',
+                    'issam@ols.com',
+                    'admin',
+                    'trinity@ols.com',
+                    'test@example.com'
+                ];
+
+                let html = '<div class="result info">';
+                html += '📋 Comptes trouvés :\n\n';
+
+                for (const email of testEmails) {
+                    const profile = await SecureStorage.getItem(`user_profile_${email}`);
+                    if (profile) {
+                        html += `✅ ${email} <span class="status ok">${profile.role}</span>\n`;
+                    } else {
+                        html += `❌ ${email} <span class="status fail">Non trouvé</span>\n`;
+                    }
+                }
+
+                html += '\n📊 Total localStorage : ' + localStorage.length + ' entrées';
+                html += '</div>';
+
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ Erreur : ${error.message}</div>`;
+            }
+        };
+
+        // Message initial
+        console.log('🔒 Système de test de connexion AES-256 prêt');
+    </script>
+</body>
+</html>

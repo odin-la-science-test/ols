@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        h1 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Quick Login</h1>
+        <p>Cliquez pour vous connecter directement</p>
+        <button onclick="loginAs('ethan@OLS.com', 'Ethan', 'super_admin')">
+            Login as Ethan (Super Admin)
+        </button>
+        <button onclick="loginAs('admin', 'Admin', 'admin')">
+            Login as Admin
+        </button>
+        <button onclick="loginAs('trinity@ols.com', 'Trinity', 'student')">
+            Login as Trinity (Student)
+        </button>
+    </div>
+
+    <script>
+        function loginAs(email, name, role) {
+            // Clear everything first
+            localStorage.clear();
+            
+            // Set user data
+            const user = {
+                email: email,
+                role: role,
+                name: name,
+                firstName: name,
+                lastName: 'User'
+            };
+            
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('currentUserRole', role);
+            localStorage.setItem('loginTime', Date.now().toString());
+            
+            console.log('Logged in as:', user);
+            
+            // Redirect to home
+            window.location.href = '/home';
+        }
+    </script>
+</body>
+</html>

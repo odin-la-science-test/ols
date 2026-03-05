@@ -28,9 +28,24 @@ const CommandPalette = () => {
     const inputRef = useRef<HTMLInputElement>(null);
     const { isMobile } = useDeviceDetection();
 
-    // Get access data
+    // Get access data avec chiffrement AES-256
+    const [accessData, setAccessData] = useState<{ sub: any; hiddenTools: string[] }>({ sub: null, hiddenTools: [] });
+
+    useEffect(() => {
+        const loadAccessData = async () => {
+            try {
+                const userStr = localStorage.getItem('currentUser');
+                const data = await getAccessData(userStr);
+                setAccessData(data);
+            } catch (error) {
+                console.error('Error loading access data:', error);
+            }
+        };
+        loadAccessData();
+    }, []); // Dépendances vides pour charger une seule fois
+
+    const { sub, hiddenTools } = accessData;
     const userStr = localStorage.getItem('currentUser');
-    const { sub, hiddenTools } = getAccessData(userStr);
 
     const hasAccess = (moduleId: string) => checkHasAccess(moduleId, userStr, sub || undefined, hiddenTools);
 

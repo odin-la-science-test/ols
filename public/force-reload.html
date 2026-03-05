@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Force Reload</title>
+    <script>
+        // Nettoyer tout
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Vider le cache et recharger
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                names.forEach(name => caches.delete(name));
+            });
+        }
+        
+        // Rediriger vers login après 1 seconde
+        setTimeout(() => {
+            window.location.href = '/login?nocache=' + Date.now();
+        }, 1000);
+    </script>
+</head>
+<body style="font-family: Arial; text-align: center; padding: 50px;">
+    <h1>🔄 Nettoyage en cours...</h1>
+    <p>Redirection vers la page de connexion...</p>
+</body>
+</html>

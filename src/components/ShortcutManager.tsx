@@ -11,17 +11,29 @@ const ShortcutManager: React.FC = () => {
             const isInput = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
             if (isInput) return;
 
+            // Vérifier si l'utilisateur est connecté
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
             if (e.key.toLowerCase() === 'h' && (e.ctrlKey || e.altKey)) {
                 e.preventDefault();
-                navigate('/home');
+                // Rediriger vers /home seulement si connecté, sinon vers /login
+                if (isLoggedIn) {
+                    navigate('/home');
+                } else {
+                    navigate('/login');
+                }
             }
             if (e.key.toLowerCase() === 's' && (e.ctrlKey || e.altKey)) {
                 e.preventDefault();
-                navigate('/settings');
+                if (isLoggedIn) {
+                    navigate('/settings');
+                }
             }
             if (e.key.toLowerCase() === 'u' && (e.ctrlKey || e.altKey)) {
                 e.preventDefault();
-                navigate('/hugin');
+                if (isLoggedIn) {
+                    navigate('/hugin');
+                }
             }
             if (e.key.toLowerCase() === 'l' && (e.ctrlKey || e.altKey)) {
                 e.preventDefault();

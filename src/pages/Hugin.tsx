@@ -39,13 +39,29 @@ const Hugin = () => {
     // Tracking prédictif
     const { trackToolUse, trackSearch } = usePredictiveTracking();
 
-    // Subscription Check logic
+    // Subscription Check logic avec chiffrement AES-256
+    const [accessData, setAccessData] = useState<{ sub: any; hiddenTools: string[]; profile: any }>({ sub: null, hiddenTools: [], profile: null });
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const loadAccessData = async () => {
+            try {
+                const userStr = localStorage.getItem('currentUser');
+                const data = await getAccessData(userStr);
+                setAccessData(data);
+            } catch (error) {
+                console.error('Error loading access data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadAccessData();
+    }, []); // Dépendances vides pour charger une seule fois
+
+    const { sub, hiddenTools, profile } = accessData;
     const userStr = localStorage.getItem('currentUser');
-    const { sub, hiddenTools } = getAccessData(userStr);
 
     // Détection de la vue étudiante
-    const profileStr = userStr ? localStorage.getItem(`user_profile_${userStr}`) : null;
-    const profile = profileStr ? JSON.parse(profileStr) : null;
     const isUserStudent = profile?.isStudent || false;
     const isStudentView = shouldShowStudentView(userStr, isUserStudent);
     const platformName = getHuginPlatformName(isStudentView);

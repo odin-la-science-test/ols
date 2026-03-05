@@ -17,7 +17,7 @@ export interface UserProfile {
     hiddenTools?: string[];
 }
 
-export const getAccessData = (currentUser: string | null) => {
+export const getAccessData = async (currentUser: string | null) => {
     if (!currentUser) return { profile: null, sub: null, hiddenTools: [] };
 
     // Si currentUser est un objet JSON, extraire l'email
@@ -38,21 +38,18 @@ export const getAccessData = (currentUser: string | null) => {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
-    const profileStr = localStorage.getItem(`user_profile_${normalizedEmail}`);
-    if (!profileStr) return { profile: null, sub: null, hiddenTools: [] };
+    
+    // IMPORTANT: Utiliser SecureStorage pour lire les profils chiffrés avec AES-256
+    const { SecureStorage } = await import('./encryption');
+    const profile: UserProfile | null = await SecureStorage.getItem(`user_profile_${normalizedEmail}`);
+    
+    if (!profile) return { profile: null, sub: null, hiddenTools: [] };
 
-    try {
-        const profile: UserProfile = JSON.parse(profileStr);
-        return {
-            profile,
-            sub: profile.subscription,
-            hiddenTools: profile.hiddenTools || []
-        };
-    } catch (e) {
-        console.error('Error parsing user profile, clearing corrupted data...');
-        localStorage.removeItem(`user_profile_${normalizedEmail}`);
-        return { profile: null, sub: null, hiddenTools: [] };
-    }
+    return {
+        profile,
+        sub: profile.subscription,
+        hiddenTools: profile.hiddenTools || []
+    };
 };
 
 export const checkHasAccess = (moduleId: string, currentUser: string | null, sub: UserSubscription | undefined, hiddenTools: string[], currentUserRole?: string | null) => {

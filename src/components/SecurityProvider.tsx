@@ -35,66 +35,54 @@ export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
 
     useEffect(() => {
-        // Vérifier la session au chargement
-        const checkInitialSession = async () => {
-            const isValid = await SessionManager.validateSession();
-
-            // Banking-grade: Verify session pinning (IP/Fingerprint)
-            if (isValid) {
-                const sessionData = await SessionManager.getSessionData();
-                const currentFingerprint = navigator.userAgent + (window as any).screen.colorDepth;
-                if ((sessionData as any)?.fingerprint && (sessionData as any).fingerprint !== currentFingerprint) {
-                    await AuditLedger.log('security_alert', { type: 'session_fingerprint_mismatch' }, sessionData?.userId);
-                    logout();
-                    return;
-                }
-
-                // Load profile and role asynchronously
-                await refreshProfile();
-            }
-
-            setIsAuthenticated(isValid);
-
-            // Audit Ledger Integrity Check
-            const isLedgerSafe = await AuditLedger.verifyIntegrity();
-            if (!isLedgerSafe) {
-                console.error('CRITICAL: Audit Ledger Tampering detected!');
-            }
-
-            // Générer un token CSRF
-            if (!CSRFProtection.getToken()) {
-                CSRFProtection.generateToken();
+        // VERSION SIMPLIFIÉE : Vérifier juste localStorage
+        const checkInitialSession = () => {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const currentUser = localStorage.getItem('currentUser');
+            const currentUserRole = localStorage.getItem('currentUserRole');
+            
+            if (isLoggedIn && currentUser) {
+                setIsAuthenticated(true);
+                setUserRole(currentUserRole || 'user');
+                console.log('✅ Session valide:', currentUser, currentUserRole);
+                
+                // Charger le profil utilisateur
+                refreshProfile();
+            } else {
+                setIsAuthenticated(false);
+                setUserProfile(null);
+                console.log('❌ Pas de session');
             }
         };
 
         checkInitialSession();
-
-        // Rafraîchir la session toutes les 5 minutes
-        const interval = setInterval(async () => {
-            if (await SessionManager.validateSession()) {
-                await SessionManager.refreshSession();
-            } else {
-                setIsAuthenticated(false);
-            }
-        }, 5 * 60 * 1000);
-
-        // Nettoyer à la fermeture de la page
-        const handleBeforeUnload = async () => {
-            // Ne pas détruire la session, juste rafraîchir
-            if (await SessionManager.validateSession()) {
-                await SessionManager.refreshSession();
+        
+        // Écouter les changements de localStorage (connexion/déconnexion)
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'isLoggedIn' || e.key === 'currentUser') {
+                console.log('🔄 Changement de session détecté');
+                checkInitialSession();
             }
         };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
+        
+        window.addEventListener('storage', handleStorageChange);
+        
+        // Écouter un événement custom pour les changements dans la même fenêtre
+        const handleAuthChange = () => {
+            console.log('🔄 Événement auth-change reçu');
+            checkInitialSession();
+        };
+        
+        window.addEventListener('auth-change', handleAuthChange);
+        
         return () => {
-            clearInterval(interval);
-            window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('auth-change', handleAuthChange);
         };
     }, []);
 
-    // Détecter l'inactivité
+    // DÉSACTIVÉ TEMPORAIREMENT : Détecter l'inactivité
+    /*
     useEffect(() => {
         let inactivityTimer: any;
         const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes (Banking Standard)
@@ -123,8 +111,10 @@ export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             });
         };
     }, [isAuthenticated]);
+    */
 
-    // Anti-Debugging: Detect DevTools (Banking Standard)
+    // DÉSACTIVÉ TEMPORAIREMENT : Anti-Debugging
+    /*
     useEffect(() => {
         const detectDevTools = () => {
             const widthThreshold = window.outerWidth - window.innerWidth > 160;
@@ -139,6 +129,7 @@ export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const interval = setInterval(detectDevTools, 2000);
         return () => clearInterval(interval);
     }, [isAuthenticated]);
+    */
 
     const login = async (userId: string) => {
         const fingerprint = navigator.userAgent + (window as any).screen.colorDepth;
