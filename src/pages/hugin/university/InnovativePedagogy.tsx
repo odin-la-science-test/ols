@@ -62,7 +62,7 @@ const InnovativePedagogy = () => {
                     <div key={i} style={{ padding: '0.75rem', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div>
                         <div style={{ fontWeight: 600 }}>{r.title}</div>
-                        {r.duration && <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{r.duration} min</div>}
+                        {'duration' in r && r.duration && <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{r.duration} min</div>}
                       </div>
                       <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#10b981' }}>{r.completionRate}% complété</div>
                     </div>

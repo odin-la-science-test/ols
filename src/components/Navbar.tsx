@@ -128,12 +128,12 @@ const Navbar = () => {
                             onClick={() => {
                                 if (location.pathname.startsWith('/hugin/')) {
                                     // Si on est dans un sous-module de Hugin, retourner à /hugin
-                                    navigate('/hugin');
+                                    navigate('/hugin', { replace: true });
                                 } else if (location.pathname === '/hugin') {
                                     // Si on est sur la page Hugin principale, retourner à /home
-                                    navigate('/home');
+                                    navigate('/home', { replace: true });
                                 } else if (location.pathname.startsWith('/munin')) {
-                                    navigate('/home');
+                                    navigate('/home', { replace: true });
                                 } else {
                                     navigate(-1);
                                 }
@@ -325,12 +325,12 @@ const Navbar = () => {
                     <button onClick={() => {
                         if (location.pathname.startsWith('/hugin/')) {
                             // Si on est dans un sous-module de Hugin, retourner à /hugin
-                            navigate('/hugin');
+                            navigate('/hugin', { replace: true });
                         } else if (location.pathname === '/hugin') {
                             // Si on est sur la page Hugin principale, retourner à /home
-                            navigate('/home');
+                            navigate('/home', { replace: true });
                         } else if (location.pathname.startsWith('/munin')) {
-                            navigate('/home');
+                            navigate('/home', { replace: true });
                         } else {
                             navigate(-1);
                         }

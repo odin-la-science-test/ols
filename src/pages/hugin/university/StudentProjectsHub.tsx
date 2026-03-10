@@ -18,7 +18,7 @@ const StudentProjectsHub = () => {
       endDate: new Date('2026-06-30'),
       milestones: [
         { title: 'Cahier des charges', dueDate: new Date('2025-11-01'), status: 'completed', completedAt: new Date('2025-10-28') },
-        { title: 'Prototype', dueDate: new Date('2026-02-01'), status: 'in_progress' }
+        { title: 'Prototype', dueDate: new Date('2026-02-01'), status: 'pending' }
       ],
       deliverables: [
         { title: 'Rapport final', type: 'report', dueDate: new Date('2026-06-15') }

@@ -1,4 +1,4 @@
-import React, { CSSProperties } from 'react';
+import React, { type CSSProperties } from 'react';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 
 interface ResponsiveGridProps {
