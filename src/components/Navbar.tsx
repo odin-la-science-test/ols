@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { User, LogOut, ChevronDown, ChevronLeft, Settings, LayoutDashboard, StickyNote, Layers } from 'lucide-react';
-import { useToast } from './ToastContext';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import NotificationCenter from './NotificationCenter';
 import Avatar from './Avatar';
@@ -13,14 +12,10 @@ import { LOGOS } from '../utils/logoCache';
 const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { showToast } = useToast();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isNotesOpen, setIsNotesOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const { isMobile } = useDeviceDetection();
-    const [refreshAvatar, setRefreshAvatar] = useState(0);
-
-    const languages: { code: string; label: string; flag: string }[] = [];
 
     const { userProfile, userRole, isAuthenticated: isLoggedIn } = useSecurity();
 
