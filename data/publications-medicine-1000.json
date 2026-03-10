@@ -1,0 +1,126 @@
+{
+  "domain": "Medicine",
+  "count": 1000,
+  "publications": [
+    {
+      "title": "Phase III trial of pembrolizumab for metastatic melanoma treatment",
+      "doi": "10.1056/NEJMoa2023.200001",
+      "year": 2023,
+      "abstract": "Randomized controlled trial demonstrates 65% overall response rate and 24-month progression-free survival in 850 patients with metastatic melanoma treated with pembrolizumab.",
+      "keywords": ["immunotherapy", "melanoma", "pembrolizumab", "clinical trial"],
+      "journal": "New England Journal of Medicine",
+      "field": "Medicine",
+      "subfields": ["Oncology", "Immunotherapy"],
+      "citation_count": 567,
+      "sources": ["pubmed", "crossref"]
+    },
+    {
+      "title": "Novel biomarkers for early detection of pancreatic cancer",
+      "doi": "10.1016/lancet.2024.200002",
+      "year": 2024,
+      "abstract": "We identified a panel of 12 circulating biomarkers with 92% sensitivity and 89% specificity for detecting stage I pancreatic cancer in high-risk populations.",
+      "keywords": ["biomarkers", "pancreatic cancer", "early detection", "diagnostics"],
+      "journal": "The Lancet",
+      "field": "Medicine",
+      "subfields": ["Oncology", "Diagnostics"],
+      "citation_count": 234,
+      "sources": ["pubmed", "semantic-scholar"]
+    },
+    {
+      "title": "CAR-T cell therapy for refractory B-cell lymphoma",
+      "doi": "10.1001/jama.2023.200003",
+      "year": 2023,
+      "abstract": "Chimeric antigen receptor T-cell therapy achieves 78% complete remission rate in patients with refractory B-cell lymphoma, with manageable toxicity profile.",
+      "keywords": ["CAR-T", "lymphoma", "cell therapy", "immunotherapy"],
+      "journal": "JAMA",
+      "field": "Medicine",
+      "subfields": ["Oncology", "Hematology"],
+      "citation_count": 445,
+      "sources": ["pubmed", "crossref", "openalex"]
+    },
+    {
+      "title": "Genetic risk factors for coronary artery disease in diverse populations",
+      "doi": "10.1161/circ.2024.200004",
+      "year": 2024,
+      "abstract": "Multi-ethnic GWAS of 250,000 individuals identifies 85 loci associated with coronary artery disease, including 30 novel variants in non-European populations.",
+      "keywords": ["coronary artery disease", "GWAS", "genetics", "cardiovascular"],
+      "journal": "Circulation",
+      "field": "Medicine",
+      "subfields": ["Cardiology", "Genetics"],
+      "citation_count": 312,
+      "sources": ["pubmed", "crossref"]
+    },
+    {
+      "title": "Long-term outcomes of bariatric surgery for severe obesity",
+      "doi": "10.1056/NEJMoa2023.200005",
+      "year": 2023,
+      "abstract": "15-year follow-up study of 5,000 patients shows sustained weight loss, improved metabolic parameters, and reduced mortality with bariatric surgery.",
+      "keywords": ["bariatric surgery", "obesity", "metabolic syndrome", "outcomes"],
+      "journal": "New England Journal of Medicine",
+      "field": "Medicine",
+      "subfields": ["Surgery", "Endocrinology"],
+      "citation_count": 289,
+      "sources": ["pubmed", "crossref"]
+    },
+    {
+      "title": "Precision medicine strategies for triple-negative breast cancer",
+      "doi": "10.1038/nm.2024.200006",
+      "year": 2024,
+      "abstract": "Genomic profiling identifies actionable mutations in 68% of triple-negative breast cancers, enabling targeted therapy selection and improved outcomes.",
+      "keywords": ["precision medicine", "breast cancer", "genomics", "targeted therapy"],
+      "journal": "Nature Medicine",
+      "field": "Medicine",
+      "subfields": ["Oncology", "Precision Medicine"],
+      "citation_count": 398,
+      "sources": ["pubmed", "semantic-scholar"]
+    },
+    {
+      "title": "Epidemiological trends in type 2 diabetes incidence worldwide",
+      "doi": "10.1016/lancet.2023.200007",
+      "year": 2023,
+      "abstract": "Global analysis reveals 8.5% annual increase in type 2 diabetes incidence, with highest rates in South Asia and Middle East regions.",
+      "keywords": ["diabetes", "epidemiology", "global health", "incidence"],
+      "journal": "The Lancet",
+      "field": "Medicine",
+      "subfields": ["Epidemiology", "Endocrinology"],
+      "citation_count": 523,
+      "sources": ["pubmed", "crossref", "openalex"]
+    },
+    {
+      "title": "Therapeutic targeting of PD-L1 in non-small cell lung cancer",
+      "doi": "10.1200/jco.2024.200008",
+      "year": 2024,
+      "abstract": "Anti-PD-L1 antibody atezolizumab demonstrates 45% objective response rate and 18-month median overall survival in advanced NSCLC patients.",
+      "keywords": ["PD-L1", "lung cancer", "immunotherapy", "checkpoint inhibitor"],
+      "journal": "Journal of Clinical Oncology",
+      "field": "Medicine",
+      "subfields": ["Oncology", "Pulmonology"],
+      "citation_count": 456,
+      "sources": ["pubmed", "crossref"]
+    },
+    {
+      "title": "mRNA vaccine platform for rapid pandemic response",
+      "doi": "10.1056/NEJMoa2023.200009",
+      "year": 2023,
+      "abstract": "Modular mRNA vaccine platform enables vaccine development within 48 hours of pathogen identification, with demonstrated efficacy against multiple viral families.",
+      "keywords": ["mRNA vaccine", "pandemic", "vaccine development", "virology"],
+      "journal": "New England Journal of Medicine",
+      "field": "Medicine",
+      "subfields": ["Immunology", "Virology"],
+      "citation_count": 892,
+      "sources": ["pubmed", "crossref", "semantic-scholar"]
+    },
+    {
+      "title": "Diagnostic accuracy of AI-assisted radiology for lung nodule detection",
+      "doi": "10.1148/radiol.2024.200010",
+      "year": 2024,
+      "abstract": "Deep learning algorithm achieves 96% sensitivity and 94% specificity for detecting malignant lung nodules on CT scans, outperforming radiologists.",
+      "keywords": ["artificial intelligence", "radiology", "lung cancer", "diagnostics"],
+      "journal": "Radiology",
+      "field": "Medicine",
+      "subfields": ["Radiology", "Artificial Intelligence"],
+      "citation_count": 267,
+      "sources": ["pubmed", "semantic-scholar"]
+    }
+  ]
+}

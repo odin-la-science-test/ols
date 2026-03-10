@@ -1,0 +1,169 @@
+╔════════════════════════════════════════════════════════════╗
+║                                                            ║
+║   📧 CONFIGURATION GMAIL SMTP - RÉSUMÉ VISUEL             ║
+║                                                            ║
+╚════════════════════════════════════════════════════════════╝
+
+
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  ÉTAPE 1 : OBTENIR LE MOT DE PASSE D'APPLICATION           │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+    🌐 https://myaccount.google.com/apppasswords
+         │
+         ├─→ Sélectionnez "Mail"
+         ├─→ Sélectionnez "Autre" → "Odin La Science"
+         ├─→ Cliquez sur "Générer"
+         └─→ COPIEZ le mot de passe (16 caractères)
+              
+              Exemple : abcd efgh ijkl mnop
+
+
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  ÉTAPE 2 : CONFIGURER server/.env                          │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+    📝 Ouvrez : server/.env
+         │
+         └─→ Modifiez :
+         
+             GMAIL_USER=votre.email@gmail.com
+             GMAIL_APP_PASSWORD=abcd efgh ijkl mnop
+         
+         └─→ Sauvegardez
+
+
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  ÉTAPE 3 : DÉMARRER LE SERVEUR GMAIL                       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+    💻 Exécutez : .\demarrer-avec-gmail.ps1
+         │
+         ├─→ Serveur Gmail démarre sur port 3001
+         └─→ Serveur web démarre sur port 3000
+
+
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  ÉTAPE 4 : TESTER                                          │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+
+    🌐 http://localhost:3000
+         │
+         ├─→ Cliquez sur "S'inscrire"
+         ├─→ Remplissez le formulaire
+         ├─→ Cliquez sur "Suivant" (étape 3)
+         │
+         └─→ 📧 Email envoyé !
+              │
+              ├─→ Vérifiez votre Gmail
+              ├─→ Copiez le code à 6 chiffres
+              ├─→ Entrez le code
+              └─→ ✅ Compte créé !
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 ÉTAT ACTUEL DU SYSTÈME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌──────────────────┬──────────┬──────┬─────────────────────────┐
+│ Serveur          │ État     │ Port │ URL                     │
+├──────────────────┼──────────┼──────┼─────────────────────────┤
+│ Email Resend     │ ❌ Arrêté│  -   │ -                       │
+│ Email Gmail      │ ⚠️  Config│ 3001 │ http://localhost:3001   │
+│ Web              │ ✅ Actif │ 3000 │ http://localhost:3000   │
+└──────────────────┴──────────┴──────┴─────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 FLUX COMPLET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    Utilisateur                Frontend              Backend Gmail
+        │                         │                        │
+        │  1. Remplit formulaire  │                        │
+        ├────────────────────────>│                        │
+        │                         │                        │
+        │                         │  2. Génère code 6      │
+        │                         │     chiffres           │
+        │                         │                        │
+        │                         │  3. POST /api/send-    │
+        │                         │     verification-code  │
+        │                         ├───────────────────────>│
+        │                         │                        │
+        │                         │                        │  4. Envoie email
+        │                         │                        │     via Gmail SMTP
+        │                         │                        ├──────────────>
+        │                         │                        │              Gmail
+        │                         │  5. Success            │
+        │                         │<───────────────────────┤
+        │                         │                        │
+        │  6. Affiche champs code │                        │
+        │<────────────────────────┤                        │
+        │                         │                        │
+        │  7. Reçoit email        │                        │
+        │<────────────────────────┼────────────────────────┤
+        │                         │                        │
+        │  8. Entre le code       │                        │
+        ├────────────────────────>│                        │
+        │                         │                        │
+        │  9. Vérifie code        │                        │
+        │                         │                        │
+        │  10. ✅ Compte créé !   │                        │
+        │<────────────────────────┤                        │
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 FICHIERS CRÉÉS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ demarrer-avec-gmail.ps1
+   → Script pour démarrer automatiquement
+
+✅ ouvrir-config-gmail.ps1
+   → Script pour ouvrir server/.env
+
+✅ 🚀 CONFIGURER GMAIL MAINTENANT.txt
+   → Guide détaillé
+
+✅ ✅ TOUT EST PRET - SUIVEZ CES ETAPES.txt
+   → Instructions rapides
+
+✅ RESUME_CONFIGURATION_GMAIL.md
+   → Documentation technique
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ COMMANDES RAPIDES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Ouvrir la configuration
+.\ouvrir-config-gmail.ps1
+
+# Démarrer les serveurs
+.\demarrer-avec-gmail.ps1
+
+# Tester
+Start-Process "http://localhost:3000"
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 C'EST TOUT !
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Une fois configuré, vous recevrez de vrais emails dans votre
+boîte Gmail à chaque inscription ou connexion !
+
+Plus de mode mock, de vrais emails ! 📧✨

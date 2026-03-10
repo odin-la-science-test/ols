@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Drawer Code Interpreter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background: #1e293b;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            background: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        button.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1rem;
+            border-bottom: 1px solid #334155;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            min-height: 300px;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Drawer */
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 450px;
+            max-width: 85%;
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drawer.open {
+            transform: translateX(0);
+        }
+
+        .drawer-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #334155;
+            background: #0f172a;
+        }
+
+        .drawer-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .drawer-title h3 {
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .close-btn {
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            border-radius: 0.5rem;
+        }
+
+        .close-btn:hover {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: #1e293b;
+            padding: 0.25rem;
+            border-radius: 0.75rem;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: transparent;
+            border: none;
+            border-radius: 0.5rem;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .drawer-content {
+            flex: 1;
+            overflow: auto;
+            padding: 1.5rem;
+        }
+
+        .code-block {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid #334155;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            overflow: auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #64748b;
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div style="font-weight: 700; font-size: 1.25rem;">Odin La Science</div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
+
+    <!-- Drawer -->
+    <div class="drawer" id="drawer">
+        <div class="drawer-header">
+            <div class="drawer-title">
+                <h3>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                    Vue Détaillée
+                </h3>
+                <button class="close-btn" onclick="toggleDrawer()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('code')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 0.5rem;">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                    Code
+                </button>
+                <button class="tab" onclick="switchTab('interpretation')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 0.5rem;">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    Interprétation
+                </button>
+            </div>
+        </div>
+
+        <div class="drawer-content">
+            <!-- Vue Code -->
+            <div id="code-view">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h4 style="font-size: 1rem; color: #94a3b8;">Code Source</h4>
+                    <button style="padding: 0.5rem 0.75rem; font-size: 0.9rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 0.5rem;">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Copier
+                    </button>
+                </div>
+                <div class="code-block">
+def calculate_mean(data):
+    """Calcule la moyenne d'une liste"""
+    if not data:
+        return 0
+    return sum(data) / len(data)
+
+# Exemple
+values = [1, 2, 3, 4, 5]
+mean = calculate_mean(values)
+print(f"Moyenne: {mean}")
+                </div>
+            </div>
+
+            <!-- Vue Interprétation -->
+            <div id="interpretation-view" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h4 style="font-size: 1rem; color: #94a3b8;">Analyse de Mimir</h4>
+                    <button style="padding: 0.5rem 0.75rem; font-size: 0.9rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 0.5rem;">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Copier
+                    </button>
+                </div>
+                <div class="code-block" style="font-family: inherit; white-space: pre-wrap;">
+<strong>📊 Analyse du Code Python</strong>
+
+<strong>1. Fonctionnalité</strong>
+Cette fonction calcule la moyenne arithmétique d'une liste de nombres.
+
+<strong>2. Concepts Utilisés</strong>
+• Fonction avec docstring
+• Gestion des cas limites (liste vide)
+• Fonctions built-in (sum, len)
+• F-strings pour le formatage
+
+<strong>3. Bonnes Pratiques</strong>
+✅ Documentation claire
+✅ Gestion des erreurs
+✅ Nommage explicite
+✅ Code lisible
+
+<strong>4. Améliorations Possibles</strong>
+• Ajouter la gestion des types (type hints)
+• Gérer les valeurs non-numériques
+• Ajouter des tests unitaires
+
+<strong>5. Optimisation</strong>
+Le code est déjà optimal pour cette tâche simple.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="header">
+            <div class="button-group">
+                <button onclick="window.history.back()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Retour à Munin
+                </button>
+                <button id="drawer-toggle" onclick="toggleDrawer()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                    Vue Détaillée
+                </button>
+            </div>
+
+            <div class="title">Code Interpreter</div>
+            <div class="subtitle">Mimir peut lire et interpréter votre code</div>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">Votre Code</div>
+                <div class="card-body">
+                    <textarea style="width: 100%; height: 300px; background: #0f172a; border: 1px solid #334155; border-radius: 0.5rem; padding: 1rem; color: #e2e8f0; font-family: 'Courier New', monospace; resize: vertical;">def calculate_mean(data):
+    """Calcule la moyenne d'une liste"""
+    if not data:
+        return 0
+    return sum(data) / len(data)
+
+# Exemple
+values = [1, 2, 3, 4, 5]
+mean = calculate_mean(values)
+print(f"Moyenne: {mean}")</textarea>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Analyse de Mimir</div>
+                <div class="card-body">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        </svg>
+                        <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">Prêt à analyser</p>
+                        <p style="font-size: 0.9rem;">Cliquez sur "Analyser le code"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDrawer() {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('overlay');
+            const toggle = document.getElementById('drawer-toggle');
+            
+            drawer.classList.toggle('open');
+            overlay.classList.toggle('active');
+            toggle.classList.toggle('active');
+        }
+
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            const codeView = document.getElementById('code-view');
+            const interpretationView = document.getElementById('interpretation-view');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            if (tab === 'code') {
+                tabs[0].classList.add('active');
+                codeView.style.display = 'block';
+                interpretationView.style.display = 'none';
+            } else {
+                tabs[1].classList.add('active');
+                codeView.style.display = 'none';
+                interpretationView.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

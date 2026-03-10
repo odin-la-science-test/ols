@@ -10,6 +10,7 @@ export interface GroqConfig {
     temperature?: number;
     maxTokens?: number;
     reasoningEffort?: 'low' | 'medium' | 'high';
+    systemPrompt?: string;
 }
 
 export interface GroqResponse {
@@ -134,6 +135,11 @@ class GroqService {
             role: 'user',
             content: message
         });
+        
+        // Préparer les messages avec le system prompt si fourni
+        const messages: GroqMessage[] = config?.systemPrompt 
+            ? [{ role: 'system', content: config.systemPrompt }, ...this.conversationHistory]
+            : this.conversationHistory;
 
         try {
             const response = await fetch(`${this.baseUrl}/chat/completions`, {
@@ -144,7 +150,7 @@ class GroqService {
                 },
                 body: JSON.stringify({
                     model: config?.model || 'llama-3.3-70b-versatile',
-                    messages: this.conversationHistory,
+                    messages: messages,
                     temperature: config?.temperature ?? 0.7,
                     max_tokens: config?.maxTokens ?? 2000,
                     stream: true,

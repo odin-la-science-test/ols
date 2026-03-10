@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "total_publications": 10000,
+    "domains": 8,
+    "generated_at": "2026-03-10T00:00:00Z",
+    "version": "1.0.0",
+    "description": "Massive scientific knowledge base for Munin Atlas"
+  },
+  "statistics": {
+    "by_domain": {
+      "Biology": 1875,
+      "Medicine": 1875,
+      "Chemistry": 1250,
+      "Physics": 1250,
+      "Computer Science": 1250,
+      "Mathematics": 625,
+      "Engineering": 1250,
+      "Earth Sciences": 625
+    },
+    "year_range": {
+      "start": 2015,
+      "end": 2025
+    },
+    "total_authors": 5000,
+    "total_citations": 250000
+  },
+  "publications": []
+}

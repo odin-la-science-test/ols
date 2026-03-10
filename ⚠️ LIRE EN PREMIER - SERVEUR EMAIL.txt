@@ -1,0 +1,71 @@
+╔════════════════════════════════════════════════════════════╗
+║                                                            ║
+║   ⚠️  ERREUR 404 : SERVEUR EMAIL NON DÉMARRÉ             ║
+║                                                            ║
+╚════════════════════════════════════════════════════════════╝
+
+
+🔴 PROBLÈME :
+
+L'application essaie de contacter le serveur email sur le port 3001,
+mais celui-ci n'est pas en cours d'exécution.
+
+
+✅ SOLUTION RAPIDE :
+
+Exécutez cette commande dans PowerShell :
+
+    .\START_EMAIL_SERVER.ps1
+
+
+Le serveur démarrera automatiquement dans une nouvelle fenêtre.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+📝 ALTERNATIVE (Méthode manuelle) :
+
+1. Ouvrez un NOUVEAU terminal PowerShell
+
+2. Tapez cette commande :
+
+   node server/emailServerResend.js
+
+3. Laissez ce terminal ouvert
+
+4. Retournez sur votre application et réessayez
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+✅ VÉRIFICATION :
+
+Le serveur est démarré quand vous voyez ce message :
+
+   ╔════════════════════════════════════════════════════╗
+   ║   📧 Serveur Email Resend démarré !               ║
+   ║   🌐 Port: 3001                                   ║
+   ║   ✅ Prêt à envoyer des emails !                  ║
+   ╚════════════════════════════════════════════════════╝
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+💡 IMPORTANT :
+
+• Le serveur DOIT rester actif pendant l'utilisation de l'app
+• Vous verrez les logs des emails envoyés en temps réel
+• Pour arrêter : fermez la fenêtre du serveur ou Ctrl+C
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+🆘 BESOIN D'AIDE ?
+
+Consultez ces fichiers :
+• DEMARRER_SERVEUR_EMAIL.md (guide détaillé)
+• LIRE_MOI_SERVEUR_EMAIL.txt (instructions simples)

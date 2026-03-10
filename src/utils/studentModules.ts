@@ -241,8 +241,13 @@ export const getHuginPlatformName = (isStudent: boolean): string => {
 // Obtenir la description de la plateforme
 export const getHuginPlatformDescription = (isStudent: boolean): string => {
   return isStudent 
-    ? 'Votre assistant pour réussir vos études scientifiques'
-    : 'Votre laboratoire numérique professionnel';
+    ? 'Votre plateforme universitaire complète pour réussir vos études'
+    : 'Votre laboratoire numérique professionnel et système de gestion universitaire';
+};
+
+// Obtenir le logo approprié
+export const getHuginLogo = (isStudent: boolean): string => {
+  return isStudent ? '/hugin-scholar-logo.svg' : '/hugin-lab-logo.svg';
 };
 
 // Gestion du mode de vue pour les super admins

@@ -287,6 +287,26 @@ export class TwoFactorAuth {
     private static codes: Map<string, { code: string; expiresAt: number }> = new Map();
     private static readonly CODE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 
+    static async sendCodeByEmail(email: string, code: string): Promise<boolean> {
+        try {
+            // Utiliser le service d'email
+            const { EmailService } = await import('../services/emailService');
+            const success = await EmailService.sendVerificationCode(email, code);
+            
+            if (success) {
+                SecurityLogger.log('2fa_code_sent', email);
+            } else {
+                SecurityLogger.log('2fa_code_send_failed', email);
+            }
+            
+            return success;
+        } catch (error) {
+            console.error('Erreur lors de l\'envoi du code:', error);
+            SecurityLogger.log('2fa_code_send_failed', email, { error: String(error) });
+            return false;
+        }
+    }
+
     static generateCode(userId: string): string {
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = Date.now() + this.CODE_EXPIRY;
@@ -294,6 +314,12 @@ export class TwoFactorAuth {
         this.codes.set(userId, { code, expiresAt });
         SecurityLogger.log('2fa_code_generated', userId);
         
+        return code;
+    }
+
+    static async generateAndSendCode(email: string): Promise<string> {
+        const code = this.generateCode(email);
+        await this.sendCodeByEmail(email, code);
         return code;
     }
 
@@ -395,6 +421,13 @@ export class SecureRandom {
     static generateToken(length: number = 32): string {
         return generateSecureToken(length);
     }
+}
+
+/**
+ * Generate a 6-digit verification code
+ */
+export function generateVerificationCode(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 export default {

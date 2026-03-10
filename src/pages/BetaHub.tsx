@@ -4,9 +4,12 @@ import { Beaker, Lock, TrendingUp, Zap, AlertCircle, CheckCircle, Clock, Lightbu
 import { checkBetaAccess, getBetaFeatures, getBetaStats } from '../utils/betaAccess';
 import { getSortMode, getSortedModules, saveModulesOrder, getModulesOrder } from '../utils/betaModulesOrder';
 import { showToast } from '../components/ToastNotification';
+import { useBreakpoint } from '../hooks/useBreakpoint';
+import { ResponsiveContainer, ResponsiveGrid } from '../components/layout';
 
 export const BetaHub: React.FC = () => {
   const navigate = useNavigate();
+  const { isMobile, isTablet } = useBreakpoint();
   const [hasAccess, setHasAccess] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [editMode, setEditMode] = useState(false);
@@ -158,9 +161,9 @@ export const BetaHub: React.FC = () => {
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%)',
-      padding: '2rem'
+      padding: isMobile ? '1rem' : '2rem'
     }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      <ResponsiveContainer maxWidth="xl">
         {/* Header */}
         <div style={{
           background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%)',
@@ -214,12 +217,11 @@ export const BetaHub: React.FC = () => {
               </div>
             </div>
 
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '1rem',
-              marginTop: '2rem'
-            }}>
+            <ResponsiveGrid
+              columns={{ mobile: 2, tablet: 2, desktop: 4 }}
+              gap="1rem"
+              style={{ marginTop: isMobile ? '1.5rem' : '2rem' }}
+            >
               <div style={{
                 padding: '1.5rem',
                 background: 'rgba(16, 185, 129, 0.1)',
@@ -279,7 +281,7 @@ export const BetaHub: React.FC = () => {
                 </div>
                 <p style={{ color: '#cbd5e1', fontSize: '0.9rem', margin: 0 }}>Total</p>
               </div>
-            </div>
+            </ResponsiveGrid>
           </div>
         </div>
 
@@ -378,11 +380,10 @@ export const BetaHub: React.FC = () => {
         )}
 
         {/* Features Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
-          gap: '1.5rem'
-        }}>
+        <ResponsiveGrid
+          columns={{ mobile: 1, tablet: 2, desktop: 3 }}
+          gap={isMobile ? '1rem' : '1.5rem'}
+        >
           {filteredFeatures.map((feature, index) => (
             <div
               key={feature.id}
@@ -563,7 +564,7 @@ export const BetaHub: React.FC = () => {
               </div>
             </div>
           ))}
-        </div>
+        </ResponsiveGrid>
 
         {/* Info Banner */}
         <div style={{
@@ -588,7 +589,7 @@ export const BetaHub: React.FC = () => {
             </p>
           </div>
         </div>
-      </div>
+      </ResponsiveContainer>
     </div>
   );
 };

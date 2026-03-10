@@ -4,11 +4,11 @@ import {
     Package, Snowflake, Activity, Wallet, BookOpen, Calculator,
     Dna, Camera, Layers, ShieldAlert, Zap, Share2, Box,
     TrendingUp, Grid, UserCheck, Search, FileText, Clock, GitBranch, Bot, Edit3, GraduationCap,
-    Shield, Microscope, Cloud
+    Shield, Microscope, Cloud, Building, MapPin, Globe, Heart, CheckCircle, Briefcase, Award, Users, Scale, Lightbulb
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '../components/ToastContext';
-import { useDeviceDetection } from '../hooks/useDeviceDetection';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useElectron } from '../hooks/useElectron';
 import Navbar from '../components/Navbar';
 import { checkHasAccess, getAccessData } from '../utils/ShieldUtils';
@@ -24,12 +24,13 @@ import type { ModuleOrder } from '../utils/huginCustomization';
 import { getBetaFeatures, isSuperAdmin } from '../utils/betaAccess';
 import { usePredictiveTracking } from '../hooks/usePredictiveTracking';
 import { shouldShowStudentView, getHuginPlatformName, getHuginPlatformDescription } from '../utils/studentModules';
+import { ResponsiveContainer, ResponsiveGrid } from '../components/layout';
 
 const Hugin = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { showToast } = useToast();
-    const { isMobile } = useDeviceDetection();
+    const { isMobile, isTablet } = useBreakpoint();
     const { isElectron } = useElectron();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('Tout');
@@ -161,7 +162,31 @@ const Hugin = () => {
         'lab-equipment',          // Fiches Machines
         'qcm-multi',              // QCM Multi-Disciplines
         'lms',                    // Plateforme d'Apprentissage
-        'cloud-storage'           // Stockage Cloud
+        'cloud-storage',          // Stockage Cloud
+        // Modules Universitaires - Accessibles aux étudiants
+        'programs',               // Gestion des Programmes
+        'enrollment',             // Inscriptions
+        'exams',                  // Examens
+        'library',                // Bibliothèque
+        'student-life',           // Vie Étudiante
+        'internships',            // Stages
+        'mobility',               // Mobilité
+        // Nouveaux modules universitaires avancés
+        'academic-pathways',      // Orientation & Parcours
+        'faculty-workload',       // Charges Enseignantes
+        'smart-timetabling',      // Emplois du Temps
+        'continuous-assessment',  // Évaluations Continues
+        'skills-portfolio',       // Portfolio Compétences
+        'mentorship-hub',         // Hub Mentorat
+        'jury-management',        // Gestion des Jurys
+        'accreditation-tracker',  // Suivi Accréditations
+        'student-projects-hub',   // Projets Étudiants
+        'career-observatory',     // Observatoire Débouchés
+        'agreements-manager',     // Gestion Conventions
+        'accessibility-support',  // Handicap & Accessibilité
+        'campus-services',        // Services Campus
+        'vae-assessment',         // VAE/VAP
+        'innovative-pedagogy'     // Pédagogie Innovante
     ];
 
     // Modules Scholar à exclure pour les professionnels
@@ -173,10 +198,52 @@ const Hugin = () => {
         'cloud-storage'
     ];
 
+    // Modules Universitaires (nouveaux - accessibles selon le profil)
+    const universityModules = [
+        // Académique Core
+        { id: 'programs', name: 'Gestion des Programmes', desc: 'Cursus, parcours et crédits ECTS', icon: <BookOpen size={24} />, category: 'University', path: '/hugin/university/programs' },
+        { id: 'enrollment', name: 'Inscriptions', desc: 'Candidatures et admissions', icon: <UserCheck size={24} />, category: 'University', path: '/hugin/university/enrollment' },
+        { id: 'exams', name: 'Examens', desc: 'Planning et gestion des examens', icon: <FileText size={24} />, category: 'University', path: '/hugin/university/exams' },
+        { id: 'degrees', name: 'Diplômes', desc: 'Génération et validation', icon: <Award size={24} />, category: 'University', path: '/hugin/university/degrees' },
+        
+        // Administratif
+        { id: 'departments', name: 'Départements', desc: 'Gestion départementale', icon: <Building size={24} />, category: 'University', path: '/hugin/university/departments' },
+        { id: 'rooms', name: 'Salles', desc: 'Réservation et optimisation', icon: <MapPin size={24} />, category: 'University', path: '/hugin/university/rooms' },
+        { id: 'finance', name: 'Finances', desc: 'Frais et bourses', icon: <Wallet size={24} />, category: 'University', path: '/hugin/university/finance' },
+        
+        // Recherche & Carrière
+        { id: 'research-projects', name: 'Recherche', desc: 'Projets et publications', icon: <Microscope size={24} />, category: 'University', path: '/hugin/university/research' },
+        { id: 'library', name: 'Bibliothèque', desc: 'Catalogue et ressources', icon: <Book size={24} />, category: 'University', path: '/hugin/university/library' },
+        { id: 'alumni', name: 'Alumni', desc: 'Réseau et carrière', icon: <Users size={24} />, category: 'University', path: '/hugin/university/alumni' },
+        
+        // Complémentaires
+        { id: 'internships', name: 'Stages', desc: 'Offres et candidatures', icon: <Briefcase size={24} />, category: 'University', path: '/hugin/university/internships' },
+        { id: 'mobility', name: 'Mobilité', desc: 'Échanges internationaux', icon: <Globe size={24} />, category: 'University', path: '/hugin/university/mobility' },
+        { id: 'student-life', name: 'Vie Étudiante', desc: 'Associations et événements', icon: <Heart size={24} />, category: 'University', path: '/hugin/university/student-life' },
+        { id: 'quality', name: 'Qualité', desc: 'Évaluations et accréditation', icon: <CheckCircle size={24} />, category: 'University', path: '/hugin/university/quality' },
+        
+        // Nouveaux modules avancés
+        { id: 'academic-pathways', name: 'Orientation & Parcours', desc: 'Cartographie et recommandations personnalisées', icon: <MapPin size={24} />, category: 'University', path: '/hugin/university/academic-pathways' },
+        { id: 'faculty-workload', name: 'Charges Enseignantes', desc: 'Répartition et suivi des heures', icon: <Users size={24} />, category: 'University', path: '/hugin/university/faculty-workload' },
+        { id: 'smart-timetabling', name: 'Emplois du Temps', desc: 'Génération automatique et optimisation', icon: <Calendar size={24} />, category: 'University', path: '/hugin/university/smart-timetabling' },
+        { id: 'continuous-assessment', name: 'Évaluations Continues', desc: 'Feedback immédiat et suivi', icon: <FileText size={24} />, category: 'University', path: '/hugin/university/continuous-assessment' },
+        { id: 'skills-portfolio', name: 'Portfolio Compétences', desc: 'Cartographie et valorisation', icon: <Award size={24} />, category: 'University', path: '/hugin/university/skills-portfolio' },
+        { id: 'mentorship-hub', name: 'Hub Mentorat', desc: 'Accompagnement personnalisé', icon: <Users size={24} />, category: 'University', path: '/hugin/university/mentorship-hub' },
+        { id: 'jury-management', name: 'Gestion des Jurys', desc: 'Délibérations et décisions', icon: <Scale size={24} />, category: 'University', path: '/hugin/university/jury-management' },
+        { id: 'accreditation-tracker', name: 'Suivi Accréditations', desc: 'Conformité et préparation', icon: <CheckCircle size={24} />, category: 'University', path: '/hugin/university/accreditation-tracker' },
+        { id: 'student-projects-hub', name: 'Projets Étudiants', desc: 'PFE, stages et projets tutorés', icon: <Briefcase size={24} />, category: 'University', path: '/hugin/university/student-projects-hub' },
+        { id: 'career-observatory', name: 'Observatoire Débouchés', desc: 'Insertion professionnelle', icon: <TrendingUp size={24} />, category: 'University', path: '/hugin/university/career-observatory' },
+        { id: 'agreements-manager', name: 'Gestion Conventions', desc: 'Génération et suivi', icon: <FileText size={24} />, category: 'University', path: '/hugin/university/agreements-manager' },
+        { id: 'accessibility-support', name: 'Handicap & Accessibilité', desc: 'Aménagements pédagogiques', icon: <Heart size={24} />, category: 'University', path: '/hugin/university/accessibility-support' },
+        { id: 'campus-services', name: 'Services Campus', desc: 'Réservations et accès', icon: <Building size={24} />, category: 'University', path: '/hugin/university/campus-services' },
+        { id: 'vae-assessment', name: 'VAE/VAP', desc: 'Validation des acquis', icon: <Award size={24} />, category: 'University', path: '/hugin/university/vae-assessment' },
+        { id: 'innovative-pedagogy', name: 'Pédagogie Innovante', desc: 'Méthodes d\'enseignement avancées', icon: <Lightbulb size={24} />, category: 'University', path: '/hugin/university/innovative-pedagogy' }
+    ];
+
     // Filtrer les modules selon la vue
     const baseModules = isStudentView
-        ? modules.filter(m => studentAllowedModules.includes(m.id))
-        : modules.filter(m => !scholarOnlyModules.includes(m.id)); // Exclure Scholar pour les pros
+        ? [...modules, ...universityModules].filter(m => studentAllowedModules.includes(m.id))
+        : [...modules, ...universityModules].filter(m => !scholarOnlyModules.includes(m.id)); // Exclure Scholar pour les pros
 
     // Charger les modules beta et les fusionner avec les modules standards
     const allModules = useMemo(() => {
@@ -219,7 +286,7 @@ const Hugin = () => {
         return standardModules;
     }, [isUserSuperAdmin, customOrder, baseModules]);
 
-    const categories = ['Tout', 'Core', 'Lab', 'Research', 'Analysis', 'Scholar'];
+    const categories = ['Tout', 'Core', 'Lab', 'Research', 'Analysis', 'Scholar', 'University'];
 
     // Traduction des catégories en français
     const catLabels: Record<string, string> = {
@@ -228,7 +295,8 @@ const Hugin = () => {
         'Lab': 'Laboratoire',
         'Research': 'Recherche',
         'Analysis': 'Analyse',
-        'Scholar': 'Éducation'
+        'Scholar': 'Éducation',
+        'University': 'Université'
     };
 
     const accessibleModules = allModules.filter(m => hasAccess(m.id));
@@ -258,16 +326,34 @@ const Hugin = () => {
         <div style={{ minHeight: '100vh', position: 'relative', paddingBottom: '4rem' }}>
             {!isElectron && <Navbar />}
 
-            <div className="container" style={{ paddingTop: isElectron ? '1rem' : '2rem' }}>
-                <header style={{ marginBottom: '3rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <ResponsiveContainer style={{ paddingTop: isElectron ? '1rem' : isMobile ? '1rem' : '2rem' }}>
+                <header style={{ 
+                    marginBottom: isMobile ? '2rem' : '3rem', 
+                    textAlign: 'center', 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center' 
+                }}>
                     {!isElectron && (
                         <img src={LOGOS.hugin} alt={`${platformName} Logo`} style={{ width: '400px', height: '400px', objectFit: 'contain', marginBottom: '0.5rem', filter: 'drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px rgba(99, 102, 241, 0.3))' }} />
                     )}
-                    <h1 className="text-gradient" style={{ fontSize: isElectron ? '2.5rem' : '3rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <h1 className="text-gradient" style={{ 
+                        fontSize: isElectron ? '2.5rem' : isMobile ? '2rem' : '3rem', 
+                        marginBottom: '1rem', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '1rem',
+                        flexWrap: 'wrap',
+                        justifyContent: 'center'
+                    }}>
                         {isStudentView && <GraduationCap size={48} />}
                         {platformName}
                     </h1>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem' }}>
+                    <p style={{ 
+                        color: 'var(--text-secondary)', 
+                        fontSize: isMobile ? '1rem' : '1.2rem', 
+                        marginBottom: isMobile ? '1.5rem' : '2rem' 
+                    }}>
                         {platformDescription}
                     </p>
 
@@ -291,7 +377,12 @@ const Hugin = () => {
                         </div>
                     )}
 
-                    <div style={{ position: 'relative', width: '100%', maxWidth: '600px', margin: '0 auto 2rem auto' }}>
+                    <div style={{ 
+                        position: 'relative', 
+                        width: '100%', 
+                        maxWidth: isMobile ? '100%' : '600px', 
+                        margin: isMobile ? '0 0 1.5rem 0' : '0 auto 2rem auto' 
+                    }}>
                         <Search
                             size={20}
                             style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--accent-hugin)' }}
@@ -320,7 +411,14 @@ const Hugin = () => {
                         />
                     </div>
 
-                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '2rem', alignItems: 'center' }}>
+                    <div style={{ 
+                        display: 'flex', 
+                        gap: '0.75rem', 
+                        flexWrap: 'wrap', 
+                        justifyContent: 'center', 
+                        marginBottom: isMobile ? '1.5rem' : '2rem', 
+                        alignItems: 'center' 
+                    }}>
                         {categories.filter(cat => {
                             if (cat === 'Tout') return true;
                             return accessibleModules.some(m => m.category === cat);
@@ -406,13 +504,27 @@ const Hugin = () => {
                     if (catModules.length === 0) return null;
 
                     return (
-                        <div key={cat} style={{ marginBottom: '3rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                        <div key={cat} style={{ marginBottom: isMobile ? '2rem' : '3rem' }}>
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: '1rem', 
+                                marginBottom: isMobile ? '1rem' : '1.5rem' 
+                            }}>
                                 <div style={{ height: '1px', flex: 1, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.1))' }}></div>
-                                <h2 style={{ fontSize: '1.25rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent-hugin)', fontWeight: 700 }}>{catLabels[cat] || cat}</h2>
+                                <h2 style={{ 
+                                    fontSize: isMobile ? '1rem' : '1.25rem', 
+                                    textTransform: 'uppercase', 
+                                    letterSpacing: '0.1em', 
+                                    color: 'var(--accent-hugin)', 
+                                    fontWeight: 700 
+                                }}>{catLabels[cat] || cat}</h2>
                                 <div style={{ height: '1px', flex: 1, background: 'linear-gradient(to left, transparent, rgba(255,255,255,0.1))' }}></div>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                            <ResponsiveGrid 
+                                columns={{ mobile: 1, tablet: 2, desktop: 3 }}
+                                gap={isMobile ? '1rem' : '1rem'}
+                            >
                                 {catModules.map(m => {
                                     const isBeta = (m as any).isBeta === true;
                                     return (
@@ -478,7 +590,7 @@ const Hugin = () => {
                                         </div>
                                     );
                                 })}
-                            </div>
+                            </ResponsiveGrid>
                         </div>
                     );
                 })}
@@ -489,8 +601,6 @@ const Hugin = () => {
                         <p style={{ fontSize: '1.2rem' }}>Aucun module trouvé pour "{searchQuery}"</p>
                     </div>
                 )}
-            </div>
-
             {/* Edit Mode Modal */}
             {editMode && (
                 <HuginEditMode
@@ -499,6 +609,7 @@ const Hugin = () => {
                     onSave={handleSaveCustomization}
                 />
             )}
+            </ResponsiveContainer>
         </div>
     );
 };

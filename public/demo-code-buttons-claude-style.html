@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Démo - Boutons Code Style Claude</title>
+  <style>
+    :root {
+      --bg-primary: #0f1419;
+      --bg-secondary: #1a1f2e;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --border-color: #30363d;
+      --accent-hugin: #3b82f6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      padding: 2rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--accent-hugin);
+    }
+
+    .description {
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border-radius: 0.5rem;
+      border-left: 3px solid var(--accent-hugin);
+    }
+
+    .message {
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: var(--bg-secondary);
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .message-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-hugin);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+
+    .code-block-container {
+      margin: 1rem 0;
+      position: relative;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+
+    .code-header {
+      background: var(--bg-secondary);
+      padding: 0.5rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .code-lang {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .code-actions {
+      display: flex;
+      gap: 0.5rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .code-block-container:hover .code-actions {
+      opacity: 1;
+    }
+
+    .code-actions button {
+      padding: 0.375rem 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 0.375rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: 500;
+    }
+
+    .code-actions button:hover {
+      background: var(--accent-hugin);
+      border-color: var(--accent-hugin);
+      color: white;
+    }
+
+    .code-actions button:active {
+      transform: scale(0.95);
+    }
+
+    pre {
+      background: var(--bg-secondary);
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 0;
+    }
+
+    code {
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      white-space: pre-wrap;
+    }
+
+    .textarea-container {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: var(--bg-secondary);
+      border-radius: 0.75rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .textarea-container h3 {
+      margin-bottom: 1rem;
+      color: var(--accent-hugin);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 1rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      color: var(--text-primary);
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      resize: vertical;
+    }
+
+    .success-message {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 0.5rem;
+      color: #22c55e;
+      display: none;
+    }
+
+    .icon {
+      width: 14px;
+      height: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Système de Boutons Code - Style Claude</h1>
+    
+    <div class="description">
+      <strong>✨ Fonctionnalités :</strong>
+      <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+        <li>Boutons "Copier" et "Insérer" apparaissent au survol du bloc de code</li>
+        <li>Bouton "Copier" : copie le code dans le presse-papier</li>
+        <li>Bouton "Insérer" : insère le code dans le textarea ci-dessous</li>
+        <li>Animation fluide et feedback visuel</li>
+        <li>Design inspiré de Claude et Google AI Studio</li>
+      </ul>
+    </div>
+
+    <div class="message">
+      <div class="message-header">
+        <div class="avatar">M</div>
+        <div>
+          <div style="font-weight: 600;">Mímir</div>
+          <div style="font-size: 0.875rem; color: var(--text-secondary);">Assistant IA</div>
+        </div>
+      </div>
+
+      <p style="margin-bottom: 1rem;">Voici un exemple de code Python pour analyser des données :</p>
+
+      <div class="code-block-container">
+        <div class="code-header">
+          <span class="code-lang">PYTHON</span>
+          <div class="code-actions">
+            <button onclick="copyCode('code1', this)">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copier
+            </button>
+            <button onclick="insertCode('code1')">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Insérer
+            </button>
+          </div>
+        </div>
+        <pre><code id="code1">import pandas as pd
+import numpy as np
+
+# Charger les données
+data = pd.read_csv('data.csv')
+
+# Analyser les statistiques
+print(data.describe())
+
+# Calculer la moyenne
+mean_value = np.mean(data['column'])</code></pre>
+      </div>
+
+      <p style="margin-top: 1rem; margin-bottom: 1rem;">Et voici un exemple JavaScript :</p>
+
+      <div class="code-block-container">
+        <div class="code-header">
+          <span class="code-lang">JAVASCRIPT</span>
+          <div class="code-actions">
+            <button onclick="copyCode('code2', this)">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              Copier
+            </button>
+            <button onclick="insertCode('code2')">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Insérer
+            </button>
+          </div>
+        </div>
+        <pre><code id="code2">// Fonction pour analyser les données
+async function analyzeData(data) {
+  const results = await processData(data);
+  
+  return {
+    mean: calculateMean(results),
+    median: calculateMedian(results),
+    stdDev: calculateStdDev(results)
+  };
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="textarea-container">
+      <h3>📝 Zone de test - Insérer le code ici</h3>
+      <textarea id="testTextarea" placeholder="Cliquez sur 'Insérer' dans un bloc de code ci-dessus pour voir le code apparaître ici..."></textarea>
+      <div class="success-message" id="successMessage">
+        ✅ Code inséré avec succès!
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function copyCode(codeId, button) {
+      const codeElement = document.getElementById(codeId);
+      const code = codeElement.textContent;
+      
+      navigator.clipboard.writeText(code).then(() => {
+        const originalHTML = button.innerHTML;
+        button.innerHTML = `
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Copié!
+        `;
+        
+        setTimeout(() => {
+          button.innerHTML = originalHTML;
+        }, 2000);
+      });
+    }
+
+    function insertCode(codeId) {
+      const codeElement = document.getElementById(codeId);
+      const code = codeElement.textContent;
+      const textarea = document.getElementById('testTextarea');
+      
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const currentValue = textarea.value;
+      
+      // Insérer le code à la position du curseur
+      const newValue = currentValue.substring(0, start) + '\n' + code + '\n' + currentValue.substring(end);
+      textarea.value = newValue;
+      
+      // Remettre le focus sur le textarea
+      textarea.focus();
+      const newCursorPos = start + code.length + 2;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+      
+      // Afficher le message de succès
+      const successMessage = document.getElementById('successMessage');
+      successMessage.style.display = 'block';
+      setTimeout(() => {
+        successMessage.style.display = 'none';
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

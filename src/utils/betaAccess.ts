@@ -129,6 +129,43 @@ export const getBetaFeatures = () => {
       status: 'planning',
       category: 'Sécurité',
       features: ['Checklists', 'Procédures urgence', 'Formation', 'Audit', 'Rapports incidents']
+    },
+    // ========== LIMS (Laboratory Information Management System) ==========
+    {
+      id: 'lims-dashboard',
+      name: 'Dashboard Laboratoire',
+      description: 'Vue d\'ensemble complète du laboratoire avec KPIs, alertes et activité en temps réel',
+      path: '/hugin/dashboard',
+      status: 'stable',
+      category: 'LIMS',
+      features: ['6 KPIs temps réel', 'Alertes intelligentes', 'Activité récente', 'Accès rapide modules', 'Statistiques avancées', 'Design moderne']
+    },
+    {
+      id: 'lims-samples',
+      name: 'Base de Données d\'Échantillons',
+      description: 'Gestion complète des échantillons biologiques avec traçabilité et historique',
+      path: '/hugin/samples',
+      status: 'stable',
+      category: 'LIMS',
+      features: ['Vue Grid/List', 'Filtres avancés', 'Tri multi-critères', 'Historique complet', 'Export CSV', 'Codes-barres', 'Localisation précise']
+    },
+    {
+      id: 'lims-experiments',
+      name: 'Gestion des Expériences',
+      description: 'Planification et suivi d\'expériences avec observations et résultats',
+      path: '/hugin/experiments',
+      status: 'planning',
+      category: 'LIMS',
+      features: ['Planification', 'Journal observations', 'Mesures', 'Liens échantillons', 'Protocoles', 'Analyse résultats']
+    },
+    {
+      id: 'lims-equipment',
+      name: 'Gestion des Équipements',
+      description: 'Inventaire et réservation d\'équipements avec maintenance préventive',
+      path: '/hugin/equipment',
+      status: 'planning',
+      category: 'LIMS',
+      features: ['Inventaire complet', 'Réservations', 'Maintenance', 'Calibration', 'Historique usage', 'Coûts']
     }
   ];
 };

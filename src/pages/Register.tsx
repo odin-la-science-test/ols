@@ -16,6 +16,7 @@ import { InputValidator, AnomalyDetector } from '../utils/securityEnhancements';
 import { SecurityLogger } from '../utils/securityConfig';
 import { createLicense } from '../utils/licenseManagement';
 import type { AccountType } from '../types/accountTypes';
+import type { AccountValidationRequest } from '../types/accountValidation';
 import { ACCOUNT_TYPE_LABELS, ACCOUNT_PRICES } from '../types/accountTypes';
 import {
     Users, Building2, ChevronRight, CheckCircle,
@@ -25,6 +26,8 @@ import {
     CreditCard, TrendingUp
 } from 'lucide-react';
 import { LOGOS } from '../utils/logoCache';
+import EmailService from '../services/emailService';
+import { generateVerificationCode } from '../utils/securityEnhancements';
 
 // Remise selon le nombre de comptes
 const VOLUME_DISCOUNTS = [
@@ -58,6 +61,15 @@ const Register = () => {
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // États pour la vérification email
+    const [verificationStep, setVerificationStep] = useState(false);
+    const [generatedCode, setGeneratedCode] = useState('');
+    const [codeExpiry, setCodeExpiry] = useState<number>(0);
+    const [codeInputs, setCodeInputs] = useState(['', '', '', '', '', '']);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [canResend, setCanResend] = useState(false);
+    const [resendTimer, setResendTimer] = useState(60);
 
     const registrationLimiter = new RateLimiter(3, 60 * 60 * 1000);
 
@@ -171,7 +183,7 @@ const Register = () => {
         reader.readAsDataURL(file);
     };
 
-    const nextStep = () => {
+    const nextStep = async () => {
         // Validation avant de passer à l'étape suivante
         if (step === 1) {
             if (!formData.accountCategory) {
@@ -227,11 +239,110 @@ const Register = () => {
                 return;
             }
             setPasswordError('');
+
+            // Vérifier que l'email n'existe pas déjà
+            const existingUser = await SecureStorage.getItem(`user_profile_${formData.email.toLowerCase()}`);
+            if (existingUser) {
+                showToast('Cet email est déjà utilisé', 'error');
+                return;
+            }
+
+            // Envoyer le code de vérification
+            const code = generateVerificationCode();
+            setGeneratedCode(code);
+            setCodeExpiry(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+            try {
+                const success = await EmailService.sendVerificationCode(formData.email, code);
+                if (success) {
+                    setVerificationStep(true);
+                    showToast('Code envoyé à votre email', 'success');
+                    startResendTimer();
+                } else {
+                    showToast('Erreur lors de l\'envoi du code', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur envoi code:', error);
+                showToast('Erreur lors de l\'envoi du code', 'error');
+            }
+            return; // Ne pas passer à l'étape suivante, attendre la vérification
         }
 
         setStep(s => s + 1);
     };
-    const prevStep = () => setStep(s => s - 1);
+
+    const handleVerifyCode = async () => {
+        const enteredCode = codeInputs.join('');
+        
+        if (enteredCode.length !== 6) {
+            showToast('Veuillez entrer le code complet', 'error');
+            return;
+        }
+
+        if (Date.now() > codeExpiry) {
+            showToast('Le code a expiré', 'error');
+            return;
+        }
+
+        setIsVerifying(true);
+
+        if (enteredCode === generatedCode) {
+            showToast('Email vérifié avec succès !', 'success');
+            setVerificationStep(false);
+            setStep(4); // Passer à l'étape paiement
+        } else {
+            showToast('Code incorrect', 'error');
+            setCodeInputs(['', '', '', '', '', '']);
+        }
+
+        setIsVerifying(false);
+    };
+
+    const handleResendCode = async () => {
+        if (!canResend) return;
+
+        const code = generateVerificationCode();
+        setGeneratedCode(code);
+        setCodeExpiry(Date.now() + 5 * 60 * 1000);
+
+        try {
+            const success = await EmailService.sendVerificationCode(formData.email, code);
+            if (success) {
+                showToast('Nouveau code envoyé', 'success');
+                setCanResend(false);
+                startResendTimer();
+                setCodeInputs(['', '', '', '', '', '']);
+            } else {
+                showToast('Erreur lors de l\'envoi', 'error');
+            }
+        } catch (error) {
+            showToast('Erreur lors de l\'envoi', 'error');
+        }
+    };
+
+    const startResendTimer = () => {
+        setResendTimer(60);
+        setCanResend(false);
+        
+        const interval = setInterval(() => {
+            setResendTimer(prev => {
+                if (prev <= 1) {
+                    clearInterval(interval);
+                    setCanResend(true);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    };
+
+    const prevStep = () => {
+        if (verificationStep) {
+            setVerificationStep(false);
+        } else {
+            setStep(s => s - 1);
+        }
+    };
 
     // Validation en temps réel du mot de passe
     const handlePasswordChange = (password: string) => {
@@ -298,64 +409,127 @@ const Register = () => {
                 phone: formData.phone
             });
 
-            // Save Mock Profile
             const normalizedEmail = formData.email.toLowerCase().trim();
-            const userProfile = {
-                email: normalizedEmail,
-                password: hashedPassword,
-                username: normalizedEmail.split('@')[0],
-                fullName: sanitizedData.fullName || emailValidation.sanitized.split('@')[0],
-                phone: sanitizedData.phone,
-                role: formData.accountCategory === 'enterprise' ? 'admin' : 'user',
-                accountCategory: formData.accountCategory,
-                isStudent: formData.isStudent,
-                enterpriseType: formData.enterpriseType,
-                companyName: sanitizedData.companyName,
-                numberOfEmployees: formData.numberOfEmployees,
-                subscription: {
-                    status: 'active',
-                    type: formData.subscriptionType,
-                    cycle: formData.billingCycle,
-                    modules: formData.subscriptionType === 'full' ? 'all' : formData.selectedModules,
-                    price: formData.billingCycle === 'annual' ? cost.annual : cost.monthly,
-                    seats: formData.accountCategory === 'enterprise' ? formData.numberOfEmployees : 1
-                },
-                createdAt: new Date().toISOString()
-            };
 
-            // Save Mock Profile using SecureStorage
-            await SecureStorage.setItem(`user_profile_${normalizedEmail}`, userProfile);
-            localStorage.setItem('currentUser', normalizedEmail);
-            localStorage.setItem('currentUserRole', userProfile.role);
-            localStorage.setItem('isAuthenticated', 'true');
-            localStorage.setItem('isLoggedIn', 'true');
+            // VÉRIFIER SI NÉCESSITE UNE VALIDATION
+            const needsValidation = 
+                (formData.accountCategory === 'personal' && formData.isStudent && formData.studentCardImage) ||
+                (formData.accountCategory === 'enterprise' && formData.enterpriseType === 'public' && formData.publicJustification);
 
-            // Créer une licence si compte entreprise
-            if (formData.accountCategory === 'enterprise' && formData.numberOfEmployees > 0) {
-                // cost.basePrice contient déjà le prix par siège
-                const pricePerSeat = cost.basePrice;
-                createLicense(
-                    normalizedEmail,
-                    formData.numberOfEmployees,
-                    formData.subscriptionType,
-                    formData.billingCycle,
-                    pricePerSeat
-                );
+            if (needsValidation) {
+                // Importer les fonctions de validation
+                const { saveValidationRequest, generateRequestId } = await import('../utils/accountValidation');
+
+                // Convertir les fichiers en base64 pour le stockage
+                let studentCardUrl = '';
+                let publicJustificationUrl = '';
+
+                if (formData.studentCardImage) {
+                    studentCardUrl = formData.studentCardPreview;
+                }
+
+                if (formData.publicJustification) {
+                    publicJustificationUrl = formData.publicJustificationPreview;
+                }
+
+                // Créer la demande de validation
+                const validationRequest: AccountValidationRequest = {
+                    id: generateRequestId(),
+                    email: normalizedEmail,
+                    fullName: sanitizedData.fullName || emailValidation.sanitized.split('@')[0],
+                    accountCategory: formData.accountCategory as 'personal' | 'enterprise',
+                    isStudent: formData.isStudent,
+                    studentCardUrl,
+                    enterpriseType: formData.enterpriseType as 'private' | 'public' | undefined,
+                    publicJustificationUrl,
+                    companyName: sanitizedData.companyName,
+                    numberOfEmployees: formData.numberOfEmployees,
+                    accountData: {
+                        email: normalizedEmail,
+                        password: hashedPassword,
+                        fullName: sanitizedData.fullName || emailValidation.sanitized.split('@')[0],
+                        phone: sanitizedData.phone,
+                        accountCategory: formData.accountCategory,
+                        isStudent: formData.isStudent,
+                        enterpriseType: formData.enterpriseType,
+                        companyName: sanitizedData.companyName,
+                        numberOfEmployees: formData.numberOfEmployees,
+                        subscriptionType: formData.subscriptionType,
+                        selectedModules: formData.selectedModules,
+                        billingCycle: formData.billingCycle,
+                        price: formData.billingCycle === 'annual' ? cost.annual : cost.monthly
+                    },
+                    status: 'pending' as const,
+                    submittedAt: new Date(),
+                    notificationsSent: false
+                };
+
+                saveValidationRequest(validationRequest);
+
+                showToast('✅ Demande envoyée ! Votre compte sera créé après validation par nos administrateurs.', 'success');
+                SecurityLogger.log('validation_request_created', normalizedEmail);
+
+                setTimeout(() => {
+                    navigate('/login');
+                }, 2000);
+            } else {
+                // Créer le compte directement (pas de justificatif)
+                const userProfile = {
+                    email: normalizedEmail,
+                    password: hashedPassword,
+                    username: normalizedEmail.split('@')[0],
+                    fullName: sanitizedData.fullName || emailValidation.sanitized.split('@')[0],
+                    phone: sanitizedData.phone,
+                    role: formData.accountCategory === 'enterprise' ? 'admin' : 'user',
+                    accountCategory: formData.accountCategory,
+                    isStudent: formData.isStudent,
+                    enterpriseType: formData.enterpriseType,
+                    companyName: sanitizedData.companyName,
+                    numberOfEmployees: formData.numberOfEmployees,
+                    subscription: {
+                        status: 'active',
+                        type: formData.subscriptionType,
+                        cycle: formData.billingCycle,
+                        modules: formData.subscriptionType === 'full' ? 'all' : formData.selectedModules,
+                        price: formData.billingCycle === 'annual' ? cost.annual : cost.monthly,
+                        seats: formData.accountCategory === 'enterprise' ? formData.numberOfEmployees : 1
+                    },
+                    createdAt: new Date().toISOString()
+                };
+
+                // Save Mock Profile using SecureStorage
+                await SecureStorage.setItem(`user_profile_${normalizedEmail}`, userProfile);
+                localStorage.setItem('currentUser', normalizedEmail);
+                localStorage.setItem('currentUserRole', userProfile.role);
+                localStorage.setItem('isAuthenticated', 'true');
+                localStorage.setItem('isLoggedIn', 'true');
+
+                // Créer une licence si compte entreprise
+                if (formData.accountCategory === 'enterprise' && formData.numberOfEmployees > 0) {
+                    const pricePerSeat = cost.basePrice;
+                    createLicense(
+                        normalizedEmail,
+                        formData.numberOfEmployees,
+                        formData.subscriptionType,
+                        formData.billingCycle,
+                        pricePerSeat
+                    );
+                }
+
+                // Créer une session sécurisée
+                await login(normalizedEmail);
+
+                // Enregistrer le comportement
+                AnomalyDetector.recordBehavior(normalizedEmail, 'registration');
+                SecurityLogger.log('registration_success', normalizedEmail);
+
+                showToast('🚀 Inscription réussie ! Bienvenue sur Odin la Science.', 'success');
+                loadThemeForUser(normalizedEmail);
+
+                setTimeout(() => {
+                    navigate('/home');
+                }, 1500);
             }
-
-            // Créer une session sécurisée
-            await login(normalizedEmail);
-
-            // Enregistrer le comportement
-            AnomalyDetector.recordBehavior(normalizedEmail, 'registration');
-            SecurityLogger.log('registration_success', normalizedEmail);
-
-            showToast('🚀 Inscription réussie ! Bienvenue sur Odin la Science.', 'success');
-            loadThemeForUser(normalizedEmail);
-
-            setTimeout(() => {
-                navigate('/home');
-            }, 1500);
         } catch (error) {
             console.error('Registration error:', error);
             SecurityLogger.log('registration_error', formData.email, { error: String(error) });
@@ -363,6 +537,176 @@ const Register = () => {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const renderEmailVerification = () => {
+        const timeLeft = Math.max(0, Math.floor((codeExpiry - Date.now()) / 1000));
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+
+        return (
+            <div style={{ animation: 'fadeInUp 0.4s ease-out' }}>
+                <div style={{ 
+                    maxWidth: '500px', 
+                    margin: '0 auto', 
+                    padding: '2rem',
+                    background: c.bgSecondary,
+                    borderRadius: '1rem',
+                    border: `1px solid ${c.borderColor}`
+                }}>
+                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                        <div style={{
+                            width: '80px',
+                            height: '80px',
+                            borderRadius: '50%',
+                            background: `${c.accentPrimary}15`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 1.5rem'
+                        }}>
+                            <Mail size={40} color={c.accentPrimary} />
+                        </div>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>
+                            Vérifiez votre email
+                        </h2>
+                        <p style={{ color: c.textSecondary, fontSize: '0.9rem' }}>
+                            Nous avons envoyé un code à 6 chiffres à<br/>
+                            <strong style={{ color: c.textPrimary }}>{formData.email}</strong>
+                        </p>
+                    </div>
+
+                    <div style={{ 
+                        display: 'flex', 
+                        gap: '0.5rem', 
+                        justifyContent: 'center',
+                        marginBottom: '1.5rem'
+                    }}>
+                        {codeInputs.map((digit, index) => (
+                            <input
+                                key={index}
+                                type="text"
+                                maxLength={1}
+                                value={digit}
+                                onChange={(e) => {
+                                    const value = e.target.value.replace(/[^0-9]/g, '');
+                                    const newInputs = [...codeInputs];
+                                    newInputs[index] = value;
+                                    setCodeInputs(newInputs);
+                                    
+                                    if (value && index < 5) {
+                                        const nextInput = document.querySelector(
+                                            `input[name="code-${index + 1}"]`
+                                        ) as HTMLInputElement;
+                                        nextInput?.focus();
+                                    }
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Backspace' && !codeInputs[index] && index > 0) {
+                                        const prevInput = document.querySelector(
+                                            `input[name="code-${index - 1}"]`
+                                        ) as HTMLInputElement;
+                                        prevInput?.focus();
+                                    }
+                                }}
+                                name={`code-${index}`}
+                                autoFocus={index === 0}
+                                style={{
+                                    width: isMobile ? '45px' : '50px',
+                                    height: isMobile ? '55px' : '60px',
+                                    fontSize: '24px',
+                                    fontWeight: 700,
+                                    textAlign: 'center',
+                                    border: `2px solid ${digit ? c.accentPrimary : c.borderColor}`,
+                                    borderRadius: '0.75rem',
+                                    background: c.bgPrimary,
+                                    color: c.textPrimary,
+                                    outline: 'none',
+                                    transition: 'all 0.2s'
+                                }}
+                            />
+                        ))}
+                    </div>
+
+                    <div style={{ 
+                        textAlign: 'center', 
+                        marginBottom: '1.5rem',
+                        color: timeLeft < 60 ? '#ef4444' : c.textSecondary,
+                        fontSize: '0.9rem',
+                        fontWeight: 600
+                    }}>
+                        {timeLeft > 0 ? (
+                            <p>
+                                ⏱️ Code valide pendant {minutes}:{seconds.toString().padStart(2, '0')}
+                            </p>
+                        ) : (
+                            <p style={{ color: '#ef4444' }}>
+                                ⚠️ Le code a expiré
+                            </p>
+                        )}
+                    </div>
+
+                    <button
+                        onClick={handleVerifyCode}
+                        disabled={isVerifying || codeInputs.join('').length !== 6}
+                        style={{
+                            width: '100%',
+                            padding: '1rem',
+                            background: isVerifying || codeInputs.join('').length !== 6 
+                                ? 'rgba(99, 102, 241, 0.3)' 
+                                : c.accentPrimary,
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '0.75rem',
+                            fontSize: '1rem',
+                            fontWeight: 700,
+                            cursor: isVerifying || codeInputs.join('').length !== 6 ? 'not-allowed' : 'pointer',
+                            marginBottom: '1rem',
+                            opacity: isVerifying || codeInputs.join('').length !== 6 ? 0.5 : 1,
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        {isVerifying ? 'Vérification...' : 'Vérifier le code'}
+                    </button>
+
+                    <button
+                        onClick={handleResendCode}
+                        disabled={!canResend}
+                        style={{
+                            width: '100%',
+                            padding: '1rem',
+                            background: 'transparent',
+                            color: canResend ? c.accentPrimary : c.textSecondary,
+                            border: `1px solid ${canResend ? c.accentPrimary : c.borderColor}`,
+                            borderRadius: '0.75rem',
+                            fontSize: '0.9rem',
+                            fontWeight: 600,
+                            cursor: canResend ? 'pointer' : 'not-allowed',
+                            opacity: canResend ? 1 : 0.5,
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        {canResend ? 'Renvoyer le code' : `Renvoyer dans ${resendTimer}s`}
+                    </button>
+
+                    <button
+                        onClick={() => setVerificationStep(false)}
+                        style={{
+                            width: '100%',
+                            padding: '1rem',
+                            background: 'transparent',
+                            color: c.textSecondary,
+                            border: 'none',
+                            fontSize: '0.9rem',
+                            cursor: 'pointer',
+                            marginTop: '1rem'
+                        }}
+                    >
+                        ← Modifier l'email
+                    </button>
+                </div>
+            </div>
+        );
     };
 
     const renderStepIndicator = () => (
@@ -901,7 +1245,7 @@ const Register = () => {
                         )}
 
                         {/* STEP 3: INFORMATIONS PERSONNELLES */}
-                        {step === 3 && (
+                        {step === 3 && !verificationStep && (
                             <div style={{ animation: 'fadeInUp 0.4s ease-out' }}>
                                 <h2 style={{ fontSize: isMobile ? '1.2rem' : '1.5rem', marginBottom: '1rem', textAlign: 'center', fontWeight: 800 }}>
                                     Vos informations
@@ -1088,6 +1432,9 @@ const Register = () => {
                                 </div>
                             </div>
                         )}
+
+                        {/* VÉRIFICATION EMAIL */}
+                        {step === 3 && verificationStep && renderEmailVerification()}
 
                         {/* STEP 4: RÉSUMÉ ET CONFIRMATION */}
                         {step === 4 && (

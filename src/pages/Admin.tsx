@@ -137,10 +137,15 @@ const Admin = () => {
         const enterpriseUsers = users.filter(u => u.accountCategory === 'enterprise').length;
         const students = users.filter(u => u.isStudent).length;
         const totalRevenue = users.reduce((sum, u) => sum + (u.subscription?.price || 0), 0);
-        const pendingValidations = users.filter(u => 
-            (u.isStudent && u.studentCardImage) || 
-            (u.enterpriseType === 'public' && u.publicJustification)
-        ).length;
+        
+        // Calculer les demandes de validation en attente
+        let pendingValidations = 0;
+        try {
+            const validationRequests = JSON.parse(localStorage.getItem('account_validation_requests') || '[]');
+            pendingValidations = validationRequests.filter((req: any) => req.status === 'pending').length;
+        } catch (error) {
+            console.error('Error loading validation requests:', error);
+        }
 
         // Calculs financiers
         const financialMetrics = calculateFinancialMetrics(users);
@@ -748,6 +753,96 @@ const Admin = () => {
                         >
                             <Beaker size={20} />
                             Accéder au Beta Hub
+                        </button>
+                    </div>
+                )}
+
+                {/* Account Validation Button */}
+                {stats.pendingValidations > 0 && (
+                    <div style={{
+                        marginBottom: '2rem',
+                        padding: '1.5rem',
+                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
+                        border: '2px solid rgba(99, 102, 241, 0.3)',
+                        borderRadius: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}>
+                        <div style={{
+                            position: 'absolute',
+                            top: '-50%',
+                            right: '-10%',
+                            width: '300px',
+                            height: '300px',
+                            background: 'radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%)',
+                            borderRadius: '50%',
+                            filter: 'blur(40px)'
+                        }} />
+                        
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                                <div style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                    borderRadius: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    boxShadow: '0 8px 24px rgba(99, 102, 241, 0.4)',
+                                    animation: 'pulse 2s infinite'
+                                }}>
+                                    <Clock size={24} color="white" />
+                                </div>
+                                <div>
+                                    <h3 style={{
+                                        fontSize: '1.25rem',
+                                        fontWeight: '800',
+                                        margin: 0,
+                                        color: c.textPrimary
+                                    }}>
+                                        Validation de comptes
+                                    </h3>
+                                    <p style={{ color: c.textSecondary, fontSize: '0.9rem', margin: '0.25rem 0 0 0' }}>
+                                        {stats.pendingValidations} demande{stats.pendingValidations > 1 ? 's' : ''} en attente de validation
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button
+                            onClick={() => navigate('/admin/account-validation')}
+                            style={{
+                                position: 'relative',
+                                zIndex: 1,
+                                padding: '1rem 2rem',
+                                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                border: 'none',
+                                borderRadius: '0.75rem',
+                                color: 'white',
+                                fontWeight: '700',
+                                fontSize: '1rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 8px 30px rgba(99, 102, 241, 0.6)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '0 4px 20px rgba(99, 102, 241, 0.4)';
+                            }}
+                        >
+                            <Shield size={20} />
+                            Valider les comptes
                         </button>
                     </div>
                 )}

@@ -1,0 +1,75 @@
+╔════════════════════════════════════════════════════════════╗
+║                                                            ║
+║   ⚠️  ACTION REQUISE : CONFIGURER GMAIL                   ║
+║                                                            ║
+╚════════════════════════════════════════════════════════════╝
+
+
+🎯 SITUATION ACTUELLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Serveur Resend : ARRÊTÉ (email sandbox ne fonctionnait pas)
+✅ Serveur web : ACTIF (http://localhost:3000)
+✅ Configuration : PRÊTE pour Gmail
+⚠️  Gmail : PAS ENCORE CONFIGURÉ
+
+
+📝 CE QU'IL FAUT FAIRE MAINTENANT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OPTION 1 : Configuration Rapide (Recommandé)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Ouvrez le fichier : 🚀 CONFIGURER GMAIL MAINTENANT.txt
+2. Suivez les 5 étapes simples
+3. Exécutez : .\demarrer-avec-gmail.ps1
+4. Testez sur http://localhost:3000
+
+
+OPTION 2 : Configuration Manuelle
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Allez sur : https://myaccount.google.com/apppasswords
+2. Créez un mot de passe d'application
+3. Modifiez server/.env :
+   
+   GMAIL_USER=votre.email@gmail.com
+   GMAIL_APP_PASSWORD=votre_mot_de_passe_16_caracteres
+
+4. Démarrez le serveur Gmail :
+   
+   node server/emailServerGmail.js
+
+5. Le serveur web tourne déjà sur http://localhost:3000
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❓ POURQUOI GMAIL ?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Simple à configurer (5 minutes)
+✓ Pas besoin de domaine
+✓ Envoie de VRAIS emails (pas de mode mock)
+✓ 500 emails/jour gratuits
+✓ Fonctionne immédiatement
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 PROCHAINES ÉTAPES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Configurez Gmail (voir 🚀 CONFIGURER GMAIL MAINTENANT.txt)
+2. Démarrez le serveur Gmail
+3. Testez l'inscription sur http://localhost:3000
+4. Vérifiez votre boîte Gmail pour le code
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 BESOIN D'AIDE ?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Si vous avez des problèmes avec Gmail, dites-moi et je vous
+proposerai une autre solution (Resend avec domaine, etc.)

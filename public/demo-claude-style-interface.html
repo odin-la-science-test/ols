@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interface IA Style Claude - Démo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+      background: #ffffff;
+      color: #2c3e50;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .claude-chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* Header */
+    .claude-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid #e5e7eb;
+      background: #ffffff;
+    }
+
+    .back-button {
+      padding: 0.5rem;
+      background: transparent;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      border-radius: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .back-button:hover {
+      background: #f3f4f6;
+      color: #2c3e50;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .header-title h1 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .header-icon {
+      color: #8b5cf6;
+    }
+
+    .new-chat-button {
+      padding: 0.5rem 1rem;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      color: #374151;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .new-chat-button:hover {
+      background: #e5e7eb;
+      border-color: #d1d5db;
+    }
+
+    /* Messages */
+    .claude-messages {
+      flex: 1;
+      overflow-y: auto;
+      background: #ffffff;
+    }
+
+    .welcome-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100%;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+
+    .welcome-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      margin-bottom: 2rem;
+      font-size: 2rem;
+    }
+
+    .welcome-title {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0 0 0.75rem 0;
+    }
+
+    .welcome-subtitle {
+      font-size: 1.125rem;
+      color: #6b7280;
+      margin: 0 0 3rem 0;
+    }
+
+    .suggested-prompts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .suggested-prompt {
+      padding: 1.25rem;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      color: #374151;
+      cursor: pointer;
+      font-size: 0.9375rem;
+      text-align: left;
+      transition: all 0.2s;
+    }
+
+    .suggested-prompt:hover {
+      background: #f3f4f6;
+      border-color: #8b5cf6;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.1);
+    }
+
+    .messages-list {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .message-wrapper {
+      margin-bottom: 2rem;
+    }
+
+    .message-content {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .user-message .message-content {
+      flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+      flex-shrink: 0;
+    }
+
+    .avatar-user {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    .avatar-assistant {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #f3f4f6;
+      color: #8b5cf6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .message-body {
+      flex: 1;
+      max-width: 100%;
+    }
+
+    .user-message .message-body {
+      text-align: right;
+    }
+
+    .message-text {
+      font-size: 0.9375rem;
+      line-height: 1.7;
+      color: #374151;
+      word-wrap: break-word;
+    }
+
+    .user-message .message-text {
+      background: #f3f4f6;
+      padding: 1rem 1.25rem;
+      border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+      display: inline-block;
+      text-align: left;
+      max-width: 85%;
+    }
+
+    .assistant-message .message-text {
+      padding: 0.5rem 0;
+    }
+
+    /* Message Formatting */
+    .message-text h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 1.25rem 0 0.75rem 0;
+      color: #1f2937;
+    }
+
+    .message-text ul {
+      margin: 1rem 0;
+      padding-left: 1.5rem;
+    }
+
+    .message-text li {
+      margin-bottom: 0.5rem;
+    }
+
+    .message-text code {
+      background: #f3f4f6;
+      padding: 0.125rem 0.375rem;
+      border-radius: 0.25rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      color: #8b5cf6;
+    }
+
+    .code-block {
+      margin: 1.5rem 0;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+    }
+
+    .code-header {
+      background: #f9fafb;
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #6b7280;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .code-block pre {
+      background: #1f2937;
+      padding: 1.25rem;
+      margin: 0;
+      overflow-x: auto;
+    }
+
+    .code-block code {
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      color: #e5e7eb;
+      line-height: 1.6;
+    }
+
+    /* Message Actions */
+    .message-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .message-wrapper:hover .message-actions {
+      opacity: 1;
+    }
+
+    .user-message .message-actions {
+      justify-content: flex-end;
+    }
+
+    .action-button {
+      padding: 0.375rem 0.75rem;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.375rem;
+      color: #6b7280;
+      cursor: pointer;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      transition: all 0.2s;
+    }
+
+    .action-button:hover {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    /* Input Area */
+    .claude-input-area {
+      border-top: 1px solid #e5e7eb;
+      background: #ffffff;
+      padding: 1.5rem 2rem;
+    }
+
+    .input-container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-end;
+    }
+
+    .input-textarea {
+      flex: 1;
+      min-height: 56px;
+      max-height: 200px;
+      padding: 1rem 1.25rem;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 1.5rem;
+      color: #374151;
+      font-size: 0.9375rem;
+      font-family: inherit;
+      resize: none;
+      transition: all 0.2s;
+    }
+
+    .input-textarea:focus {
+      outline: none;
+      border-color: #8b5cf6;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+
+    .send-button {
+      width: 48px;
+      height: 48px;
+      background: #8b5cf6;
+      border: none;
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .send-button:hover:not(:disabled) {
+      background: #7c3aed;
+      transform: scale(1.05);
+    }
+
+    .send-button:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+
+    .input-hint {
+      max-width: 900px;
+      margin: 0.75rem auto 0;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      text-align: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .claude-header {
+        padding: 1rem;
+      }
+
+      .header-title h1 {
+        font-size: 1rem;
+      }
+
+      .new-chat-button {
+        padding: 0.5rem;
+        font-size: 0;
+      }
+
+      .messages-list {
+        padding: 1rem;
+      }
+
+      .welcome-title {
+        font-size: 1.5rem;
+      }
+
+      .welcome-subtitle {
+        font-size: 1rem;
+      }
+
+      .suggested-prompts {
+        grid-template-columns: 1fr;
+      }
+
+      .claude-input-area {
+        padding: 1rem;
+      }
+
+      .user-message .message-text {
+        max-width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="claude-chat-container">
+    <!-- Header -->
+    <header class="claude-header">
+      <button class="back-button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <div class="header-title">
+        <svg class="header-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 3l9 4.5v9L12 21l-9-4.5v-9L12 3z"/>
+          <path d="M12 12l9-4.5M12 12v9M12 12L3 7.5"/>
+        </svg>
+        <h1>Assistant IA</h1>
+      </div>
+      <button class="new-chat-button" onclick="showWelcome()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        Nouvelle conversation
+      </button>
+    </header>
+
+    <!-- Messages Container -->
+    <main class="claude-messages" id="messagesContainer">
+      <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-icon">✨</div>
+        <h2 class="welcome-title">Comment puis-je vous aider aujourd'hui ?</h2>
+        <p class="welcome-subtitle">
+          Posez-moi n'importe quelle question, je suis là pour vous aider.
+        </p>
+        <div class="suggested-prompts">
+          <button class="suggested-prompt" onclick="sendMessage('Explique-moi un concept complexe')">
+            Explique-moi un concept complexe
+          </button>
+          <button class="suggested-prompt" onclick="sendMessage('Aide-moi à écrire un texte')">
+            Aide-moi à écrire un texte
+          </button>
+          <button class="suggested-prompt" onclick="sendMessage('Analyse ce problème')">
+            Analyse ce problème
+          </button>
+          <button class="suggested-prompt" onclick="sendMessage('Génère du code')">
+            Génère du code
+          </button>
+        </div>
+      </div>
+
+      <div class="messages-list" id="messagesList" style="display: none;"></div>
+    </main>
+
+    <!-- Input Area -->
+    <footer class="claude-input-area">
+      <div class="input-container">
+        <textarea
+          id="inputTextarea"
+          placeholder="Écrivez votre message... (Shift+Entrée pour nouvelle ligne)"
+          class="input-textarea"
+          rows="1"
+          onkeydown="handleKeyDown(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <button class="send-button" onclick="sendMessage()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+      <p class="input-hint">
+        Appuyez sur Entrée pour envoyer, Shift+Entrée pour une nouvelle ligne
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    function autoResize(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function showWelcome() {
+      document.getElementById('welcomeScreen').style.display = 'flex';
+      document.getElementById('messagesList').style.display = 'none';
+      document.getElementById('messagesList').innerHTML = '';
+    }
+
+    function sendMessage(text) {
+      const textarea = document.getElementById('inputTextarea');
+      const message = text || textarea.value.trim();
+      
+      if (!message) return;
+
+      // Masquer l'écran de bienvenue
+      document.getElementById('welcomeScreen').style.display = 'none';
+      document.getElementById('messagesList').style.display = 'block';
+
+      // Ajouter le message utilisateur
+      addMessage(message, 'user');
+      
+      // Vider le textarea
+      textarea.value = '';
+      textarea.style.height = 'auto';
+
+      // Simuler une réponse de l'IA
+      setTimeout(() => {
+        const responses = [
+          `<h2>Excellente question !</h2>
+          <p>Voici une réponse structurée pour vous aider :</p>
+          <ul>
+            <li>Premier point important à considérer</li>
+            <li>Deuxième aspect essentiel</li>
+            <li>Troisième élément clé</li>
+          </ul>
+          <p>Pour aller plus loin, voici un exemple de code :</p>
+          <div class="code-block">
+            <div class="code-header">PYTHON</div>
+            <pre><code>def exemple():
+    print("Ceci est un exemple")
+    return True</code></pre>
+          </div>
+          <p>N'hésitez pas si vous avez d'autres questions !</p>`,
+          
+          `<p>Je comprends votre demande. Laissez-moi vous expliquer de manière claire et structurée.</p>
+          <h2>Contexte</h2>
+          <p>Il est important de comprendre le contexte avant de plonger dans les détails.</p>
+          <h2>Solution</h2>
+          <p>Voici une approche étape par étape :</p>
+          <ul>
+            <li>Étape 1 : Analyser le problème</li>
+            <li>Étape 2 : Identifier les solutions possibles</li>
+            <li>Étape 3 : Implémenter la meilleure approche</li>
+          </ul>
+          <p>Cette méthode vous permettra d'obtenir les meilleurs résultats.</p>`
+        ];
+        
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+        addMessage(randomResponse, 'assistant');
+      }, 1000);
+    }
+
+    function addMessage(content, role) {
+      const messagesList = document.getElementById('messagesList');
+      
+      const messageWrapper = document.createElement('div');
+      messageWrapper.className = `message-wrapper ${role}-message`;
+      
+      messageWrapper.innerHTML = `
+        <div class="message-content">
+          <div class="message-avatar">
+            ${role === 'user' 
+              ? '<div class="avatar-user">U</div>' 
+              : '<div class="avatar-assistant">✨</div>'
+            }
+          </div>
+          <div class="message-body">
+            <div class="message-text">${content}</div>
+            <div class="message-actions">
+              ${role === 'assistant' 
+                ? `<button class="action-button" onclick="copyMessage(this)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                    Copier
+                  </button>
+                  <button class="action-button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 4v6h6M23 20v-6h-6"/>
+                      <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                    </svg>
+                    Régénérer
+                  </button>`
+                : `<button class="action-button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Modifier
+                  </button>`
+              }
+            </div>
+          </div>
+        </div>
+      `;
+      
+      messagesList.appendChild(messageWrapper);
+      messagesList.scrollTop = messagesList.scrollHeight;
+    }
+
+    function copyMessage(button) {
+      const messageText = button.closest('.message-body').querySelector('.message-text').textContent;
+      navigator.clipboard.writeText(messageText);
+      
+      const originalHTML = button.innerHTML;
+      button.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Copié
+      `;
+      
+      setTimeout(() => {
+        button.innerHTML = originalHTML;
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

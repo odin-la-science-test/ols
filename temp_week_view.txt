@@ -1,0 +1,47 @@
+              <div style={{ position: 'relative' }}>
+                {/* Grille de fond */}
+                {timeSlots.filter((_, i) => i % 2 === 0).map((time, index) => (
+                  <div
+                    key={time}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '80px repeat(6, 1fr)',
+                      gap: '0.5rem',
+                      marginBottom: '0.5rem',
+                      minHeight: '80px'
+                    }}
+                  >
+                    <div style={{ 
+                      color: 'var(--text-secondary)', 
+                      fontWeight: 600,
+                      fontSize: '0.85rem',
+                      paddingTop: '0.5rem'
+                    }}>
+                      {time}
+                    </div>
+                    {days.map((day) => (
+                      <div
+                        key={day.id}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          borderRadius: '0.5rem',
+                          border: '1px dashed rgba(255, 255, 255, 0.1)',
+                          position: 'relative'
+                        }}
+                      />
+                    ))}
+                  </div>
+                ))}
+                
+                {/* Overlay des créneaux avec positionnement absolu */}
+                {days.map((day, dayIndex) => {
+                  const daySlots = filteredTimetable.filter(slot => slot.day === day.id);
+                  
+                  return daySlots.map(slot => {
+                    // Calculer la position verticale
+                    const startHour = parseInt(slot.startTime.split(':')[0]);
+                    const startMin = parseInt(slot.startTime.split(':')[1]);
+                    const startTotalMin = startHour * 60 + startMin;
+                    const baseTime = 8 * 60; // 08:00
+                    const offsetMin = startTotalMin - baseTime;
+                    const topPosition = (offsetMin / 60) * 160; // 160px par heure (2 créneaux de 80px)

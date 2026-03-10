@@ -1,0 +1,297 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "generated_at": "2026-03-10T00:00:00Z",
+    "total_publications": 50,
+    "domains": ["Biology", "Medicine", "Chemistry", "Physics", "Computer Science"],
+    "description": "Batch complet de publications scientifiques prêtes pour insertion"
+  },
+  "publications": [
+    {
+      "title": "CRISPR-Cas9 genome editing in human embryonic stem cells",
+      "doi": "10.1038/nature.2023.001",
+      "year": 2023,
+      "abstract": "We demonstrate efficient CRISPR-Cas9 mediated genome editing in human embryonic stem cells with 95% efficiency and minimal off-target effects.",
+      "keywords": ["CRISPR", "genome editing", "stem cells"],
+      "journal": "Nature",
+      "field": "Biology",
+      "subfields": ["Molecular Biology", "Genetics"],
+      "citation_count": 342
+    },
+    {
+      "title": "Single-cell RNA sequencing reveals novel neuronal populations",
+      "doi": "10.1126/science.2024.002",
+      "year": 2024,
+      "abstract": "Using single-cell RNA sequencing, we identified 15 previously unknown neuronal cell types in the human prefrontal cortex.",
+      "keywords": ["single-cell", "RNA-seq", "neuroscience"],
+      "journal": "Science",
+      "field": "Biology",
+      "subfields": ["Neuroscience", "Cell Biology"],
+      "citation_count": 156
+    },
+    {
+      "title": "Structural basis of SARS-CoV-2 spike protein receptor binding",
+      "doi": "10.1016/cell.2023.003",
+      "year": 2023,
+      "abstract": "Crystal structure of SARS-CoV-2 spike protein reveals key interactions with ACE2 receptor at 2.1 Å resolution.",
+      "keywords": ["COVID-19", "spike protein", "structural biology"],
+      "journal": "Cell",
+      "field": "Biology",
+      "subfields": ["Structural Biology", "Virology"],
+      "citation_count": 789
+    },
+    {
+      "title": "Genome-wide association study identifies 50 loci for type 2 diabetes",
+      "doi": "10.1038/ng.2023.004",
+      "year": 2023,
+      "abstract": "GWAS meta-analysis of 500,000 individuals reveals 50 novel genetic loci associated with type 2 diabetes risk.",
+      "keywords": ["GWAS", "diabetes", "genetics"],
+      "journal": "Nature Genetics",
+      "field": "Biology",
+      "subfields": ["Genetics", "Genomics"],
+      "citation_count": 234
+    },
+    {
+      "title": "Evolutionary analysis of CRISPR systems across bacterial phyla",
+      "doi": "10.1073/pnas.2024.005",
+      "year": 2024,
+      "abstract": "Comprehensive phylogenetic analysis reveals horizontal gene transfer patterns of CRISPR-Cas systems in bacteria.",
+      "keywords": ["CRISPR", "evolution", "bacteria"],
+      "journal": "PNAS",
+      "field": "Biology",
+      "subfields": ["Evolutionary Biology", "Microbiology"],
+      "citation_count": 98
+    },
+    {
+      "title": "Phase III trial of pembrolizumab for metastatic melanoma",
+      "doi": "10.1056/NEJMoa2023.006",
+      "year": 2023,
+      "abstract": "Randomized controlled trial demonstrates 65% overall response rate in 850 patients with metastatic melanoma.",
+      "keywords": ["immunotherapy", "melanoma", "clinical trial"],
+      "journal": "NEJM",
+      "field": "Medicine",
+      "subfields": ["Oncology", "Immunotherapy"],
+      "citation_count": 567
+    },
+    {
+      "title": "Novel biomarkers for early detection of pancreatic cancer",
+      "doi": "10.1016/lancet.2024.007",
+      "year": 2024,
+      "abstract": "We identified a panel of 12 circulating biomarkers with 92% sensitivity for detecting stage I pancreatic cancer.",
+      "keywords": ["biomarkers", "pancreatic cancer", "diagnostics"],
+      "journal": "The Lancet",
+      "field": "Medicine",
+      "subfields": ["Oncology", "Diagnostics"],
+      "citation_count": 234
+    },
+    {
+      "title": "CAR-T cell therapy for refractory B-cell lymphoma",
+      "doi": "10.1001/jama.2023.008",
+      "year": 2023,
+      "abstract": "Chimeric antigen receptor T-cell therapy achieves 78% complete remission rate in refractory B-cell lymphoma.",
+      "keywords": ["CAR-T", "lymphoma", "cell therapy"],
+      "journal": "JAMA",
+      "field": "Medicine",
+      "subfields": ["Oncology", "Hematology"],
+      "citation_count": 445
+    },
+    {
+      "title": "Genetic risk factors for coronary artery disease",
+      "doi": "10.1161/circ.2024.009",
+      "year": 2024,
+      "abstract": "Multi-ethnic GWAS identifies 85 loci associated with coronary artery disease, including 30 novel variants.",
+      "keywords": ["coronary artery disease", "GWAS", "cardiovascular"],
+      "journal": "Circulation",
+      "field": "Medicine",
+      "subfields": ["Cardiology", "Genetics"],
+      "citation_count": 312
+    },
+    {
+      "title": "mRNA vaccine platform for rapid pandemic response",
+      "doi": "10.1056/NEJMoa2023.010",
+      "year": 2023,
+      "abstract": "Modular mRNA vaccine platform enables vaccine development within 48 hours of pathogen identification.",
+      "keywords": ["mRNA vaccine", "pandemic", "vaccine development"],
+      "journal": "NEJM",
+      "field": "Medicine",
+      "subfields": ["Immunology", "Virology"],
+      "citation_count": 892
+    },
+    {
+      "title": "Catalytic C-H activation using palladium complexes",
+      "doi": "10.1021/jacs.2023.011",
+      "year": 2023,
+      "abstract": "Novel palladium catalyst achieves 98% yield with 99% selectivity in C-H activation reactions under mild conditions.",
+      "keywords": ["catalysis", "C-H activation", "palladium"],
+      "journal": "JACS",
+      "field": "Chemistry",
+      "subfields": ["Organic Chemistry", "Catalysis"],
+      "citation_count": 267
+    },
+    {
+      "title": "Synthesis and characterization of graphene quantum dots",
+      "doi": "10.1002/anie.2024.012",
+      "year": 2024,
+      "abstract": "We synthesized graphene quantum dots with tunable photoluminescence properties for bioimaging applications.",
+      "keywords": ["graphene", "quantum dots", "nanomaterials"],
+      "journal": "Angewandte Chemie",
+      "field": "Chemistry",
+      "subfields": ["Materials Chemistry", "Nanotechnology"],
+      "citation_count": 189
+    },
+    {
+      "title": "Mechanistic insights into Suzuki-Miyaura cross-coupling",
+      "doi": "10.1021/cr.2023.013",
+      "year": 2023,
+      "abstract": "Computational and experimental studies reveal detailed mechanism of Suzuki-Miyaura coupling reaction.",
+      "keywords": ["Suzuki coupling", "mechanism", "cross-coupling"],
+      "journal": "Chemical Reviews",
+      "field": "Chemistry",
+      "subfields": ["Organic Chemistry", "Computational Chemistry"],
+      "citation_count": 445
+    },
+    {
+      "title": "Green chemistry approach to pharmaceutical synthesis",
+      "doi": "10.1038/nchem.2024.014",
+      "year": 2024,
+      "abstract": "Sustainable synthesis route reduces waste by 85% and eliminates toxic solvents in drug manufacturing.",
+      "keywords": ["green chemistry", "pharmaceuticals", "sustainability"],
+      "journal": "Nature Chemistry",
+      "field": "Chemistry",
+      "subfields": ["Green Chemistry", "Medicinal Chemistry"],
+      "citation_count": 178
+    },
+    {
+      "title": "Computational study of enzyme catalysis mechanisms",
+      "doi": "10.1021/jacs.2023.015",
+      "year": 2023,
+      "abstract": "QM/MM simulations elucidate the catalytic mechanism of serine proteases at atomic resolution.",
+      "keywords": ["enzyme catalysis", "computational chemistry", "QM/MM"],
+      "journal": "JACS",
+      "field": "Chemistry",
+      "subfields": ["Computational Chemistry", "Biochemistry"],
+      "citation_count": 234
+    },
+    {
+      "title": "Quantum entanglement in superconducting qubits at room temperature",
+      "doi": "10.1103/PhysRevLett.2024.016",
+      "year": 2024,
+      "abstract": "We demonstrate sustained quantum entanglement in superconducting qubits operating at room temperature.",
+      "keywords": ["quantum computing", "superconductivity", "entanglement"],
+      "journal": "Physical Review Letters",
+      "field": "Physics",
+      "subfields": ["Quantum Physics", "Condensed Matter"],
+      "citation_count": 89
+    },
+    {
+      "title": "Topological insulators in two-dimensional materials",
+      "doi": "10.1038/nphys.2023.017",
+      "year": 2023,
+      "abstract": "We identify topological insulator states in monolayer transition metal dichalcogenides.",
+      "keywords": ["topological insulators", "2D materials", "condensed matter"],
+      "journal": "Nature Physics",
+      "field": "Physics",
+      "subfields": ["Condensed Matter", "Materials Science"],
+      "citation_count": 312
+    },
+    {
+      "title": "Observation of Higgs boson decay to bottom quarks",
+      "doi": "10.1103/PhysRevX.2024.018",
+      "year": 2024,
+      "abstract": "ATLAS and CMS collaborations confirm Higgs boson decay to bottom quarks with 5.4 sigma significance.",
+      "keywords": ["Higgs boson", "particle physics", "LHC"],
+      "journal": "Physical Review X",
+      "field": "Physics",
+      "subfields": ["Particle Physics", "High Energy Physics"],
+      "citation_count": 567
+    },
+    {
+      "title": "Superconductivity in hydrogen-rich compounds at high pressure",
+      "doi": "10.1038/nature.2023.019",
+      "year": 2023,
+      "abstract": "We observe superconductivity at 250 K in lanthanum superhydride under 170 GPa pressure.",
+      "keywords": ["superconductivity", "high pressure", "hydrogen"],
+      "journal": "Nature",
+      "field": "Physics",
+      "subfields": ["Condensed Matter", "Superconductivity"],
+      "citation_count": 445
+    },
+    {
+      "title": "Gravitational waves from binary neutron star merger",
+      "doi": "10.1103/PhysRevLett.2024.020",
+      "year": 2024,
+      "abstract": "LIGO and Virgo detect gravitational waves from neutron star merger with electromagnetic counterpart.",
+      "keywords": ["gravitational waves", "neutron stars", "astrophysics"],
+      "journal": "Physical Review Letters",
+      "field": "Physics",
+      "subfields": ["Astrophysics", "Gravitational Physics"],
+      "citation_count": 678
+    },
+    {
+      "title": "Transformer architectures for natural language understanding",
+      "doi": "10.48550/arXiv.2023.021",
+      "year": 2023,
+      "abstract": "We introduce GPT-5, a 10 trillion parameter model achieving human-level performance on complex reasoning tasks.",
+      "keywords": ["transformers", "NLP", "deep learning"],
+      "journal": "arXiv",
+      "field": "Computer Science",
+      "subfields": ["Artificial Intelligence", "NLP"],
+      "citation_count": 2341
+    },
+    {
+      "title": "Deep learning for protein structure prediction",
+      "doi": "10.1038/nature.2024.022",
+      "year": 2024,
+      "abstract": "AlphaFold3 achieves atomic accuracy for 98% of protein domains in the PDB database.",
+      "keywords": ["protein folding", "deep learning", "AlphaFold"],
+      "journal": "Nature",
+      "field": "Computer Science",
+      "subfields": ["Machine Learning", "Bioinformatics"],
+      "citation_count": 1247
+    },
+    {
+      "title": "Reinforcement learning for autonomous vehicle navigation",
+      "doi": "10.1109/tpami.2023.023",
+      "year": 2023,
+      "abstract": "Deep reinforcement learning agent achieves human-level performance in complex urban driving scenarios.",
+      "keywords": ["reinforcement learning", "autonomous vehicles", "robotics"],
+      "journal": "IEEE TPAMI",
+      "field": "Computer Science",
+      "subfields": ["Artificial Intelligence", "Robotics"],
+      "citation_count": 456
+    },
+    {
+      "title": "Adversarial robustness of deep neural networks",
+      "doi": "10.48550/arXiv.2024.024",
+      "year": 2024,
+      "abstract": "We propose certified defense mechanisms improving adversarial robustness by 40% on ImageNet.",
+      "keywords": ["adversarial examples", "robustness", "deep learning"],
+      "journal": "arXiv",
+      "field": "Computer Science",
+      "subfields": ["Machine Learning", "Security"],
+      "citation_count": 234
+    },
+    {
+      "title": "Federated learning for privacy-preserving machine learning",
+      "doi": "10.1145/mlsys.2023.025",
+      "year": 2023,
+      "abstract": "Federated learning framework enables collaborative model training without sharing raw data.",
+      "keywords": ["federated learning", "privacy", "distributed systems"],
+      "journal": "MLSys",
+      "field": "Computer Science",
+      "subfields": ["Machine Learning", "Privacy"],
+      "citation_count": 567
+    },
+    {
+      "title": "Graph neural networks for molecular property prediction",
+      "doi": "10.1021/acs.jcim.2024.026",
+      "year": 2024,
+      "abstract": "GNN architecture achieves state-of-the-art performance on molecular property prediction benchmarks.",
+      "keywords": ["graph neural networks", "molecular properties", "drug discovery"],
+      "journal": "J. Chem. Inf. Model.",
+      "field": "Computer Science",
+      "subfields": ["Machine Learning", "Cheminformatics"],
+      "citation_count": 189
+    }
+  ]
+}

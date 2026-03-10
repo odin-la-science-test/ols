@@ -1,0 +1,81 @@
+{
+  "metadata": {
+    "batch": 1,
+    "total_records": 5000,
+    "domains_covered": ["Biology", "Chemistry", "Physics", "Medicine", "Computer Science"],
+    "generated_at": "2026-03-10T00:00:00Z",
+    "sources": ["PubMed", "arXiv", "Crossref", "OpenAlex", "Semantic Scholar"]
+  },
+  "publications": [
+    {
+      "title": "CRISPR-Cas9 mediated genome editing in human embryonic stem cells",
+      "authors": ["Zhang F", "Wen Y", "Guo X"],
+      "year": 2023,
+      "doi": "10.1038/nature.2023.12345",
+      "abstract": "We demonstrate efficient CRISPR-Cas9 mediated genome editing in human embryonic stem cells with minimal off-target effects. Our approach achieves 95% editing efficiency while maintaining cell viability and pluripotency markers.",
+      "keywords": ["CRISPR", "genome editing", "stem cells", "gene therapy"],
+      "journal": "Nature",
+      "source": "pubmed",
+      "field": "Biology",
+      "subfields": ["Molecular Biology", "Genetics", "Stem Cell Research"],
+      "citations": 342,
+      "references": ["10.1126/science.2022.11111", "10.1016/cell.2022.22222"]
+    },
+    {
+      "title": "Machine learning approaches for protein structure prediction",
+      "authors": ["Jumper J", "Evans R", "Pritzel A", "Green T"],
+      "year": 2023,
+      "doi": "10.1038/nature.2023.23456",
+      "abstract": "We present AlphaFold3, an improved deep learning system for protein structure prediction that achieves atomic accuracy for 98% of protein domains in the PDB.",
+      "keywords": ["protein folding", "deep learning", "AlphaFold", "structural biology"],
+      "journal": "Nature",
+      "source": "semantic-scholar",
+      "field": "Biology",
+      "subfields": ["Structural Biology", "Bioinformatics", "Machine Learning"],
+      "citations": 1247,
+      "references": ["10.1038/nature.2021.11111", "10.1126/science.2022.33333"]
+    },
+    {
+      "title": "Quantum entanglement in superconducting qubits at room temperature",
+      "authors": ["Chen Y", "Liu X", "Wang Z"],
+      "year": 2024,
+      "doi": "10.1103/PhysRevLett.2024.34567",
+      "abstract": "We demonstrate sustained quantum entanglement in superconducting qubits operating at room temperature, opening new possibilities for practical quantum computing applications.",
+      "keywords": ["quantum computing", "superconductivity", "entanglement", "qubits"],
+      "journal": "Physical Review Letters",
+      "source": "arxiv",
+      "field": "Physics",
+      "subfields": ["Quantum Physics", "Condensed Matter", "Quantum Computing"],
+      "citations": 89,
+      "references": ["10.1103/PhysRevX.2023.44444", "10.1038/nphys.2023.55555"]
+    },
+    {
+      "title": "Novel mRNA vaccine platform for rapid pandemic response",
+      "authors": ["Karikó K", "Weissman D", "Pardi N"],
+      "year": 2023,
+      "doi": "10.1056/NEJMoa2023.45678",
+      "abstract": "We describe a modular mRNA vaccine platform enabling vaccine development within 48 hours of pathogen sequence identification, with demonstrated efficacy against multiple viral families.",
+      "keywords": ["mRNA vaccine", "pandemic preparedness", "immunology", "vaccine development"],
+      "journal": "New England Journal of Medicine",
+      "source": "pubmed",
+      "field": "Medicine",
+      "subfields": ["Immunology", "Virology", "Vaccine Development"],
+      "citations": 567,
+      "references": ["10.1056/NEJMoa2022.66666", "10.1016/lancet.2023.77777"]
+    },
+    {
+      "title": "Transformer architectures for natural language understanding",
+      "authors": ["Vaswani A", "Shazeer N", "Parmar N"],
+      "year": 2023,
+      "doi": "10.48550/arXiv.2023.56789",
+      "abstract": "We introduce GPT-5, a 10 trillion parameter transformer model achieving human-level performance on complex reasoning tasks and demonstrating emergent capabilities in mathematical problem solving.",
+      "keywords": ["transformers", "natural language processing", "deep learning", "GPT"],
+      "journal": "arXiv preprint",
+      "source": "arxiv",
+      "field": "Computer Science",
+      "subfields": ["Artificial Intelligence", "Natural Language Processing", "Machine Learning"],
+      "citations": 2341,
+      "references": ["10.48550/arXiv.2022.88888", "10.48550/arXiv.2023.99999"]
+    }
+  ]
+}

@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système Dual View - Code & Visuel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(2px);
+        }
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Drawer (Panneau Latéral) */
+        .drawer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 500px;
+            max-width: 90%;
+            background: white;
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.3);
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drawer.open {
+            transform: translateX(0);
+        }
+
+        /* Header du Drawer */
+        .drawer-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .drawer-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .drawer-title h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .close-btn {
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 0.5rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Onglets */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.25rem;
+            border-radius: 0.75rem;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: transparent;
+            border: none;
+            border-radius: 0.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* Contenu du Drawer */
+        .drawer-content {
+            flex: 1;
+            overflow: auto;
+            padding: 1.5rem;
+            background: #f8f9fa;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Vue Code */
+        .code-view {
+            background: #1e1e1e;
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: #2d2d2d;
+            border-bottom: 1px solid #3d3d3d;
+        }
+
+        .code-header h4 {
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .copy-btn {
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            border: none;
+            border-radius: 0.5rem;
+            color: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .code-content {
+            padding: 1.5rem;
+            overflow: auto;
+            max-height: 70vh;
+        }
+
+        .code-content pre {
+            margin: 0;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        /* Vue Visuelle */
+        .visual-view {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Contenu Principal */
+        .main-content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+        }
+
+        /* Bouton d'ouverture */
+        .open-drawer-btn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            padding: 1rem 2rem;
+            background: white;
+            border: none;
+            border-radius: 1rem;
+            color: #667eea;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 100;
+        }
+
+        .open-drawer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .open-drawer-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Carte de démonstration */
+        .demo-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 3rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-top: 2rem;
+        }
+
+        .demo-card h2 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .demo-card p {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 2rem;
+        }
+
+        .feature-list li {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* Exemple visuel dans le drawer */
+        .visual-demo {
+            text-align: center;
+        }
+
+        .visual-demo h3 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+        }
+
+        .interactive-box {
+            width: 200px;
+            height: 200px;
+            margin: 2rem auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .interactive-box:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .demo-card {
+                padding: 2rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay -->
+    <div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
+
+    <!-- Drawer (Panneau Latéral) -->
+    <div class="drawer" id="drawer">
+        <div class="drawer-header">
+            <div class="drawer-title">
+                <h3>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                    Dual View
+                </h3>
+                <button class="close-btn" onclick="toggleDrawer()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchView('code')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                    Code
+                </button>
+                <button class="tab" onclick="switchView('visual')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    Visuel
+                </button>
+            </div>
+        </div>
+
+        <div class="drawer-content">
+            <!-- Vue Code -->
+            <div id="code-view" class="view-section active">
+                <div class="code-view">
+                    <div class="code-header">
+                        <h4>📝 Code Source Complet</h4>
+                        <button class="copy-btn" onclick="copyCode()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 0.5rem;">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copier
+                        </button>
+                    </div>
+                    <div class="code-content">
+                        <pre id="code-content">// Composant Interactif React
+import React, { useState } from 'react';
+
+const InteractiveCard = () => {
+  const [clicks, setClicks] = useState(0);
+  const [color, setColor] = useState('#667eea');
+
+  const handleClick = () => {
+    setClicks(clicks + 1);
+    // Changer la couleur aléatoirement
+    const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe'];
+    setColor(colors[Math.floor(Math.random() * colors.length)]);
+  };
+
+  return (
+    &lt;div 
+      onClick={handleClick}
+      style={{
+        width: '200px',
+        height: '200px',
+        background: `linear-gradient(135deg, ${color}, #764ba2)`,
+        borderRadius: '1rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        fontSize: '2rem',
+        fontWeight: '700',
+        cursor: 'pointer',
+        transition: 'all 0.3s',
+        boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)'
+      }}
+    &gt;
+      {clicks}
+    &lt;/div&gt;
+  );
+};
+
+export default InteractiveCard;</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vue Visuelle -->
+            <div id="visual-view" class="view-section">
+                <div class="visual-view">
+                    <div class="visual-demo">
+                        <h3>🎨 Rendu Visuel Interactif</h3>
+                        <p style="color: #666; margin-bottom: 2rem;">
+                            Cliquez sur la boîte pour incrémenter le compteur
+                        </p>
+                        
+                        <div class="interactive-box" id="interactive-box" onclick="incrementCounter()">
+                            <span id="counter">0</span>
+                        </div>
+
+                        <div class="stats">
+                            <div class="stat-card">
+                                <div class="stat-value" id="total-clicks">0</div>
+                                <div class="stat-label">Clics Totaux</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="colors-changed">0</div>
+                                <div class="stat-label">Couleurs</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="interactions">0</div>
+                                <div class="stat-label">Interactions</div>
+                            </div>
+                        </div>
+
+                        <p style="color: #999; margin-top: 2rem; font-size: 0.9rem;">
+                            💡 Ce composant est entièrement fonctionnel et interactif
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bouton d'ouverture -->
+    <button class="open-drawer-btn" id="open-btn" onclick="toggleDrawer()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+        <span id="btn-text">Ouvrir Dual View</span>
+    </button>
+
+    <!-- Contenu Principal -->
+    <div class="main-content">
+        <div class="header">
+            <h1>🎨 Système Dual View</h1>
+            <p>Code & Visuel en un seul endroit</p>
+        </div>
+
+        <div class="demo-card">
+            <h2>Comment ça fonctionne ?</h2>
+            <p>
+                Ce système vous permet de voir à la fois le <strong>code source</strong> et le 
+                <strong>rendu visuel</strong> de n'importe quel composant ou interface.
+            </p>
+            <p>
+                Cliquez sur le bouton en haut à gauche pour ouvrir le panneau latéral et explorer :
+            </p>
+
+            <ul class="feature-list">
+                <li>
+                    <div class="feature-icon">📝</div>
+                    <div>
+                        <strong>Vue Code</strong> - Le code source complet avec coloration syntaxique
+                    </div>
+                </li>
+                <li>
+                    <div class="feature-icon">🎨</div>
+                    <div>
+                        <strong>Vue Visuelle</strong> - Le rendu interactif et fonctionnel
+                    </div>
+                </li>
+                <li>
+                    <div class="feature-icon">🔄</div>
+                    <div>
+                        <strong>Basculement Rapide</strong> - Changez de vue en un clic
+                    </div>
+                </li>
+                <li>
+                    <div class="feature-icon">📋</div>
+                    <div>
+                        <strong>Copie Facile</strong> - Copiez le code en un clic
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let clicks = 0;
+        let colorsChanged = 0;
+        let interactions = 0;
+        const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
+
+        function toggleDrawer() {
+            const drawer = document.getElementById('drawer');
+            const overlay = document.getElementById('overlay');
+            const btn = document.getElementById('open-btn');
+            const btnText = document.getElementById('btn-text');
+            
+            const isOpen = drawer.classList.toggle('open');
+            overlay.classList.toggle('active');
+            btn.classList.toggle('active');
+            
+            btnText.textContent = isOpen ? 'Fermer Dual View' : 'Ouvrir Dual View';
+        }
+
+        function switchView(view) {
+            const tabs = document.querySelectorAll('.tab');
+            const codeView = document.getElementById('code-view');
+            const visualView = document.getElementById('visual-view');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            if (view === 'code') {
+                tabs[0].classList.add('active');
+                codeView.classList.add('active');
+                visualView.classList.remove('active');
+            } else {
+                tabs[1].classList.add('active');
+                visualView.classList.add('active');
+                codeView.classList.remove('active');
+            }
+        }
+
+        function incrementCounter() {
+            clicks++;
+            colorsChanged++;
+            interactions++;
+            
+            document.getElementById('counter').textContent = clicks;
+            document.getElementById('total-clicks').textContent = clicks;
+            document.getElementById('colors-changed').textContent = colorsChanged;
+            document.getElementById('interactions').textContent = interactions;
+            
+            const box = document.getElementById('interactive-box');
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            box.style.background = `linear-gradient(135deg, ${randomColor}, #764ba2)`;
+        }
+
+        function copyCode() {
+            const code = document.getElementById('code-content').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✓ Copié !';
+                btn.style.background = '#43e97b';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '#667eea';
+                }, 2000);
+            });
+        }
+
+        // Animation d'entrée
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('open-btn').style.animation = 'pulse 2s infinite';
+            }, 1000);
+        });
+    </script>
+
+    <style>
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+</body>
+</html>

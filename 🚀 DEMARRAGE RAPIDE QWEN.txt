@@ -1,0 +1,224 @@
+╔════════════════════════════════════════════════════════════╗
+║                                                            ║
+║   🤖 QWEN2-VL LOCAL AI - DÉMARRAGE RAPIDE                 ║
+║                                                            ║
+╚════════════════════════════════════════════════════════════╝
+
+
+✅ CE QUI A ÉTÉ CRÉÉ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Serveur IA local (server/qwenServer.js)
+✅ Service frontend (src/services/qwenService.ts)
+✅ Scripts d'installation et démarrage
+✅ Documentation complète
+
+
+🎯 QU'EST-CE QUE QWEN2-VL ?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Qwen2-VL 14B est une IA vision-language qui peut :
+
+✓ Analyser des images scientifiques
+✓ Répondre à des questions sur les images
+✓ Comprendre le contexte scientifique
+✓ Générer des descriptions détaillées
+✓ Fonctionner 100% en local (pas d'internet)
+
+
+📋 INSTALLATION (3 ÉTAPES)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  INSTALLER OLLAMA
+┌─────────────────────────────────────────────────────────┐
+│ a) Allez sur https://ollama.ai/                         │
+│ b) Téléchargez Ollama pour Windows                      │
+│ c) Installez et redémarrez votre ordinateur             │
+└─────────────────────────────────────────────────────────┘
+
+2️⃣  INSTALLER QWEN2-VL
+┌─────────────────────────────────────────────────────────┐
+│ Exécutez :                                               │
+│   .\installer-qwen.ps1                                  │
+│                                                          │
+│ Ce script va :                                           │
+│ • Vérifier Node.js                                       │
+│ • Installer les dépendances                              │
+│ • Vérifier Ollama                                        │
+│ • Proposer de télécharger le modèle (~8GB)             │
+│ • Configurer les fichiers .env                           │
+└─────────────────────────────────────────────────────────┘
+
+3️⃣  DÉMARRER
+┌─────────────────────────────────────────────────────────┐
+│ Option A - Tout démarrer :                               │
+│   .\demarrer-tout.ps1                                   │
+│                                                          │
+│ Option B - Seulement l'IA :                              │
+│   .\demarrer-qwen.ps1                                   │
+│   npm run dev                                            │
+└─────────────────────────────────────────────────────────┘
+
+
+🎮 UTILISATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DEPUIS LE CODE :
+┌─────────────────────────────────────────────────────────┐
+│ import QwenService from '@/services/qwenService';       │
+│                                                          │
+│ // Analyser une image                                   │
+│ const result = await QwenService.analyzeImage(          │
+│   imageFile,                                             │
+│   'Décris cette image scientifique'                     │
+│ );                                                       │
+│                                                          │
+│ // Analyser une image de microscopie                    │
+│ const result = await QwenService.analyzeScientificImage(│
+│   imageFile,                                             │
+│   'microscopy'                                           │
+│ );                                                       │
+│                                                          │
+│ // Poser une question                                   │
+│ const result = await QwenService.askScientificQuestion( │
+│   'Qu\'est-ce que l\'ADN ?',                            │
+│   'biology'                                              │
+│ );                                                       │
+└─────────────────────────────────────────────────────────┘
+
+API REST :
+┌─────────────────────────────────────────────────────────┐
+│ Health check :                                           │
+│   GET http://localhost:3002/api/health                  │
+│                                                          │
+│ Analyser une image :                                    │
+│   POST http://localhost:3002/api/analyze-image          │
+│   Body: multipart/form-data                             │
+│     - image: [fichier]                                   │
+│     - prompt: "Décris cette image"                      │
+│                                                          │
+│ Chat :                                                   │
+│   POST http://localhost:3002/api/chat                   │
+│   Body: { "message": "Question ?", "context": "..." }  │
+└─────────────────────────────────────────────────────────┘
+
+
+📊 TYPES D'IMAGES SUPPORTÉS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• microscopy  → Images de microscopie
+• gel         → Gels d'électrophorèse
+• graph       → Graphiques scientifiques
+• spectrum    → Spectres (IR, RMN, etc.)
+• other       → Autres images scientifiques
+
+
+⚙️ CONFIGURATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+server/.env :
+  QWEN_PORT=3002
+
+.env.local :
+  VITE_QWEN_SERVER_URL=http://localhost:3002
+
+
+📁 FICHIERS CRÉÉS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Backend :
+  • server/qwenServer.js (serveur IA)
+
+Frontend :
+  • src/services/qwenService.ts (service)
+
+Scripts :
+  • installer-qwen.ps1 (installation)
+  • demarrer-qwen.ps1 (démarrer IA)
+  • demarrer-tout.ps1 (démarrer tout)
+
+Documentation :
+  • 🤖 GUIDE QWEN2-VL LOCAL AI.md (guide complet)
+
+
+🐛 DÉPANNAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ "Ollama n'est pas installé"
+   → Installez depuis https://ollama.ai/
+
+❌ "Modèle non téléchargé"
+   → Exécutez : ollama pull qwen2-vl:14b
+
+❌ "Serveur non disponible"
+   → Vérifiez : http://localhost:3002/api/health
+
+❌ "Analyse trop lente"
+   → Utilisez un GPU (10x plus rapide)
+
+
+💡 AVANTAGES DU LOCAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Confidentialité totale (données ne quittent pas votre PC)
+✓ Pas de coûts API (gratuit après installation)
+✓ Pas de limite de requêtes
+✓ Fonctionne hors ligne
+✓ Rapide avec un GPU
+
+
+📊 PERFORMANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Configuration      | Analyse d'image | Chat
+-------------------|-----------------|-------
+CPU (i7)          | 10-30s          | 5-15s
+GPU (RTX 3060)    | 2-5s            | 1-3s
+GPU (RTX 4090)    | 1-2s            | <1s
+
+
+🎯 EXEMPLES D'UTILISATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Analyser une image de microscopie
+2. Interpréter un gel d'électrophorèse
+3. Analyser un graphique scientifique
+4. Identifier des structures cellulaires
+5. Répondre à des questions scientifiques
+
+
+🚀 COMMANDES RAPIDES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Installer
+.\installer-qwen.ps1
+
+# Démarrer tout
+.\demarrer-tout.ps1
+
+# Télécharger le modèle manuellement
+ollama pull qwen2-vl:14b
+
+# Vérifier l'état
+curl http://localhost:3002/api/health
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTATION COMPLÈTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Consultez : 🤖 GUIDE QWEN2-VL LOCAL AI.md
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 PRÊT À UTILISER !
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Installez Ollama
+2. Exécutez : .\installer-qwen.ps1
+3. Exécutez : .\demarrer-tout.ps1
+4. Allez sur http://localhost:3000
+
+Votre IA locale est prête ! 🚀

@@ -1,6 +1,7 @@
 import { useNavigate, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, lazy, Suspense } from 'react';
 import './App.css';
+import './styles/responsive.css'; // Import responsive styles
 import { initAutoWatchService } from './services/autoWatchService';
 import { useDeviceDetection } from './hooks/useDeviceDetection';
 import { SecurityManager } from './utils/advancedSecurity';
@@ -19,6 +20,7 @@ import Register from './pages/Register';
 import TermsOfService from './pages/TermsOfService';
 import RGPD from './pages/RGPD';
 import Admin from './pages/Admin';
+import AccountValidation from './pages/AccountValidation';
 import ShortcutManager from './components/ShortcutManager';
 import KeyboardShortcuts from './components/KeyboardShortcuts';
 import QuickNotes from './components/QuickNotes';
@@ -42,7 +44,7 @@ const PropertyDetail = lazy(() => import('./pages/PropertyDetail'));
 const CompareEntities = lazy(() => import('./pages/CompareEntities'));
 const Hugin = lazy(() => import('./pages/Hugin'));
 const Messaging = lazy(() => import('./pages/hugin/Messaging'));
-const Inventory = lazy(() => import('./pages/hugin/Inventory'));
+const Inventory = lazy(() => import('./pages/hugin/InventoryV2'));
 const Planning = lazy(() => import('./pages/hugin/Planning'));
 const Documents = lazy(() => import('./pages/hugin/Documents'));
 const CultureTracking = lazy(() => import('./pages/hugin/CultureTracking'));
@@ -58,7 +60,7 @@ const EquipFlow = lazy(() => import('./pages/hugin/EquipFlow'));
 const GrantBudget = lazy(() => import('./pages/hugin/GrantBudget'));
 const SOPLibrary = lazy(() => import('./pages/hugin/SOPLibrary'));
 const BioTools = lazy(() => import('./pages/hugin/BioTools'));
-const AIAssistant = lazy(() => import('./pages/hugin/AIAssistant'));
+const AIAssistant = lazy(() => import('./pages/hugin/AIAssistantClaude'));
 const SequenceLens = lazy(() => import('./pages/hugin/SequenceLens'));
 const ColonyVision = lazy(() => import('./pages/hugin/ColonyVision'));
 const ProjectMind = lazy(() => import('./pages/hugin/ProjectMind'));
@@ -98,8 +100,47 @@ const BacterialGrowthPredictor = lazy(() => import('./pages/hugin/BacterialGrowt
 const ResistancePhenotypes = lazy(() => import('./pages/hugin/ResistancePhenotypes'));
 const LabEquipment = lazy(() => import('./pages/hugin/LabEquipment'));
 const QCMMultiDisciplines = lazy(() => import('./pages/hugin/university/ExamsProfessional'));
+
+// LIMS Modules
+const LabDashboard = lazy(() => import('./pages/hugin/LabDashboard'));
+const SampleDatabase = lazy(() => import('./pages/hugin/samples/SampleDatabase'));
+
 const LearningManagement = lazy(() => import('./pages/hugin/university/LMSProfessional'));
 const CloudStorage = lazy(() => import('./pages/hugin/university/CloudStorageProfessional'));
+
+// Modules Universitaires
+const ProgramManagement = lazy(() => import('./pages/hugin/university/ProgramManagement'));
+const EnrollmentPortal = lazy(() => import('./pages/hugin/university/EnrollmentPortal'));
+const ExamScheduler = lazy(() => import('./pages/hugin/university/ExamScheduler'));
+const DiplomaGenerator = lazy(() => import('./pages/hugin/university/DiplomaGenerator'));
+const DepartmentDashboard = lazy(() => import('./pages/hugin/university/DepartmentDashboard'));
+const RoomBooking = lazy(() => import('./pages/hugin/university/RoomBooking'));
+const FinanceManagement = lazy(() => import('./pages/hugin/university/FinanceManagement'));
+const ResearchProjects = lazy(() => import('./pages/hugin/university/ResearchProjects'));
+const LibraryCatalog = lazy(() => import('./pages/hugin/university/LibraryCatalog'));
+const AlumniNetwork = lazy(() => import('./pages/hugin/university/AlumniNetwork'));
+const InternshipBoard = lazy(() => import('./pages/hugin/university/InternshipBoard'));
+const MobilityPrograms = lazy(() => import('./pages/hugin/university/MobilityPrograms'));
+const StudentLife = lazy(() => import('./pages/hugin/university/StudentLife'));
+const QualityAssurance = lazy(() => import('./pages/hugin/university/QualityAssurance'));
+
+// Nouveaux modules universitaires avancés
+const AcademicPathways = lazy(() => import('./pages/hugin/university/AcademicPathways'));
+const FacultyWorkload = lazy(() => import('./pages/hugin/university/FacultyWorkload'));
+const SmartTimetabling = lazy(() => import('./pages/hugin/university/SmartTimetabling'));
+const ContinuousAssessment = lazy(() => import('./pages/hugin/university/ContinuousAssessment'));
+const SkillsPortfolio = lazy(() => import('./pages/hugin/university/SkillsPortfolio'));
+const MentorshipHub = lazy(() => import('./pages/hugin/university/MentorshipHub'));
+const JuryManagement = lazy(() => import('./pages/hugin/university/JuryManagement'));
+const AccreditationTracker = lazy(() => import('./pages/hugin/university/AccreditationTracker'));
+const StudentProjectsHub = lazy(() => import('./pages/hugin/university/StudentProjectsHub'));
+const CareerObservatory = lazy(() => import('./pages/hugin/university/CareerObservatory'));
+const AgreementsManager = lazy(() => import('./pages/hugin/university/AgreementsManager'));
+const AccessibilitySupport = lazy(() => import('./pages/hugin/university/AccessibilitySupport'));
+const CampusServices = lazy(() => import('./pages/hugin/university/CampusServices'));
+const VAEAssessment = lazy(() => import('./pages/hugin/university/VAEAssessment'));
+const InnovativePedagogy = lazy(() => import('./pages/hugin/university/InnovativePedagogy'));
+
 const WhyOdin = lazy(() => import('./pages/WhyOdin'));
 const Enterprise = lazy(() => import('./pages/Enterprise'));
 const Pricing = lazy(() => import('./pages/Pricing'));
@@ -142,6 +183,7 @@ const MobileMessaging = lazy(() => import('./pages/mobile/hugin/Messaging'));
 const MobileSafetyHub = lazy(() => import('./pages/mobile/hugin/SafetyHub'));
 const MobileLandingPage = lazy(() => import('./pages/mobile/LandingPage'));
 const MobileAccount = lazy(() => import('./pages/mobile/AccountWrapper'));
+const CodeInterpreter = lazy(() => import('./pages/munin/CodeInterpreter'));
 
 // ResponsiveRoute component
 import ResponsiveRoute from './components/ResponsiveRoute';
@@ -533,6 +575,11 @@ function App() {
                     <CompareEntities />
                   </ProtectedRoute>
                 } />
+                <Route path="/munin/code-interpreter" element={
+                  <ProtectedRoute module="munin">
+                    <CodeInterpreter />
+                  </ProtectedRoute>
+                } />
                 <Route path="/hugin" element={
                   <ProtectedRoute>
                     <ResponsiveRoute
@@ -839,6 +886,23 @@ function App() {
                     <QCMMultiDisciplines />
                   </ProtectedRoute>
                 } />
+                
+                {/* LIMS Routes */}
+                <Route path="/hugin/dashboard" element={
+                  <Suspense fallback={<div>Chargement...</div>}>
+                    <ProtectedRoute module="hugin_lab">
+                      <LabDashboard />
+                    </ProtectedRoute>
+                  </Suspense>
+                } />
+                <Route path="/hugin/samples" element={
+                  <Suspense fallback={<div>Chargement...</div>}>
+                    <ProtectedRoute module="hugin_lab">
+                      <SampleDatabase />
+                    </ProtectedRoute>
+                  </Suspense>
+                } />
+                
                 <Route path="/hugin/learning-management" element={
                   <ProtectedRoute module="hugin_core">
                     <LearningManagement />
@@ -847,6 +911,155 @@ function App() {
                 <Route path="/hugin/cloud-storage" element={
                   <ProtectedRoute module="hugin_core">
                     <CloudStorage />
+                  </ProtectedRoute>
+                } />
+
+                {/* Routes Modules Universitaires */}
+                <Route path="/hugin/university/programs" element={
+                  <ProtectedRoute module="hugin_core">
+                    <ProgramManagement />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/enrollment" element={
+                  <ProtectedRoute module="hugin_core">
+                    <EnrollmentPortal />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/exams" element={
+                  <ProtectedRoute module="hugin_core">
+                    <ExamScheduler />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/degrees" element={
+                  <ProtectedRoute module="hugin_core">
+                    <DiplomaGenerator />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/departments" element={
+                  <ProtectedRoute module="hugin_core">
+                    <DepartmentDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/rooms" element={
+                  <ProtectedRoute module="hugin_core">
+                    <RoomBooking />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/finance" element={
+                  <ProtectedRoute module="hugin_core">
+                    <FinanceManagement />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/research" element={
+                  <ProtectedRoute module="hugin_core">
+                    <ResearchProjects />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/library" element={
+                  <ProtectedRoute module="hugin_core">
+                    <LibraryCatalog />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/alumni" element={
+                  <ProtectedRoute module="hugin_core">
+                    <AlumniNetwork />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/internships" element={
+                  <ProtectedRoute module="hugin_core">
+                    <InternshipBoard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/mobility" element={
+                  <ProtectedRoute module="hugin_core">
+                    <MobilityPrograms />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/student-life" element={
+                  <ProtectedRoute module="hugin_core">
+                    <StudentLife />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/quality" element={
+                  <ProtectedRoute module="hugin_core">
+                    <QualityAssurance />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Nouveaux modules universitaires avancés */}
+                <Route path="/hugin/university/academic-pathways" element={
+                  <ProtectedRoute module="hugin_core">
+                    <AcademicPathways />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/faculty-workload" element={
+                  <ProtectedRoute module="hugin_core">
+                    <FacultyWorkload />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/smart-timetabling" element={
+                  <ProtectedRoute module="hugin_core">
+                    <SmartTimetabling />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/continuous-assessment" element={
+                  <ProtectedRoute module="hugin_core">
+                    <ContinuousAssessment />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/skills-portfolio" element={
+                  <ProtectedRoute module="hugin_core">
+                    <SkillsPortfolio />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/mentorship-hub" element={
+                  <ProtectedRoute module="hugin_core">
+                    <MentorshipHub />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/jury-management" element={
+                  <ProtectedRoute module="hugin_core">
+                    <JuryManagement />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/accreditation-tracker" element={
+                  <ProtectedRoute module="hugin_core">
+                    <AccreditationTracker />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/student-projects-hub" element={
+                  <ProtectedRoute module="hugin_core">
+                    <StudentProjectsHub />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/career-observatory" element={
+                  <ProtectedRoute module="hugin_core">
+                    <CareerObservatory />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/agreements-manager" element={
+                  <ProtectedRoute module="hugin_core">
+                    <AgreementsManager />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/accessibility-support" element={
+                  <ProtectedRoute module="hugin_core">
+                    <AccessibilitySupport />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/campus-services" element={
+                  <ProtectedRoute module="hugin_core">
+                    <CampusServices />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/vae-assessment" element={
+                  <ProtectedRoute module="hugin_core">
+                    <VAEAssessment />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/university/innovative-pedagogy" element={
+                  <ProtectedRoute module="hugin_core">
+                    <InnovativePedagogy />
                   </ProtectedRoute>
                 } />
 
@@ -879,6 +1092,11 @@ function App() {
                 <Route path="/admin" element={
                   <ProtectedRoute>
                     <Admin />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/account-validation" element={
+                  <ProtectedRoute>
+                    <AccountValidation />
                   </ProtectedRoute>
                 } />
 

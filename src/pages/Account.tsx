@@ -13,14 +13,25 @@ const Account = () => {
 
     // Fetch profile from localStorage
     const currentUser = localStorage.getItem('currentUser') || 'User';
-    const profileStr = localStorage.getItem(`user_profile_${currentUser}`);
-    const profile = profileStr ? JSON.parse(profileStr) : null;
+    
+    let profile: any = null;
+    try {
+        const profileStr = localStorage.getItem(`user_profile_${currentUser}`);
+        if (profileStr) {
+            // Vérifier si c'est un JSON valide
+            profile = JSON.parse(profileStr);
+        }
+    } catch (error) {
+        console.error('Error parsing user profile from localStorage:', error);
+        // Profil corrompu, utiliser des valeurs par défaut
+        profile = null;
+    }
 
     const [user, setUser] = useState({
         username: currentUser,
-        email: profile?.email || 'user@odinlascience.lab',
+        email: profile?.email || currentUser || 'user@odinlascience.lab',
         role: profile?.role === 'admin' ? 'Administrateur' : 'Utilisateur',
-        joinedDate: '2024-02-12',
+        joinedDate: profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : '2024-02-12',
         subscription: profile?.subscription || { status: 'none', type: 'Gratuit', modules: [] },
         hiddenTools: profile?.hiddenTools || []
     });

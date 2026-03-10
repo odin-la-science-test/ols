@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Settings, Trash2, Plus, Search, Bot, Sparkles, Code, FileText, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Send, Settings, Trash2, Plus, Search, Bot, Sparkles, Code, FileText, Lightbulb, Eye, Copy, X, Menu } from 'lucide-react';
 import { groqService } from '../../services/groqService';
 import type { GroqMessage } from '../../services/groqService';
 import { sanitizeHTML, SecureStorage } from '../../utils/encryption';
@@ -30,6 +30,11 @@ const AIAssistant = () => {
   const isUserScrollingRef = useRef(false);
   const lastScrollTopRef = useRef(0);
 
+  // États pour le Dual View
+  const [isDualViewOpen, setIsDualViewOpen] = useState(false);
+  const [dualViewMode, setDualViewMode] = useState<'code' | 'visual'>('code');
+  const [dualViewContent, setDualViewContent] = useState({ code: '', visual: '' });
+
   useEffect(() => {
     const init = async () => {
       const key = await groqService.getApiKey();
@@ -50,6 +55,17 @@ const AIAssistant = () => {
       }
     };
     init();
+
+    // Écouteur pour l'événement d'insertion de code
+    const handleInsertCode = (event: any) => {
+      const { code } = event.detail;
+      insertCodeAtCursor(code);
+    };
+
+    window.addEventListener('insertCode', handleInsertCode);
+    return () => {
+      window.removeEventListener('insertCode', handleInsertCode);
+    };
   }, []);
 
   // Gestion intelligente du scroll
@@ -164,6 +180,9 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
       const finalMessages = [...newMessages, { role: 'assistant', content: fullResponse }];
       await SecureStorage.setItem('mimir_current_conversation', finalMessages);
 
+      // Détecter automatiquement le code et ouvrir le Dual View
+      detectCodeInMessage(fullResponse);
+
     } catch (error: any) {
       console.error('Erreur:', error);
       setMessages([...newMessages, {
@@ -227,15 +246,97 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
     { icon: <Lightbulb size={16} />, label: 'Expliquer concept', prompt: 'Explique-moi ce concept scientifique : ' }
   ];
 
+  // Fonction pour copier le code dans le presse-papier
+  const copyCodeToClipboard = (code: string, buttonId: string) => {
+    navigator.clipboard.writeText(code).then(() => {
+      const button = document.getElementById(buttonId);
+      if (button) {
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Copié!';
+        setTimeout(() => {
+          button.innerHTML = originalHTML;
+        }, 2000);
+      }
+    });
+  };
+
+  // Fonction pour insérer le code dans le textarea à la position du curseur
+  const insertCodeAtCursor = (code: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentValue = textarea.value;
+
+    // Insérer le code à la position du curseur
+    const newValue = currentValue.substring(0, start) + '\n' + code + '\n' + currentValue.substring(end);
+    setInput(newValue);
+
+    // Remettre le focus sur le textarea
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + code.length + 2;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
   // Fonction pour formater le message avec support Markdown
   const formatMessage = (text: string): string => {
     let formatted = text;
+    let codeBlockCounter = 0;
 
     // Code blocks (traiter en premier pour éviter les conflits)
     formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) => {
       const language = lang || 'text';
       const displayLang = language.toUpperCase();
-      return `<div style="margin: 1rem 0;"><div style="background: var(--bg-secondary); padding: 0.5rem 1rem; border-radius: 0.5rem 0.5rem 0 0; font-size: 0.75rem; color: var(--text-secondary); border: 1px solid var(--border-color); border-bottom: none;">${displayLang}</div><pre style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 0.5rem 0.5rem; padding: 1rem; overflow-x: auto; margin: 0;"><code style="font-family: 'Courier New', monospace; font-size: 0.875rem; color: var(--text-primary); white-space: pre-wrap;">${code.trim()}</code></pre></div>`;
+      const codeId = `code-block-${Date.now()}-${codeBlockCounter++}`;
+      const copyBtnId = `copy-btn-${codeId}`;
+      const insertBtnId = `insert-btn-${codeId}`;
+      const escapedCode = code.trim().replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      
+      return `<div class="code-block-container" style="margin: 1rem 0; position: relative; border-radius: 0.75rem; overflow: hidden; border: 1px solid var(--border-color);">
+        <div style="background: var(--bg-secondary); padding: 0.5rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color);">
+          <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600;">${displayLang}</span>
+          <div class="code-actions" style="display: flex; gap: 0.5rem; opacity: 0; transition: opacity 0.2s;">
+            <button 
+              id="${copyBtnId}"
+              onclick="(function() {
+                const code = decodeURIComponent('${encodeURIComponent(code.trim())}');
+                navigator.clipboard.writeText(code).then(() => {
+                  const btn = document.getElementById('${copyBtnId}');
+                  if (btn) {
+                    const original = btn.innerHTML;
+                    btn.innerHTML = '<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"14\\" height=\\"14\\" viewBox=\\"0 0 24 24\\" fill=\\"none\\" stroke=\\"currentColor\\" stroke-width=\\"2\\" stroke-linecap=\\"round\\" stroke-linejoin=\\"round\\"><polyline points=\\"20 6 9 17 4 12\\"></polyline></svg> Copié!';
+                    setTimeout(() => { btn.innerHTML = original; }, 2000);
+                  }
+                });
+              })()"
+              style="padding: 0.375rem 0.75rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 0.375rem; color: var(--text-primary); cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; gap: 0.375rem; transition: all 0.2s; font-weight: 500;"
+              onmouseover="this.style.background='var(--accent-hugin)'; this.style.borderColor='var(--accent-hugin)'; this.style.color='white';"
+              onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.borderColor='rgba(255, 255, 255, 0.2)'; this.style.color='var(--text-primary)';"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copier
+            </button>
+            <button 
+              id="${insertBtnId}"
+              onclick="(function() {
+                const code = decodeURIComponent('${encodeURIComponent(code.trim())}');
+                const event = new CustomEvent('insertCode', { detail: { code } });
+                window.dispatchEvent(event);
+              })()"
+              style="padding: 0.375rem 0.75rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 0.375rem; color: var(--text-primary); cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; gap: 0.375rem; transition: all 0.2s; font-weight: 500;"
+              onmouseover="this.style.background='var(--accent-hugin)'; this.style.borderColor='var(--accent-hugin)'; this.style.color='white';"
+              onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.borderColor='rgba(255, 255, 255, 0.2)'; this.style.color='var(--text-primary)';"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Insérer
+            </button>
+          </div>
+        </div>
+        <pre style="background: var(--bg-secondary); padding: 1rem; overflow-x: auto; margin: 0;"><code style="font-family: 'Courier New', monospace; font-size: 0.875rem; color: var(--text-primary); white-space: pre-wrap;">${code.trim()}</code></pre>
+      </div>`;
     });
 
     // Tables
@@ -300,13 +401,232 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
     c.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Fonction pour détecter le code dans les messages
+  const detectCodeInMessage = (content: string) => {
+    const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+    const matches = content.match(codeBlockRegex);
+    
+    if (matches && matches.length > 0) {
+      const code = matches.join('\n\n');
+      setDualViewContent({ code, visual: content });
+      setIsDualViewOpen(true);
+    }
+  };
+
+  // Composant Dual View Panel
+  const DualViewPanel = () => (
+    <>
+      {/* Overlay */}
+      {isDualViewOpen && (
+        <div
+          onClick={() => setIsDualViewOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 998,
+            backdropFilter: 'blur(2px)'
+          }}
+        />
+      )}
+
+      {/* Drawer */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        width: '500px',
+        maxWidth: '90%',
+        background: 'var(--bg-secondary)',
+        boxShadow: '4px 0 30px rgba(0, 0, 0, 0.3)',
+        transform: isDualViewOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        zIndex: 999,
+        display: 'flex',
+        flexDirection: 'column',
+        borderRight: '1px solid var(--border-color)'
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '1.5rem',
+          background: 'var(--accent-hugin)',
+          color: 'white',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '1rem'
+          }}>
+            <h3 style={{
+              fontSize: '1.5rem',
+              fontWeight: 700,
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem'
+            }}>
+              <Code size={24} />
+              Dual View
+            </h3>
+            <button
+              onClick={() => setIsDualViewOpen(false)}
+              style={{
+                padding: '0.5rem',
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                borderRadius: '0.5rem',
+                color: 'white',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Onglets */}
+          <div style={{
+            display: 'flex',
+            gap: '0.5rem',
+            background: 'rgba(255, 255, 255, 0.1)',
+            padding: '0.25rem',
+            borderRadius: '0.75rem'
+          }}>
+            <button
+              onClick={() => setDualViewMode('code')}
+              style={{
+                flex: 1,
+                padding: '0.75rem',
+                background: dualViewMode === 'code' ? 'white' : 'transparent',
+                border: 'none',
+                borderRadius: '0.5rem',
+                color: dualViewMode === 'code' ? 'var(--accent-hugin)' : 'white',
+                cursor: 'pointer',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Code size={18} />
+              Code
+            </button>
+            <button
+              onClick={() => setDualViewMode('visual')}
+              style={{
+                flex: 1,
+                padding: '0.75rem',
+                background: dualViewMode === 'visual' ? 'white' : 'transparent',
+                border: 'none',
+                borderRadius: '0.5rem',
+                color: dualViewMode === 'visual' ? 'var(--accent-hugin)' : 'white',
+                cursor: 'pointer',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Eye size={18} />
+              Visuel
+            </button>
+          </div>
+        </div>
+
+        {/* Contenu */}
+        <div style={{
+          flex: 1,
+          overflow: 'auto',
+          padding: '1.5rem',
+          background: 'var(--bg-primary)'
+        }}>
+          {dualViewMode === 'code' ? (
+            <div>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1rem'
+              }}>
+                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Code Source</h4>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(dualViewContent.code);
+                    alert('Code copié !');
+                  }}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: 'var(--accent-hugin)',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    color: 'white',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                >
+                  <Copy size={16} />
+                  Copier
+                </button>
+              </div>
+              <pre style={{
+                background: 'var(--bg-secondary)',
+                padding: '1rem',
+                borderRadius: '0.75rem',
+                overflow: 'auto',
+                fontSize: '0.85rem',
+                lineHeight: 1.6,
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-primary)',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word'
+              }}>
+                {dualViewContent.code}
+              </pre>
+            </div>
+          ) : (
+            <div>
+              <h4 style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: 600 }}>Interprétation</h4>
+              <div
+                style={{
+                  fontSize: '0.9375rem',
+                  lineHeight: 1.6,
+                  color: 'var(--text-primary)'
+                }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHTML(formatMessage(dualViewContent.visual)) }}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+
   return (
-    <div style={{ display: 'flex', height: '100vh', background: 'var(--bg-primary)' }}>
+    <div className="claude-ai-assistant" style={{ display: 'flex', height: '100vh', background: '#ffffff' }}>
       {/* Sidebar */}
       <div style={{
         width: '260px',
-        background: 'var(--bg-secondary)',
-        borderRight: '1px solid var(--border-color)',
+        background: '#f9fafb',
+        borderRight: '1px solid #e5e7eb',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden'
@@ -509,35 +829,69 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
               </div>
             </div>
           </div>
-          <button
-            onClick={handleClearConversation}
-            style={{
-              padding: '0.5rem 1rem',
-              background: 'transparent',
-              border: '1px solid var(--border-color)',
-              borderRadius: '0.5rem',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
-              e.currentTarget.style.borderColor = '#ef4444';
-              e.currentTarget.style.color = '#ef4444';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.borderColor = 'var(--border-color)';
-              e.currentTarget.style.color = 'var(--text-primary)';
-            }}
-          >
-            <Trash2 size={16} />
-            Effacer
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button
+              onClick={() => setIsDualViewOpen(!isDualViewOpen)}
+              style={{
+                padding: '0.5rem 1rem',
+                background: isDualViewOpen ? 'var(--accent-hugin)' : 'transparent',
+                border: '1px solid var(--border-color)',
+                borderRadius: '0.5rem',
+                color: isDualViewOpen ? 'white' : 'var(--text-primary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s',
+                fontWeight: isDualViewOpen ? 600 : 400
+              }}
+              onMouseEnter={(e) => {
+                if (!isDualViewOpen) {
+                  e.currentTarget.style.background = 'var(--bg-primary)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isDualViewOpen) {
+                  e.currentTarget.style.background = 'transparent';
+                }
+              }}
+            >
+              <Menu size={16} />
+              Dual View
+            </button>
+            <button
+              onClick={handleClearConversation}
+              style={{
+                padding: '0.5rem 1rem',
+                background: 'transparent',
+                border: '1px solid var(--border-color)',
+                borderRadius: '0.5rem',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                e.currentTarget.style.borderColor = '#ef4444';
+                e.currentTarget.style.color = '#ef4444';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.borderColor = 'var(--border-color)';
+                e.currentTarget.style.color = 'var(--text-primary)';
+              }}
+            >
+              <Trash2 size={16} />
+              Effacer
+            </button>
+          </div>
         </div>
+
+        {/* Dual View Panel */}
+        <DualViewPanel />
 
         {/* Messages */}
         <div
@@ -833,6 +1187,42 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
         @keyframes pulse {
           0%, 100% { opacity: 0.4; }
           50% { opacity: 1; }
+        }
+
+        /* Effet de survol pour les boutons de code */
+        .code-block-container:hover .code-actions {
+          opacity: 1 !important;
+        }
+
+        /* Animation douce pour les boutons */
+        .code-actions button {
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .code-actions button:active {
+          transform: scale(0.95);
+        }
+
+        /* Design Claude-style - Variables CSS */
+        .claude-ai-assistant {
+          --bg-primary: #ffffff;
+          --bg-secondary: #f9fafb;
+          --text-primary: #374151;
+          --text-secondary: #6b7280;
+          --border-color: #e5e7eb;
+          --accent-hugin: #8b5cf6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+          .claude-ai-assistant {
+            flex-direction: column;
+          }
+          
+          .claude-ai-assistant > div:first-child {
+            width: 100%;
+            max-height: 200px;
+          }
         }
       `}</style>
     </div>

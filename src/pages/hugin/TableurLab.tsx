@@ -76,7 +76,7 @@ const TableurLab = () => {
                     width: () => spreadsheetRef.current?.clientWidth || 1000,
                 },
                 row: { len: 100, height: 25 },
-                col: { len: 26, width: 100 }
+                col: { len: 26, width: 100, indexWidth: 60, minWidth: 60 }
             });
             setXs(s);
         }
@@ -208,9 +208,7 @@ const TableurLab = () => {
                     <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                         <div ref={spreadsheetRef} style={{ width: '100%', height: '100%' }} />
                         {showChart && (
-                            <div style={{ position: 'absolute', top: '1rem', right: '1rem', width: '400px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '1rem', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', zIndex: 10 }}>
-                                <SpreadsheetChart data={getChartData()} />
-                            </div>
+                            <SpreadsheetChart data={getChartData()} onClose={() => setShowChart(false)} />
                         )}
                     </div>
                 </main>

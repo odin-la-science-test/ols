@@ -1,6 +1,6 @@
 import React from 'react';
 import { BetaRoute } from '../../components/BetaRoute';
-import { ChemicalInventory } from '../hugin/ChemicalInventory';
+import { ChemicalInventoryV2 } from '../hugin/ChemicalInventoryV2';
 import { AlertCircle } from 'lucide-react';
 
 export const BetaChemicalInventory: React.FC = () => {
@@ -33,7 +33,7 @@ export const BetaChemicalInventory: React.FC = () => {
           </span>
         </div>
 
-        <ChemicalInventory />
+        <ChemicalInventoryV2 />
 
         <style>{`
           @keyframes pulse {

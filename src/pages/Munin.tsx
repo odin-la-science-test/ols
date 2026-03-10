@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
     BookOpen, Search, Activity, Dna, FlaskConical,
-    Calculator, Users, Settings, Grid, Sparkles, TrendingUp, Star
+    Calculator, Users, Settings, Grid, Sparkles, TrendingUp, Star, Code
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
@@ -103,10 +103,43 @@ const Munin = () => {
                     <p style={{ 
                         color: 'var(--text-secondary)', 
                         fontSize: '1.2rem', 
-                        marginBottom: '2rem'
+                        marginBottom: '1rem'
                     }}>
                         250+ domaines scientifiques disponibles
                     </p>
+
+                    {/* Code Interpreter Button */}
+                    <button
+                        onClick={() => navigate('/munin/code-interpreter')}
+                        style={{
+                            padding: '1rem 2rem',
+                            background: 'linear-gradient(135deg, var(--accent-munin), var(--accent-hugin))',
+                            border: 'none',
+                            borderRadius: '1rem',
+                            color: 'white',
+                            fontWeight: 700,
+                            fontSize: '1rem',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            marginBottom: '2rem',
+                            boxShadow: '0 10px 30px rgba(16, 185, 129, 0.3)',
+                            transition: 'all 0.3s'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 15px 40px rgba(16, 185, 129, 0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 10px 30px rgba(16, 185, 129, 0.3)';
+                        }}
+                    >
+                        <Code size={20} />
+                        Code Interpreter
+                        <Sparkles size={18} />
+                    </button>
 
                     <div style={{ position: 'relative', width: '100%', maxWidth: '600px', margin: '0 auto 2rem auto' }}>
                         <Search

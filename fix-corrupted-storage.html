@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réparer le stockage corrompu</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        .container {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #60a5fa;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        button.danger {
+            background: #ef4444;
+        }
+        button.danger:hover {
+            background: #dc2626;
+        }
+        .log {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #3b82f6;
+            padding-left: 10px;
+        }
+        .log-entry.error {
+            border-left-color: #ef4444;
+            color: #fca5a5;
+        }
+        .log-entry.success {
+            border-left-color: #10b981;
+            color: #86efac;
+        }
+        .log-entry.warning {
+            border-left-color: #f59e0b;
+            color: #fcd34d;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #60a5fa;
+            margin: 10px 0;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Réparation du stockage</h1>
+        <p>Cet outil permet de diagnostiquer et réparer les problèmes de stockage localStorage.</p>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-label">Entrées totales</div>
+                <div class="stat-value" id="totalEntries">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Entrées valides</div>
+                <div class="stat-value" id="validEntries">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Entrées corrompues</div>
+                <div class="stat-value" id="corruptedEntries">0</div>
+            </div>
+        </div>
+
+        <div>
+            <button onclick="diagnose()">🔍 Diagnostiquer</button>
+            <button onclick="fixCorrupted()">🔧 Réparer les entrées corrompues</button>
+            <button onclick="clearAll()" class="danger">🗑️ Tout effacer</button>
+            <button onclick="exportData()">💾 Exporter les données</button>
+        </div>
+
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStats(total, valid, corrupted) {
+            document.getElementById('totalEntries').textContent = total;
+            document.getElementById('validEntries').textContent = valid;
+            document.getElementById('corruptedEntries').textContent = corrupted;
+        }
+
+        function diagnose() {
+            log('🔍 Début du diagnostic...', 'info');
+            
+            let total = 0;
+            let valid = 0;
+            let corrupted = 0;
+            const corruptedKeys = [];
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (!key) continue;
+
+                total++;
+                const value = localStorage.getItem(key);
+
+                // Vérifier si c'est un JSON valide
+                if (key.startsWith('user_profile_') || key.includes('validation') || key.includes('license')) {
+                    try {
+                        JSON.parse(value);
+                        valid++;
+                        log(`✅ ${key}: OK`, 'success');
+                    } catch (error) {
+                        corrupted++;
+                        corruptedKeys.push(key);
+                        log(`❌ ${key}: CORROMPU - ${error.message}`, 'error');
+                    }
+                } else {
+                    // Entrées simples (non-JSON)
+                    valid++;
+                    log(`ℹ️ ${key}: ${value.substring(0, 50)}${value.length > 50 ? '...' : ''}`, 'info');
+                }
+            }
+
+            updateStats(total, valid, corrupted);
+            log(`📊 Diagnostic terminé: ${total} entrées, ${valid} valides, ${corrupted} corrompues`, 'warning');
+
+            if (corrupted > 0) {
+                log(`⚠️ Entrées corrompues trouvées: ${corruptedKeys.join(', ')}`, 'warning');
+            }
+        }
+
+        function fixCorrupted() {
+            log('🔧 Début de la réparation...', 'info');
+            
+            let fixed = 0;
+            const keysToRemove = [];
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (!key) continue;
+
+                const value = localStorage.getItem(key);
+
+                // Vérifier si c'est un JSON qui devrait être valide
+                if (key.startsWith('user_profile_') || key.includes('validation') || key.includes('license')) {
+                    try {
+                        JSON.parse(value);
+                    } catch (error) {
+                        keysToRemove.push(key);
+                        log(`🗑️ Suppression de l'entrée corrompue: ${key}`, 'warning');
+                    }
+                }
+            }
+
+            // Supprimer les entrées corrompues
+            keysToRemove.forEach(key => {
+                localStorage.removeItem(key);
+                fixed++;
+            });
+
+            log(`✅ Réparation terminée: ${fixed} entrées corrompues supprimées`, 'success');
+            
+            // Re-diagnostiquer
+            setTimeout(diagnose, 500);
+        }
+
+        function clearAll() {
+            if (confirm('⚠️ ATTENTION: Cela va supprimer TOUTES les données stockées localement, y compris les comptes utilisateurs. Êtes-vous sûr ?')) {
+                localStorage.clear();
+                log('🗑️ Toutes les données ont été effacées', 'warning');
+                updateStats(0, 0, 0);
+            }
+        }
+
+        function exportData() {
+            const data = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key) {
+                    data[key] = localStorage.getItem(key);
+                }
+            }
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `localStorage-backup-${new Date().toISOString()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            log('💾 Données exportées avec succès', 'success');
+        }
+
+        // Diagnostic automatique au chargement
+        window.addEventListener('load', () => {
+            log('🚀 Outil de réparation chargé', 'success');
+            diagnose();
+        });
+    </script>
+</body>
+</html>

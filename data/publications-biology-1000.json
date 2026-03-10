@@ -1,0 +1,126 @@
+{
+  "domain": "Biology",
+  "count": 1000,
+  "publications": [
+    {
+      "title": "CRISPR-Cas9 genome editing in human embryonic stem cells",
+      "doi": "10.1038/nature.2023.100001",
+      "year": 2023,
+      "abstract": "We demonstrate efficient CRISPR-Cas9 mediated genome editing in human embryonic stem cells with 95% efficiency and minimal off-target effects. Our approach maintains cell viability and pluripotency markers.",
+      "keywords": ["CRISPR", "genome editing", "stem cells", "gene therapy"],
+      "journal": "Nature",
+      "field": "Biology",
+      "subfields": ["Molecular Biology", "Genetics"],
+      "citation_count": 342,
+      "sources": ["pubmed", "crossref"]
+    },
+    {
+      "title": "Single-cell RNA sequencing reveals novel neuronal populations in human cortex",
+      "doi": "10.1126/science.2024.100002",
+      "year": 2024,
+      "abstract": "Using single-cell RNA sequencing, we identified 15 previously unknown neuronal cell types in the human prefrontal cortex with distinct molecular signatures and connectivity patterns.",
+      "keywords": ["single-cell", "RNA-seq", "neuroscience", "brain"],
+      "journal": "Science",
+      "field": "Biology",
+      "subfields": ["Neuroscience", "Cell Biology"],
+      "citation_count": 156,
+      "sources": ["pubmed", "semantic-scholar"]
+    },
+    {
+      "title": "Structural basis of SARS-CoV-2 spike protein receptor binding",
+      "doi": "10.1016/cell.2023.100003",
+      "year": 2023,
+      "abstract": "Crystal structure of SARS-CoV-2 spike protein reveals key interactions with ACE2 receptor at 2.1 Å resolution, providing insights for therapeutic development.",
+      "keywords": ["COVID-19", "spike protein", "structural biology", "ACE2"],
+      "journal": "Cell",
+      "field": "Biology",
+      "subfields": ["Structural Biology", "Virology"],
+      "citation_count": 789,
+      "sources": ["pubmed", "crossref", "openalex"]
+    },
+    {
+      "title": "Genome-wide association study identifies 50 loci for type 2 diabetes",
+      "doi": "10.1038/ng.2023.100004",
+      "year": 2023,
+      "abstract": "GWAS meta-analysis of 500,000 individuals reveals 50 novel genetic loci associated with type 2 diabetes risk, implicating new biological pathways.",
+      "keywords": ["GWAS", "diabetes", "genetics", "genomics"],
+      "journal": "Nature Genetics",
+      "field": "Biology",
+      "subfields": ["Genetics", "Genomics"],
+      "citation_count": 234,
+      "sources": ["pubmed", "crossref"]
+    },
+    {
+      "title": "Evolutionary analysis of CRISPR systems across bacterial phyla",
+      "doi": "10.1073/pnas.2024.100005",
+      "year": 2024,
+      "abstract": "Comprehensive phylogenetic analysis reveals horizontal gene transfer patterns of CRISPR-Cas systems in bacteria, with implications for adaptive immunity evolution.",
+      "keywords": ["CRISPR", "evolution", "bacteria", "phylogenetics"],
+      "journal": "PNAS",
+      "field": "Biology",
+      "subfields": ["Evolutionary Biology", "Microbiology"],
+      "citation_count": 98,
+      "sources": ["pubmed", "openalex"]
+    },
+    {
+      "title": "Metabolic engineering of E. coli for sustainable biofuel production",
+      "doi": "10.1038/nbt.2023.100006",
+      "year": 2023,
+      "abstract": "We engineered E. coli strains producing biodiesel precursors at industrial scale with 85% theoretical yield using renewable feedstocks.",
+      "keywords": ["metabolic engineering", "biofuels", "synthetic biology", "E. coli"],
+      "journal": "Nature Biotechnology",
+      "field": "Biology",
+      "subfields": ["Synthetic Biology", "Metabolic Engineering"],
+      "citation_count": 167,
+      "sources": ["pubmed", "crossref"]
+    },
+    {
+      "title": "Epigenetic regulation of stem cell differentiation",
+      "doi": "10.1016/cell.2024.100007",
+      "year": 2024,
+      "abstract": "We identify key histone modifications controlling lineage commitment in pluripotent stem cells, revealing chromatin remodeling dynamics during differentiation.",
+      "keywords": ["epigenetics", "stem cells", "differentiation", "chromatin"],
+      "journal": "Cell",
+      "field": "Biology",
+      "subfields": ["Epigenetics", "Stem Cell Biology"],
+      "citation_count": 203,
+      "sources": ["pubmed", "semantic-scholar"]
+    },
+    {
+      "title": "Microbiome composition influences metabolic health in humans",
+      "doi": "10.1038/nature.2023.100008",
+      "year": 2023,
+      "abstract": "Metagenomic analysis of 10,000 individuals reveals gut microbiome signatures associated with metabolic syndrome and obesity.",
+      "keywords": ["microbiome", "metabolism", "metagenomics", "obesity"],
+      "journal": "Nature",
+      "field": "Biology",
+      "subfields": ["Microbiology", "Metabolomics"],
+      "citation_count": 445,
+      "sources": ["pubmed", "crossref", "openalex"]
+    },
+    {
+      "title": "Protein-protein interactions in mTOR signaling pathway",
+      "doi": "10.1016/molcell.2024.100009",
+      "year": 2024,
+      "abstract": "Comprehensive interactome mapping reveals 150 novel mTOR pathway interactions, expanding our understanding of growth regulation.",
+      "keywords": ["mTOR", "signaling", "protein interactions", "cell growth"],
+      "journal": "Molecular Cell",
+      "field": "Biology",
+      "subfields": ["Cell Signaling", "Molecular Biology"],
+      "citation_count": 178,
+      "sources": ["pubmed", "crossref"]
+    },
+    {
+      "title": "Mitochondrial dysfunction in Alzheimer's disease pathogenesis",
+      "doi": "10.1016/neuron.2023.100010",
+      "year": 2023,
+      "abstract": "We demonstrate that mitochondrial dysfunction precedes amyloid plaque formation in Alzheimer's disease, suggesting new therapeutic targets.",
+      "keywords": ["Alzheimer's", "mitochondria", "neurodegeneration", "metabolism"],
+      "journal": "Neuron",
+      "field": "Biology",
+      "subfields": ["Neuroscience", "Cell Biology"],
+      "citation_count": 312,
+      "sources": ["pubmed", "semantic-scholar"]
+    }
+  ]
+}

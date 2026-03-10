@@ -30,6 +30,14 @@ interface Milestone {
     progress: number;
 }
 
+interface TeamMember {
+    id: string;
+    name: string;
+    role: 'Principal Investigator' | 'Co-Investigator' | 'Postdoc' | 'PhD Student' | 'Master Student' | 'Technician' | 'Research Assistant' | 'Intern' | 'Collaborator';
+    email?: string;
+    joinedDate: string;
+}
+
 interface Project {
     id: string;
     name: string;
@@ -37,7 +45,8 @@ interface Project {
     startDate: string;
     endDate: string;
     status: 'planning' | 'active' | 'completed' | 'on-hold';
-    team: string[];
+    team: string[]; // Ancien format pour compatibilité
+    teamMembers?: TeamMember[]; // Nouveau format avec rôles
     budget: number;
     milestones: Milestone[];
     tags: string[];
@@ -93,6 +102,36 @@ const ProjectMind = () => {
                     endDate: "2026-12-31",
                     status: "active",
                     team: ["Dr. Martin", "Dr. Dupont"],
+                    teamMembers: [
+                        {
+                            id: "tm1",
+                            name: "Dr. Sophie Martin",
+                            role: "Principal Investigator",
+                            email: "s.martin@lab.fr",
+                            joinedDate: "2026-01-01"
+                        },
+                        {
+                            id: "tm2",
+                            name: "Dr. Jean Dupont",
+                            role: "Co-Investigator",
+                            email: "j.dupont@lab.fr",
+                            joinedDate: "2026-01-01"
+                        },
+                        {
+                            id: "tm3",
+                            name: "Marie Lambert",
+                            role: "PhD Student",
+                            email: "m.lambert@lab.fr",
+                            joinedDate: "2026-01-15"
+                        },
+                        {
+                            id: "tm4",
+                            name: "Thomas Bernard",
+                            role: "Technician",
+                            email: "t.bernard@lab.fr",
+                            joinedDate: "2026-01-10"
+                        }
+                    ],
                     budget: 50000,
                     tags: ["Génétique", "Microbiologie"],
                     milestones: [{
@@ -129,6 +168,36 @@ const ProjectMind = () => {
                     endDate: "2026-12-31",
                     status: "active",
                     team: ["Dr. Martin", "Dr. Dupont"],
+                    teamMembers: [
+                        {
+                            id: "tm1",
+                            name: "Dr. Sophie Martin",
+                            role: "Principal Investigator",
+                            email: "s.martin@lab.fr",
+                            joinedDate: "2026-01-01"
+                        },
+                        {
+                            id: "tm2",
+                            name: "Dr. Jean Dupont",
+                            role: "Co-Investigator",
+                            email: "j.dupont@lab.fr",
+                            joinedDate: "2026-01-01"
+                        },
+                        {
+                            id: "tm3",
+                            name: "Marie Lambert",
+                            role: "PhD Student",
+                            email: "m.lambert@lab.fr",
+                            joinedDate: "2026-01-15"
+                        },
+                        {
+                            id: "tm4",
+                            name: "Thomas Bernard",
+                            role: "Technician",
+                            email: "t.bernard@lab.fr",
+                            joinedDate: "2026-01-10"
+                        }
+                    ],
                     budget: 50000,
                     tags: ["Génétique", "Microbiologie"],
                     milestones: [{
@@ -459,7 +528,7 @@ const ProjectMind = () => {
                                         }} />
                                     </div>
                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                                        {p.milestones.length} jalons • {p.team.length} membres
+                                        {p.milestones.length} jalons • {(p.teamMembers?.length || p.team.length)} membres
                                     </div>
                                     <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>
                                         <div style={{
@@ -587,7 +656,7 @@ const ProjectMind = () => {
                                                     <Users size={14} />
                                                     Équipe
                                                 </div>
-                                                <div style={{ fontSize: '0.875rem' }}>{activeProject.team.length} membres</div>
+                                                <div style={{ fontSize: '0.875rem' }}>{(activeProject.teamMembers?.length || activeProject.team.length)} membres</div>
                                             </div>
                                             <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '1rem', border: '1px solid rgba(255,255,255,0.05)' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
@@ -606,6 +675,190 @@ const ProjectMind = () => {
                                                 <div style={{ fontSize: '0.875rem' }}>{activeProject ? calculateProjectProgress(activeProject) : 0}%</div>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    {/* Team Members Section */}
+                                    <div className="glass-panel" style={{ padding: '2rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                                <Users size={20} color="#a78bfa" /> Équipe du projet
+                                            </h3>
+                                            <button
+                                                onClick={() => {
+                                                    const name = prompt('Nom du membre:');
+                                                    if (!name) return;
+                                                    
+                                                    const roles = ['Principal Investigator', 'Co-Investigator', 'Postdoc', 'PhD Student', 'Master Student', 'Technician', 'Research Assistant', 'Intern', 'Collaborator'];
+                                                    const roleChoice = prompt(`Rôle (${roles.join(', ')}):`);
+                                                    if (!roleChoice) return;
+                                                    
+                                                    const email = prompt('Email (optionnel):');
+                                                    
+                                                    const newMember: TeamMember = {
+                                                        id: Date.now().toString(),
+                                                        name,
+                                                        role: roleChoice as any,
+                                                        email: email || undefined,
+                                                        joinedDate: new Date().toISOString().split('T')[0]
+                                                    };
+                                                    
+                                                    const updatedProject = {
+                                                        ...activeProject,
+                                                        teamMembers: [...(activeProject.teamMembers || []), newMember]
+                                                    };
+                                                    handleUpdateProject(updatedProject);
+                                                }}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.5rem',
+                                                    padding: '0.5rem 1rem',
+                                                    background: 'linear-gradient(135deg, #a78bfa, #8b5cf6)',
+                                                    border: 'none',
+                                                    borderRadius: '0.5rem',
+                                                    color: 'white',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.875rem',
+                                                    fontWeight: 600
+                                                }}
+                                            >
+                                                <Plus size={16} /> Ajouter un membre
+                                            </button>
+                                        </div>
+                                        
+                                        {activeProject.teamMembers && activeProject.teamMembers.length > 0 ? (
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                                                {activeProject.teamMembers.map(member => {
+                                                    const getRoleColor = (role: string) => {
+                                                        switch (role) {
+                                                            case 'Principal Investigator': return '#8b5cf6';
+                                                            case 'Co-Investigator': return '#a78bfa';
+                                                            case 'Postdoc': return '#3b82f6';
+                                                            case 'PhD Student': return '#10b981';
+                                                            case 'Master Student': return '#06b6d4';
+                                                            case 'Technician': return '#f59e0b';
+                                                            case 'Research Assistant': return '#ec4899';
+                                                            case 'Intern': return '#6366f1';
+                                                            case 'Collaborator': return '#64748b';
+                                                            default: return '#6b7280';
+                                                        }
+                                                    };
+                                                    
+                                                    const getRoleIcon = (role: string) => {
+                                                        switch (role) {
+                                                            case 'Principal Investigator': return '👨‍🔬';
+                                                            case 'Co-Investigator': return '👩‍🔬';
+                                                            case 'Postdoc': return '🎓';
+                                                            case 'PhD Student': return '📚';
+                                                            case 'Master Student': return '📖';
+                                                            case 'Technician': return '🔧';
+                                                            case 'Research Assistant': return '🧪';
+                                                            case 'Intern': return '🌱';
+                                                            case 'Collaborator': return '🤝';
+                                                            default: return '👤';
+                                                        }
+                                                    };
+                                                    
+                                                    return (
+                                                        <div
+                                                            key={member.id}
+                                                            style={{
+                                                                padding: '1rem',
+                                                                background: 'rgba(255,255,255,0.02)',
+                                                                borderRadius: '1rem',
+                                                                border: '1px solid rgba(255,255,255,0.05)',
+                                                                position: 'relative'
+                                                            }}
+                                                        >
+                                                            <button
+                                                                onClick={() => {
+                                                                    if (confirm(`Retirer ${member.name} du projet ?`)) {
+                                                                        const updatedProject = {
+                                                                            ...activeProject,
+                                                                            teamMembers: activeProject.teamMembers?.filter(m => m.id !== member.id)
+                                                                        };
+                                                                        handleUpdateProject(updatedProject);
+                                                                    }
+                                                                }}
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    top: '0.5rem',
+                                                                    right: '0.5rem',
+                                                                    background: 'rgba(239, 68, 68, 0.1)',
+                                                                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                                                                    borderRadius: '0.5rem',
+                                                                    padding: '0.25rem',
+                                                                    cursor: 'pointer',
+                                                                    color: '#ef4444'
+                                                                }}
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                            
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                                                                <div style={{
+                                                                    width: '48px',
+                                                                    height: '48px',
+                                                                    borderRadius: '50%',
+                                                                    background: `linear-gradient(135deg, ${getRoleColor(member.role)}, ${getRoleColor(member.role)}dd)`,
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    fontSize: '1.5rem'
+                                                                }}>
+                                                                    {getRoleIcon(member.role)}
+                                                                </div>
+                                                                <div style={{ flex: 1 }}>
+                                                                    <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.25rem' }}>
+                                                                        {member.name}
+                                                                    </div>
+                                                                    <div style={{
+                                                                        display: 'inline-block',
+                                                                        padding: '0.125rem 0.5rem',
+                                                                        background: `${getRoleColor(member.role)}20`,
+                                                                        color: getRoleColor(member.role),
+                                                                        borderRadius: '0.25rem',
+                                                                        fontSize: '0.75rem',
+                                                                        fontWeight: 600
+                                                                    }}>
+                                                                        {member.role}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            {member.email && (
+                                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                                                                    📧 {member.email}
+                                                                </div>
+                                                            )}
+                                                            
+                                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                                                                Rejoint le {new Date(member.joinedDate).toLocaleDateString('fr-FR')}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <div style={{
+                                                padding: '2rem',
+                                                textAlign: 'center',
+                                                color: 'var(--text-secondary)',
+                                                background: 'rgba(255,255,255,0.02)',
+                                                borderRadius: '1rem',
+                                                border: '1px dashed rgba(255,255,255,0.1)'
+                                            }}>
+                                                <Users size={48} style={{ margin: '0 auto 1rem', opacity: 0.3 }} />
+                                                <p style={{ marginBottom: '0.5rem' }}>Aucun membre avec rôle défini</p>
+                                                <p style={{ fontSize: '0.875rem' }}>Cliquez sur "Ajouter un membre" pour commencer</p>
+                                                {activeProject.team.length > 0 && (
+                                                    <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '0.5rem' }}>
+                                                        <p style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>Anciens membres (sans rôle):</p>
+                                                        <p style={{ fontSize: '0.875rem', color: 'var(--text-primary)' }}>{activeProject.team.join(', ')}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Progress Bar */}
