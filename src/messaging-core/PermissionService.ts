@@ -8,7 +8,7 @@
  */
 
 import { getDatabase, executeWithRetry } from '../messaging-db/database';
-import { Role, Permission, IPermissionService } from '../messaging-types-v3/types';
+import type { Role, Permission, IPermissionService } from '../messaging-types-v3/types';
 import { ROLE_PERMISSIONS } from '../messaging-types-v3/constants';
 
 export class PermissionService implements IPermissionService {

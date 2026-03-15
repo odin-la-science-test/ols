@@ -7,7 +7,7 @@
  * Requirements: 8.2 - Performance Optimization
  */
 
-import { CacheEntry, CacheOptions, Channel, User } from '../messaging-types-v3/types';
+import type { CacheEntry, CacheOptions, Channel, User } from '../messaging-types-v3/types';
 
 export class CacheService {
   private cache: Map<string, CacheEntry<any>> = new Map();
@@ -39,7 +39,9 @@ export class CacheService {
     // Si le cache est plein, supprimer l'entrée la plus ancienne
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
     }
 
     const entry: CacheEntry<T> = {

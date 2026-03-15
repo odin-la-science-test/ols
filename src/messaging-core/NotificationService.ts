@@ -8,7 +8,7 @@
  */
 
 import { getDatabase, executeWithRetry } from '../messaging-db/database';
-import { Message, NotificationPreference, INotificationService } from '../messaging-types-v3/types';
+import type { Message, NotificationPreference, INotificationService } from '../messaging-types-v3/types';
 import { v4 as uuidv4 } from 'uuid';
 
 export class NotificationService implements INotificationService {

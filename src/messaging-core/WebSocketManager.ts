@@ -8,7 +8,7 @@
  */
 
 import { WebSocket } from 'ws';
-import { WebSocketMessage, IWebSocketManager, UserStatus } from '../messaging-types-v3/types';
+import type { WebSocketMessage, IWebSocketManager, UserStatus } from '../messaging-types-v3/types';
 import { getDatabase, executeWithRetry } from '../messaging-db/database';
 
 interface ConnectionInfo {

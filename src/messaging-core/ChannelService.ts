@@ -4,7 +4,7 @@
  */
 
 import { getDatabase, executeWithRetry } from '../messaging-db/database';
-import { Channel, User, IChannelService } from '../messaging-types-v3/types';
+import type { Channel, User, IChannelService } from '../messaging-types-v3/types';
 import { permissionService } from './PermissionService';
 import { v4 as uuidv4 } from 'uuid';
 

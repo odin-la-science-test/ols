@@ -7,7 +7,7 @@
  * Requirements: 6.5, 6.6 - Error Handling and Audit Logging
  */
 
-import { ErrorResponse, ErrorCode, ErrorCategory, AuditLogEntry, AuditAction } from '../messaging-types-v3/types';
+import type { ErrorResponse, ErrorCode, ErrorCategory, AuditLogEntry, AuditAction } from '../messaging-types-v3/types';
 import { getDatabase, executeWithRetry } from '../messaging-db/database';
 import { v4 as uuidv4 } from 'uuid';
 

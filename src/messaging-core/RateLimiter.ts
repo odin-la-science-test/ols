@@ -8,7 +8,7 @@
  */
 
 import { MESSAGING_CONFIG } from './config';
-import { RateLimitState } from '../messaging-types-v3/types';
+import type { RateLimitState } from '../messaging-types-v3/types';
 
 export class RateLimiter {
   private userStates: Map<string, RateLimitState> = new Map();

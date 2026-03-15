@@ -8,7 +8,7 @@
  */
 
 import { getDatabase, executeWithRetry } from '../messaging-db/database';
-import { Message, SearchFilters, SearchResult, IMessageService } from '../messaging-types-v3/types';
+import type { Message, SearchFilters, SearchResult, IMessageService } from '../messaging-types-v3/types';
 import { MESSAGING_CONFIG } from './config';
 import { v4 as uuidv4 } from 'uuid';
 import { permissionService } from './PermissionService';
