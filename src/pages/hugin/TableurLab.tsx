@@ -336,7 +336,7 @@ const TableurLab = () => {
             try { jspreadsheet.destroy(containerRef.current, true); } catch (e) { /* ignore */ }
         }
         containerRef.current.innerHTML = '';
-        const jss = jspreadsheet(containerRef.current, {
+        const jss = (jspreadsheet as any)(containerRef.current as any, {
             worksheets: [{
                 data,
                 columns: (columns || defaultCols(Math.max(26, (data[0] || []).length))).map(c => ({
@@ -432,11 +432,11 @@ const TableurLab = () => {
         const t = TEMPLATES[key];
         if (!t) return;
         if (!containerRef.current) return;
-        if (instanceRef.current && typeof jspreadsheet.destroy === 'function') {
-            try { jspreadsheet.destroy(containerRef.current, true); } catch (e) { /* ignore */ }
+        if (instanceRef.current && typeof (jspreadsheet as any).destroy === 'function') {
+            try { (jspreadsheet as any).destroy(containerRef.current as any, true); } catch (e) { /* ignore */ }
         }
         containerRef.current.innerHTML = '';
-        const jss = jspreadsheet(containerRef.current, {
+        const jss = (jspreadsheet as any)(containerRef.current as any, {
             worksheets: [{
                 data: t.data,
                 columns: t.columns.map(c => ({

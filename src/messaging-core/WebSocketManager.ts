@@ -25,7 +25,7 @@ export class WebSocketManager implements IWebSocketManager {
    * Enregistre une nouvelle connexion WebSocket
    * Requirement: 8.1 - WebSocket Connection Management
    */
-  async connect(userId: string, token: string): Promise<WebSocket> {
+  async connect(userId: string, token: string): Promise<any> {
     // Note: Dans une implémentation réelle, valider le token ici
     // Pour l'instant, on accepte toutes les connexions
     
