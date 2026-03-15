@@ -332,8 +332,8 @@ const TableurLab = () => {
 
     const mountSheet = useCallback((data: string[][], columns?: { width: number }[]) => {
         if (!containerRef.current) return;
-        if (instanceRef.current && typeof jspreadsheet.destroy === 'function') {
-            try { jspreadsheet.destroy(containerRef.current, true); } catch (e) { /* ignore */ }
+        if (instanceRef.current && typeof (jspreadsheet as any).destroy === 'function') {
+            try { (jspreadsheet as any).destroy(containerRef.current as any, true); } catch (e) { /* ignore */ }
         }
         containerRef.current.innerHTML = '';
         const jss = (jspreadsheet as any)(containerRef.current as any, {
@@ -352,7 +352,7 @@ const TableurLab = () => {
                 defaultColAlign: 'left',
             }],
             toolbar: true,
-            onselection: (_inst, px, py) => {
+            onselection: (_inst: any, px: number, py: number) => {
                 try {
                     const inst = instanceRef.current;
                     const colLetter = String.fromCharCode(65 + px);
