@@ -253,7 +253,7 @@ export const LabInventoryPro: React.FC = () => {
       {tab === 'dashboard' && (
         <DashboardView
           stats={stats} alertItems={alertItems} cryoStats={cryoStats}
-          onViewItem={item => { setSelectedItem(item); setTab('inventory'); }}
+          onViewItem={(item: MaterialItem) => { setSelectedItem(item); setTab('inventory'); }}
           onGenerateOrder={handleGenerateOrder}
           card={card} btn={btn} ghost={ghost}
         />
@@ -346,7 +346,7 @@ function DashboardView({ stats, alertItems, cryoStats, onViewItem, onGenerateOrd
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '320px', overflowY: 'auto' }}>
             {alertItems.length === 0 && <p style={{ color: 'var(--text-secondary,#94a3b8)', textAlign: 'center', padding: '2rem 0' }}>✅ Tous les stocks sont bons</p>}
-            {alertItems.map(item => (
+            {alertItems.map((item: MaterialItem) => (
               <div key={item.id}
                 onClick={() => onViewItem(item)}
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 0.75rem', backgroundColor: `${getStatusColor(item.stock.status)}15`, border: `1px solid ${getStatusColor(item.stock.status)}40`, borderRadius: '8px', cursor: 'pointer' }}>
@@ -493,7 +493,7 @@ function InventoryView({
                 </tr>
               </thead>
               <tbody>
-                {items.map(item => {
+                {items.map((item: MaterialItem) => {
                   const sc = getStatusColor(item.stock.status);
                   const cat = CATEGORIES.find(c => c.value === item.category);
                   const isSelected = selectedItem?.id === item.id;
@@ -547,7 +547,7 @@ function InventoryView({
         {/* Grid view */}
         {viewMode === 'grid' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: '1rem' }}>
-            {items.map(item => {
+            {items.map((item: MaterialItem) => {
               const sc = getStatusColor(item.stock.status);
               const cat = CATEGORIES.find(c => c.value === item.category);
               return (
@@ -577,7 +577,7 @@ function InventoryView({
           item={selectedItem}
           onEdit={() => { setEditingItem({ ...selectedItem }); setSelectedItem(null); }}
           onDelete={() => onDelete(selectedItem.id, selectedItem.name)}
-          onAdjustStock={(delta: number) => { onAdjustStock(selectedItem, delta); setSelectedItem(prev => prev ? { ...prev, stock: { ...prev.stock, quantity: Math.max(0, prev.stock.quantity + delta) } } : prev); }}
+          onAdjustStock={(delta: number) => { onAdjustStock(selectedItem, delta); setSelectedItem((prev: MaterialItem | null) => prev ? { ...prev, stock: { ...prev.stock, quantity: Math.max(0, prev.stock.quantity + delta) } } : prev); }}
           onClose={() => setSelectedItem(null)}
           card={card}
         />

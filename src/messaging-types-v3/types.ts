@@ -198,7 +198,7 @@ export interface INotificationService {
 }
 
 export interface IWebSocketManager {
-  connect(userId: string, token: string): Promise<WebSocket>;
+  connect(userId: string, token: string): Promise<any>;
   disconnect(userId: string): void;
   send(userId: string, message: WebSocketMessage): void;
   broadcast(channelId: string, message: WebSocketMessage): void;

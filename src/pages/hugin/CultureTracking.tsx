@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronRight, Search, Trash2, Download, Upload,
-    History, TrendingUp, Activity, Play, RotateCcw, Beaker, X
+    History, TrendingUp, Activity, Play, RotateCcw, Beaker, X, Plus
 } from 'lucide-react';
 import Plot from 'react-plotly.js';
 import { useToast } from '../../components/ToastContext';

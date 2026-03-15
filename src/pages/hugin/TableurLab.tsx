@@ -370,8 +370,8 @@ const TableurLab = () => {
         loadSaved();
         return () => {
             if (containerRef.current) {
-                if (instanceRef.current && typeof jspreadsheet.destroy === 'function') {
-                    try { jspreadsheet.destroy(containerRef.current, true); } catch (e) { /* ignore */ }
+                if (instanceRef.current && typeof (jspreadsheet as any).destroy === 'function') {
+                    try { (jspreadsheet as any).destroy(containerRef.current as any, true); } catch (e) { /* ignore */ }
                 }
                 containerRef.current.innerHTML = '';
             }
