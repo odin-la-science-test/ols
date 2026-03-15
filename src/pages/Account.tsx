@@ -4,6 +4,7 @@ import { useToast } from '../components/ToastContext';
 import Navbar from '../components/Navbar';
 import Avatar from '../components/Avatar';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
+import { ThemeSettings } from '../components/ThemeSettings';
 
 const Account = () => {
     const navigate = useNavigate();
@@ -241,6 +242,11 @@ const Account = () => {
                                 🔄 Upgrader l'abonnement
                             </button>
                         </div>
+                    </Section>
+
+                    {/* Theme Settings Section */}
+                    <Section title="Thème" icon="🎨" description="Personnalisez l'apparence de l'interface">
+                        <ThemeSettings />
                     </Section>
 
                     {/* Tool Customization Section */}

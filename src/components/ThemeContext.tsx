@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
-export type ThemeName = 'cosmic-glass' | 'neumorphic-soft' | 'brutalist-minimal' | 'cyberpunk-neon' | 'botanical-journal';
+export type ThemeName = 'cosmic-glass' | 'neumorphic-soft' | 'brutalist-minimal' | 'cyberpunk-neon' | 'botanical-journal' | 'medical-professional' | 'dark-laboratory';
 
 export interface DesignSystem {
     // Typography
@@ -201,34 +201,27 @@ const themes: Record<ThemeName, Theme> = {
         label: 'Botanical Journal',
         description: 'Organic, paper-textured design with serif typography',
         designSystem: {
-            fontFamily: "'Playfair Display', serif", // Headings
-            // We'll set body font in CSS if needed or rely on fallback?
-            // Actually, let's use Playfair for headings and Lato for body via CSS overrides if possible,
-            // or just use a nice serif/sans pairing here.
-            // Let's stick with Playfair as the primary font variable for now, or maybe Lato as primary and Playfair as headers manually?
-            // The prompt says "fontFamily" variable. Let's use 'Lato', sans-serif for UI readability, and use Playfair for headers in CSS.
-            // Or just allow serif UI. Serif UI is very "journal". Let's try 'Lato', sans-serif for readability and override headers.
-            // Wait, ThemeContext defines one fontFamily. Let's use 'Lato', sans-serif to be safe, visually distinct.
+            fontFamily: "'Playfair Display', serif",
             fontWeightNormal: 400,
             fontWeightBold: 700,
-            borderRadius: '1rem', // Soft corners
+            borderRadius: '1rem',
             spacing: '2rem',
             shadowStyle: 'soft',
-            effectStyle: 'emboss', // Texture feel
-            buttonStyle: 'neumorphic', // Soft touch
+            effectStyle: 'emboss',
+            buttonStyle: 'neumorphic',
             cardStyle: 'neumorphic',
             inputStyle: 'neumorphic',
         },
         colors: {
-            bgPrimary: '#fdfbf7', // Warm paper
+            bgPrimary: '#fdfbf7',
             bgSecondary: '#f4f1ea',
             bgTertiary: '#e9e5dc',
-            textPrimary: '#2d3a2d', // Dark forest green
-            textSecondary: '#5d4037', // Earthy brown
-            accentPrimary: '#4a6741', // Muted Green
-            accentSecondary: '#8c6b5d', // Muted Terracotta
-            accentMunin: '#556b2f', // Dark Olive Green
-            accentHugin: '#8b4513', // Saddle Brown
+            textPrimary: '#2d3a2d',
+            textSecondary: '#5d4037',
+            accentPrimary: '#4a6741',
+            accentSecondary: '#8c6b5d',
+            accentMunin: '#556b2f',
+            accentHugin: '#8b4513',
             borderColor: '#dcd7cd',
             cardBg: '#fffefb',
             inputBg: '#fcfaf5',
@@ -236,6 +229,75 @@ const themes: Record<ThemeName, Theme> = {
             gradientEnd: '#8c6b5d',
             shadowColor: '#d6d2c4',
             glowColor: 'transparent',
+        }
+    },
+    'medical-professional': {
+        name: 'medical-professional',
+        label: 'Medical Professional',
+        description: 'Interface épurée et professionnelle optimisée pour environnements médicaux',
+        designSystem: {
+            fontFamily: "'Roboto', sans-serif",
+            fontWeightNormal: 400,
+            fontWeightBold: 600,
+            borderRadius: '0.5rem',
+            spacing: '2rem',
+            shadowStyle: 'soft',
+            effectStyle: 'flat',
+            buttonStyle: 'neumorphic',
+            cardStyle: 'neumorphic',
+            inputStyle: 'neumorphic',
+        },
+        colors: {
+            bgPrimary: '#FFFFFF',
+            bgSecondary: '#F7FAFC',
+            bgTertiary: '#EDF2F7',
+            textPrimary: '#4A5568',
+            textSecondary: '#718096',
+            accentPrimary: '#0077BE',
+            accentSecondary: '#00A3E0',
+            accentMunin: '#10B981',
+            accentHugin: '#0077BE',
+            borderColor: '#E2E8F0',
+            cardBg: '#FFFFFF',
+            inputBg: '#F7FAFC',
+            gradientStart: '#0077BE',
+            gradientEnd: '#00A3E0',
+            shadowColor: '#CBD5E0',
+        }
+    },
+    'dark-laboratory': {
+        name: 'dark-laboratory',
+        label: 'Dark Laboratory',
+        description: 'Interface sombre avec éléments lumineux pour laboratoires à faible luminosité',
+        designSystem: {
+            fontFamily: "'Source Code Pro', monospace",
+            fontWeightNormal: 400,
+            fontWeightBold: 700,
+            borderRadius: '0.25rem',
+            spacing: '1.5rem',
+            shadowStyle: 'glow',
+            effectStyle: 'flat',
+            buttonStyle: 'glass',
+            cardStyle: 'glass',
+            inputStyle: 'glass',
+        },
+        colors: {
+            bgPrimary: '#0A0A0A',
+            bgSecondary: '#1A1A1A',
+            bgTertiary: '#2A2A2A',
+            textPrimary: '#E5E5E5',
+            textSecondary: '#A0A0A0',
+            accentPrimary: '#00FF41',
+            accentSecondary: '#FF6B35',
+            accentMunin: '#00FF41',
+            accentHugin: '#00D4FF',
+            borderColor: '#00FF41',
+            cardBg: 'rgba(26, 26, 26, 0.8)',
+            inputBg: 'rgba(42, 42, 42, 0.8)',
+            gradientStart: '#00FF41',
+            gradientEnd: '#00D4FF',
+            glowColor: 'rgba(0, 255, 65, 0.5)',
+            shadowColor: 'rgba(0, 255, 65, 0.3)',
         }
     }
 

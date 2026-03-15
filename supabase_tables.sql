@@ -198,3 +198,82 @@ CREATE POLICY "Enable all for meeting_signals" ON meeting_signals FOR ALL USING 
 
 -- Message de confirmation
 SELECT 'Tables créées avec succès!' as status;
+
+
+-- ============================================================================
+-- Tables pour CryoKeeper 3D
+-- ============================================================================
+
+-- Table pour les congélateurs 3D
+CREATE TABLE IF NOT EXISTS cryo3d_freezers (
+    id TEXT PRIMARY KEY,
+    user_email TEXT NOT NULL,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    location TEXT,
+    color TEXT NOT NULL,
+    capacity INTEGER NOT NULL,
+    shelves JSONB NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Index pour recherche rapide par utilisateur
+CREATE INDEX IF NOT EXISTS idx_cryo3d_freezers_user ON cryo3d_freezers(user_email);
+
+-- Table pour les boîtes 3D
+CREATE TABLE IF NOT EXISTS cryo3d_boxes (
+    id TEXT PRIMARY KEY,
+    user_email TEXT NOT NULL,
+    freezer_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    rows INTEGER NOT NULL,
+    cols INTEGER NOT NULL,
+    color TEXT NOT NULL,
+    tubes JSONB NOT NULL DEFAULT '{}',
+    description TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY (freezer_id) REFERENCES cryo3d_freezers(id) ON DELETE CASCADE
+);
+
+-- Index pour recherche rapide
+CREATE INDEX IF NOT EXISTS idx_cryo3d_boxes_user ON cryo3d_boxes(user_email);
+CREATE INDEX IF NOT EXISTS idx_cryo3d_boxes_freezer ON cryo3d_boxes(freezer_id);
+
+-- RLS (Row Level Security) pour cryo3d_freezers
+ALTER TABLE cryo3d_freezers ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own cryo3d freezers"
+    ON cryo3d_freezers FOR SELECT
+    USING (auth.jwt() ->> 'email' = user_email);
+
+CREATE POLICY "Users can insert their own cryo3d freezers"
+    ON cryo3d_freezers FOR INSERT
+    WITH CHECK (auth.jwt() ->> 'email' = user_email);
+
+CREATE POLICY "Users can update their own cryo3d freezers"
+    ON cryo3d_freezers FOR UPDATE
+    USING (auth.jwt() ->> 'email' = user_email);
+
+CREATE POLICY "Users can delete their own cryo3d freezers"
+    ON cryo3d_freezers FOR DELETE
+    USING (auth.jwt() ->> 'email' = user_email);
+
+-- RLS (Row Level Security) pour cryo3d_boxes
+ALTER TABLE cryo3d_boxes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own cryo3d boxes"
+    ON cryo3d_boxes FOR SELECT
+    USING (auth.jwt() ->> 'email' = user_email);
+
+CREATE POLICY "Users can insert their own cryo3d boxes"
+    ON cryo3d_boxes FOR INSERT
+    WITH CHECK (auth.jwt() ->> 'email' = user_email);
+
+CREATE POLICY "Users can update their own cryo3d boxes"
+    ON cryo3d_boxes FOR UPDATE
+    USING (auth.jwt() ->> 'email' = user_email);
+
+CREATE POLICY "Users can delete their own cryo3d boxes"
+    ON cryo3d_boxes FOR DELETE
+    USING (auth.jwt() ->> 'email' = user_email);

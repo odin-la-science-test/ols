@@ -100,10 +100,10 @@ const transformPlanningForSupabase = (item: any): any => {
     if (!item.date || !item.time) return item;
 
     try {
-        // La date est au format ISO (YYYY-MM-DD) depuis l'input type="date"
+        // La date est au format ISO (YYYY-MM-DD)
         const dateISO = item.date;
 
-        // Parser l'heure (format: "14:30" ou "14:00")
+        // Parser l'heure (format: "14:30")
         const timeParts = item.time.split(':');
         const hour = timeParts[0].padStart(2, '0');
         const minute = (timeParts[1] || '00').padStart(2, '0');
@@ -115,14 +115,18 @@ const transformPlanningForSupabase = (item: any): any => {
             title: item.title,
             description: item.module || '',
             start_date: dateTimeISO,
-            end_date: dateTimeISO, // Même heure pour début et fin
+            end_date: dateTimeISO,
             location: item.resource || '',
             attendees: item.user ? [item.user] : [],
-            reminder: item.reminder || false
+            reminder: item.reminder || false,
+            // Nouveaux champs pour le Registre Scientifique
+            priority: item.priority || 'secondaire',
+            objective: item.objective || '',
+            safety_checked: item.safetyChecked || false,
+            archived: item.archived || false
         };
     } catch (error) {
         console.error('Error transforming planning data:', error, item);
-        // En cas d'erreur, retourner l'item original
         return item;
     }
 };
@@ -133,23 +137,31 @@ const transformPlanningFromSupabase = (item: any): any => {
 
     const startDate = new Date(item.start_date);
 
-    // Garder le format ISO pour la date (YYYY-MM-DD) pour compatibilité avec input type="date"
+    // Format ISO pour la date (YYYY-MM-DD)
     const year = startDate.getFullYear();
     const month = String(startDate.getMonth() + 1).padStart(2, '0');
     const day = String(startDate.getDate()).padStart(2, '0');
     const dateISO = `${year}-${month}-${day}`;
 
-    const time = startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    // Format HH:MM pour l'heure
+    const hours = String(startDate.getHours()).padStart(2, '0');
+    const minutes = String(startDate.getMinutes()).padStart(2, '0');
+    const time = `${hours}:${minutes}`;
 
     return {
         id: item.id,
         title: item.title,
         resource: item.location || '',
         time: time,
-        date: dateISO, // Format ISO pour compatibilité
+        date: dateISO,
         user: item.attendees?.[0] || '',
         module: item.description || '',
-        reminder: item.reminder || false
+        reminder: item.reminder || false,
+        // Nouveaux champs
+        priority: item.priority || 'secondaire',
+        objective: item.objective || '',
+        safetyChecked: item.safety_checked || false,
+        archived: item.archived || false
     };
 };
 
@@ -251,22 +263,30 @@ export const fetchModuleData = async (moduleName: string) => {
             return cachedData;
         }
 
+        let data: any[] = [];
+        let fetchedFromSupabase = false;
+
         // Priorité 1: Supabase si configuré
         if (isSupabaseConfigured()) {
-            console.log('Using Supabase for:', moduleName);
-            const data = await fetchFromSupabase(moduleName);
-            updateCache(moduleName, data); // Mettre en cache
-            return data;
+            console.log('Attempting Supabase fetch for:', moduleName);
+            data = await fetchFromSupabase(moduleName);
+            if (data && data.length > 0) {
+                fetchedFromSupabase = true;
+            }
         }
 
-        // Priorité 2: localStorage fallback
-        console.log('Using SecureStorage fallback for:', moduleName);
-        const data = await getLocalStorageData(moduleName);
+        // Priorité 2: localStorage fallback si Supabase vide ou non configuré
+        if (!fetchedFromSupabase) {
+            console.log('Using SecureStorage fallback for:', moduleName);
+            const localData = await getLocalStorageData(moduleName);
+            data = localData;
+        }
+
         updateCache(moduleName, data); // Mettre en cache
         return data;
     } catch (error) {
         console.error(`Error fetching ${moduleName}:`, error);
-        console.log('Falling back to SecureStorage');
+        console.log('Falling back to SecureStorage on error');
         const data = await getLocalStorageData(moduleName);
         updateCache(moduleName, data);
         return data;

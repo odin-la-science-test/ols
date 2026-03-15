@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import {
     Beaker, Calendar, Mail, HardDrive, Video, Brain, Quote, Book,
     Package, Snowflake, Activity, Wallet, BookOpen, Calculator,
-    Dna, Camera, Layers, ShieldAlert, Zap, Share2, Box,
+    Dna, Camera, Layers, ShieldAlert, Zap, Share2, Box, Gamepad2,
     TrendingUp, Grid, UserCheck, Search, FileText, Clock, GitBranch, Bot, Edit3, GraduationCap,
     Shield, Microscope, Cloud, Building, MapPin, Globe, Heart, CheckCircle, Briefcase, Award, Users, Scale, Lightbulb
 } from 'lucide-react';
@@ -84,7 +84,7 @@ const Hugin = () => {
 
     const modules = [
         // Core
-        { id: 'messaging', name: 'Messagerie', desc: 'Gestion des messages et communications', icon: <Mail size={24} />, category: 'Core', path: '/hugin/messaging' },
+        { id: 'messaging', name: 'Messagerie', desc: 'Gestion des messages et communications', icon: <Mail size={24} />, category: 'Core', path: '/hugin/chat' },
         { id: 'planning', name: 'Planning', desc: 'Planification et calendrier', icon: <Calendar size={24} />, category: 'Core', path: '/hugin/planning' },
         { id: 'documents', name: 'Documents', desc: 'Gestion documentaire', icon: <HardDrive size={24} />, category: 'Core', path: '/hugin/documents' },
         { id: 'inventory', name: 'Inventaire', desc: 'Gestion de l\'inventaire', icon: <Beaker size={24} />, category: 'Core', path: '/hugin/inventory' },
@@ -96,8 +96,8 @@ const Hugin = () => {
         { id: 'it_archive', name: 'Archives IT', desc: 'Archivage automatique', icon: <HardDrive size={24} />, category: 'Core', path: '/hugin/it-archive' },
 
         // Lab Management
-        { id: 'cryo', name: 'Cryogénie', desc: 'Gestion des échantillons cryogéniques', icon: <Snowflake size={24} />, category: 'Lab', path: '/hugin/cryo' },
-        { id: 'equip', name: 'Équipements', desc: 'Gestion des équipements', icon: <Activity size={24} />, category: 'Lab', path: '/hugin/equip' },
+        { id: 'cryo', name: 'Cryogénie', desc: 'Gestion des échantillons cryogéniques', icon: <Snowflake size={24} />, category: 'Lab', path: '/hugin/cryo3d' },
+        { id: 'equip', name: 'Réservation (PSM)', desc: 'Réservation de salles et équipements', icon: <Activity size={24} />, category: 'Lab', path: '/hugin/equip' },
         { id: 'budget', name: 'Budget', desc: 'Gestion budgétaire', icon: <Wallet size={24} />, category: 'Lab', path: '/hugin/budget' },
         { id: 'safety', name: 'Sécurité', desc: 'Protocoles de sécurité', icon: <ShieldAlert size={24} />, category: 'Lab', path: '/hugin/safety' },
         { id: 'sop', name: 'Procédures', desc: 'Procédures opératoires standard', icon: <BookOpen size={24} />, category: 'Lab', path: '/hugin/sop' },
@@ -142,7 +142,9 @@ const Hugin = () => {
         { id: 'lab-equipment', name: 'Fiches Machines', desc: 'Base de données des équipements de laboratoire avec guides d\'utilisation', icon: <Microscope size={24} />, category: 'Scholar', path: '/hugin/lab-equipment' },
         { id: 'qcm-multi', name: 'QCM Multi-Disciplines', desc: '2000+ questions pour tester vos connaissances scientifiques', icon: <Brain size={24} />, category: 'Scholar', path: '/hugin/qcm-multi-disciplines' },
         { id: 'lms', name: 'Plateforme d\'Apprentissage', desc: 'Système de gestion de l\'apprentissage (LMS type Moodle)', icon: <BookOpen size={24} />, category: 'Scholar', path: '/hugin/learning-management' },
-        { id: 'cloud-storage', name: 'Stockage Cloud', desc: 'Stockage et partage de fichiers sécurisé (type Nextcloud amélioré)', icon: <Cloud size={24} />, category: 'Scholar', path: '/hugin/cloud-storage' }
+        { id: 'cloud-storage', name: 'Stockage Cloud', desc: 'Stockage et partage de fichiers sécurisé (type Nextcloud amélioré)', icon: <Cloud size={24} />, category: 'Scholar', path: '/hugin/cloud-storage' },
+        { id: 'biorender', name: 'Illustration', desc: 'Conception de schémas et diagrammes biologiques', icon: <Dna size={24} />, category: 'Analysis', path: '/hugin/biorender' },
+        { id: 'chem-editor', name: 'Éditeur Chimique', desc: 'Dessin et analyse de structures moléculaires complexes', icon: <Edit3 size={24} />, category: 'Scholar', path: '/hugin/molecule-editor' }
     ];
 
     // Modules autorisés pour les étudiants (Scholar uniquement)
@@ -163,6 +165,7 @@ const Hugin = () => {
         'qcm-multi',              // QCM Multi-Disciplines
         'lms',                    // Plateforme d'Apprentissage
         'cloud-storage',          // Stockage Cloud
+        'chem-editor',            // Éditeur Chimique
         // Modules Universitaires - Accessibles aux étudiants
         'programs',               // Gestion des Programmes
         'enrollment',             // Inscriptions
@@ -186,7 +189,8 @@ const Hugin = () => {
         'accessibility-support',  // Handicap & Accessibilité
         'campus-services',        // Services Campus
         'vae-assessment',         // VAE/VAP
-        'innovative-pedagogy'     // Pédagogie Innovante
+        'innovative-pedagogy',    // Pédagogie Innovante
+        'reservations'            // Réservation PSM
     ];
 
     // Modules Scholar à exclure pour les professionnels
@@ -271,7 +275,7 @@ const Hugin = () => {
                         id: orderItem.id,
                         name: betaModule.name,
                         desc: betaModule.description,
-                        icon: <span style={{ fontSize: '1.5rem' }}>🧪</span>,
+                        icon: <Microscope size={24} />,
                         category: betaModule.category,
                         path: betaModule.path,
                         isBeta: true // Marqueur pour le style
@@ -553,19 +557,23 @@ const Hugin = () => {
                                             }}
                                         >
                                             {isBeta && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    top: '0.5rem',
-                                                    right: '0.5rem',
-                                                    padding: '0.25rem 0.6rem',
-                                                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                                    borderRadius: '6px',
-                                                    fontSize: '0.7rem',
-                                                    color: 'white',
-                                                    fontWeight: 700,
-                                                    boxShadow: '0 2px 8px rgba(245, 158, 11, 0.4)'
-                                                }}>
-                                                    🧪 BETA
+                                                <div 
+                                                    className="animate-pulse"
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: '0.5rem',
+                                                        right: '0.5rem',
+                                                        padding: '0.25rem 0.6rem',
+                                                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                                                        borderRadius: '6px',
+                                                        fontSize: '0.7rem',
+                                                        color: 'white',
+                                                        fontWeight: 700,
+                                                        boxShadow: '0 2px 8px rgba(245, 158, 11, 0.4)',
+                                                        zIndex: 10
+                                                    }}
+                                                >
+                                                    BETA
                                                 </div>
                                             )}
                                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>

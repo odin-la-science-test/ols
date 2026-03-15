@@ -13,7 +13,7 @@ const MobileHugin = () => {
       icon: Mail,
       title: 'Messagerie',
       description: 'Messages et communications',
-      path: '/hugin/messaging',
+      path: '/hugin/chat',
       color: 'var(--mobile-primary)'
     },
     {

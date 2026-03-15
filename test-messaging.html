@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Messagerie Interne</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 1rem 2rem;
+            background: #2a2a2a;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .info-panel {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .info-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: #2a2a2a;
+            border-radius: 8px;
+            border: 1px solid #3a3a3a;
+        }
+
+        .info-section h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #6366f1;
+        }
+
+        .info-section p {
+            line-height: 1.6;
+            color: #cccccc;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-section li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .info-section li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-badge.success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .status-badge.warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .status-badge.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .code-block {
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .button:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 Test Messagerie Interne</h1>
+    </div>
+
+    <div class="content">
+        <div class="info-panel">
+            <div class="info-section">
+                <h2>État du Module</h2>
+                <p>
+                    <strong>Module:</strong> Messagerie Interne (Discord-like)<br>
+                    <strong>Status:</strong> <span class="status-badge warning">En développement</span><br>
+                    <strong>Version:</strong> 0.1.0-alpha
+                </p>
+            </div>
+
+            <div class="info-section">
+                <h2>Composants Implémentés</h2>
+                <ul>
+                    <li>Structure de dossiers du module</li>
+                    <li>Types TypeScript (User, Channel, Message, Role)</li>
+                    <li>Schéma de base de données SQLite</li>
+                    <li>Permission Service</li>
+                    <li>Channel Service</li>
+                    <li>Message Service</li>
+                    <li>WebSocket Server</li>
+                    <li>WebSocket Manager</li>
+                    <li>Reconnexion automatique</li>
+                    <li>MessagingContainer (composant principal)</li>
+                    <li>ChannelList (liste des canaux)</li>
+                    <li>MessageView (affichage des messages)</li>
+                    <li>MessageInput (saisie de messages)</li>
+                    <li>UserList (liste des utilisateurs)</li>
+                    <li>Formatage Markdown</li>
+                    <li>Système de notifications</li>
+                    <li>Sanitization XSS</li>
+                    <li>Rate limiting</li>
+                    <li>Gestion d'erreurs</li>
+                    <li>Gestion des timestamps</li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h2>Composants à Implémenter</h2>
+                <ul style="opacity: 0.6;">
+                    <li style="list-style-type: '○'; padding-left: 1.5rem;">Événements WebSocket complets</li>
+                    <li style="list-style-type: '○'; padding-left: 1.5rem;">Recherche de messages</li>
+                    <li style="list-style-type: '○'; padding-left: 1.5rem;">Gestion des membres de canal</li>
+                    <li style="list-style-type: '○'; padding-left: 1.5rem;">Contrôle d'accès complet</li>
+                    <li style="list-style-type: '○'; padding-left: 1.5rem;">Endpoints REST API</li>
+                    <li style="list-style-type: '○'; padding-left: 1.5rem;">Composants UI avancés</li>
+                    <li style="list-style-type: '○'; padding-left: 1.5rem;">Tests de propriétés</li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h2>Problème Actuel</h2>
+                <p>
+                    <span class="status-badge error">Erreur de chargement</span>
+                </p>
+                <p>
+                    Le module de messagerie ne se charge pas correctement dans l'application principale.
+                    Cela peut être dû à:
+                </p>
+                <ul>
+                    <li>Le serveur WebSocket n'est pas démarré</li>
+                    <li>Une dépendance manquante</li>
+                    <li>Un problème d'import/export</li>
+                    <li>Une erreur dans le lazy loading</li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h2>Démarrage du Serveur WebSocket</h2>
+                <p>Pour démarrer le serveur WebSocket, exécutez:</p>
+                <div class="code-block">
+npm run messaging:server
+                </div>
+                <p>Ou manuellement:</p>
+                <div class="code-block">
+node src/messaging-api/server.ts
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h2>Accès au Module</h2>
+                <p>Une fois le serveur démarré, accédez au module via:</p>
+                <div class="code-block">
+http://localhost:3000/hugin/messaging
+                </div>
+                <p style="margin-top: 1rem;">
+                    <a href="/hugin/messaging" class="button">Ouvrir la Messagerie</a>
+                </p>
+            </div>
+
+            <div class="info-section">
+                <h2>Documentation</h2>
+                <p>Pour plus d'informations, consultez:</p>
+                <ul>
+                    <li>Requirements: .kiro/specs/internal-messaging/requirements.md</li>
+                    <li>Design: .kiro/specs/internal-messaging/design.md</li>
+                    <li>Tasks: .kiro/specs/internal-messaging/tasks.md</li>
+                    <li>README: src/messaging-core/README.md</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

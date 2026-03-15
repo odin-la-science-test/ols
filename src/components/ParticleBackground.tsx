@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useMemo, useState } from 'react';
+import { SnakeGame } from './SnakeGame';
 
 interface Particle {
   x: number;
@@ -42,9 +43,38 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
   const isInitializedRef = useRef(false);
   const [clickCount, setClickCount] = useState(0);
   const [showTombolaModal, setShowTombolaModal] = useState(false);
+  const [colorSequence, setColorSequence] = useState<string[]>([]);
+  const [showSnake, setShowSnake] = useState(false);
+  
+  // Séquence secrète: bleu, bleu, vert, bleu, vert, vert
+  const SECRET_SEQUENCE = ['blue', 'blue', 'green', 'blue', 'green', 'green'];
 
   // Mémoriser les couleurs pour éviter les re-renders
   const memoizedColors = useMemo(() => colors, [colors.join(',')]);
+
+  // Fonction pour déterminer la couleur simplifiée
+  const getSimplifiedColor = (hexColor: string): string => {
+    console.log('🎨 Analyse couleur:', hexColor);
+    
+    // Convertir hex en RGB pour analyse
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    console.log('RGB:', { r, g, b });
+    
+    // Déterminer si c'est plutôt bleu ou vert basé sur les composantes RGB
+    // Bleu: composante bleue dominante
+    // Vert: composante verte ou rouge dominante (pour rose/cyan)
+    if (b > r && b > g) {
+      console.log('→ Détecté comme BLEU');
+      return 'blue';
+    } else {
+      console.log('→ Détecté comme VERT');
+      return 'green';
+    }
+  };
 
   // Gestion du clic sur les particules
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -63,19 +93,22 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
 
     // Vérifier si une particule a été cliquée
     let particleClicked = false;
+    let clickedColor = '';
+    
     particlesRef.current.forEach((particle, index) => {
-      if (particle.clicked) return; // Déjà cliquée
+      if (particle.clicked || particleClicked) return; // Déjà cliquée ou déjà trouvé une particule
       
       const dx = particle.x - clickX;
       const dy = particle.y - clickY;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
       if (distance < particle.size + 10) { // Zone de clic élargie
-        console.log('💥 Particule touchée!', { index, distance, size: particle.size });
+        console.log('💥 Particule touchée!', { index, distance, size: particle.size, color: particle.color });
         
         particle.clicked = true;
         particle.exploding = true;
         particle.explosionProgress = 0;
+        clickedColor = getSimplifiedColor(particle.color);
         
         // Créer des particules d'explosion
         particle.explosionParticles = [];
@@ -106,6 +139,39 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
         }
       }
     });
+
+    // Gérer la séquence de couleurs pour le Snake
+    if (particleClicked && clickedColor) {
+      const newSequence = [...colorSequence, clickedColor];
+      console.log('🎨 Séquence actuelle:', newSequence);
+      console.log('🎯 Séquence attendue:', SECRET_SEQUENCE);
+      console.log('📊 Progression:', `${newSequence.length}/${SECRET_SEQUENCE.length}`);
+      
+      // Vérifier si la séquence correspond au début du code secret
+      let isValid = true;
+      for (let i = 0; i < newSequence.length; i++) {
+        if (newSequence[i] !== SECRET_SEQUENCE[i]) {
+          isValid = false;
+          console.log(`❌ Erreur à la position ${i}: attendu "${SECRET_SEQUENCE[i]}", reçu "${newSequence[i]}"`);
+          break;
+        }
+      }
+      
+      if (isValid) {
+        console.log('✅ Séquence valide jusqu\'ici!');
+        setColorSequence(newSequence);
+        
+        // Vérifier si la séquence complète est correcte
+        if (newSequence.length === SECRET_SEQUENCE.length) {
+          console.log('🎉 CODE SECRET DÉBLOQUÉ! Ouverture du Snake...');
+          setShowSnake(true);
+          setColorSequence([]); // Réinitialiser
+        }
+      } else {
+        console.log('❌ Séquence incorrecte, réinitialisation');
+        setColorSequence([]); // Réinitialiser si erreur
+      }
+    }
   };
 
   // Charger le compteur au démarrage
@@ -300,6 +366,43 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = ({
           ✨ {clickCount}/100 particules
         </div>
       )}
+
+      {/* Indicateur de séquence */}
+      {enableClickable && colorSequence.length > 0 && (
+        <div style={{
+          position: 'fixed',
+          top: '4rem',
+          right: '1rem',
+          background: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          padding: '0.5rem 1rem',
+          borderRadius: '1rem',
+          fontSize: '0.75rem',
+          zIndex: 100,
+          backdropFilter: 'blur(10px)',
+          border: '2px solid #6366f1',
+          display: 'flex',
+          gap: '0.25rem',
+          alignItems: 'center'
+        }}>
+          <span style={{ marginRight: '0.5rem' }}>🔐</span>
+          {colorSequence.map((color, i) => (
+            <div key={i} style={{
+              width: '12px',
+              height: '12px',
+              borderRadius: '50%',
+              background: color === 'blue' ? '#6366f1' : '#10b981',
+              border: '1px solid white'
+            }} />
+          ))}
+          <span style={{ marginLeft: '0.5rem', opacity: 0.6 }}>
+            {colorSequence.length}/{SECRET_SEQUENCE.length}
+          </span>
+        </div>
+      )}
+
+      {/* Jeu Snake */}
+      {showSnake && <SnakeGame onClose={() => setShowSnake(false)} />}
 
       {/* Modal Tombola */}
       {showTombolaModal && (

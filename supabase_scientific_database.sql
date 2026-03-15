@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS scientific_publications (
     
     -- Citations
     citation_count INTEGER DEFAULT 0,
-    references TEXT[], -- DOIs ou IDs
+    reference_ids TEXT[], -- DOIs ou IDs
     cited_by TEXT[], -- DOIs ou IDs
     
     -- Contenu enrichi

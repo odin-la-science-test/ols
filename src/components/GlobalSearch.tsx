@@ -29,7 +29,7 @@ const GlobalSearch = ({ isOpen, onClose }: GlobalSearchProps) => {
   const searchData: SearchResult[] = [
     { id: '1', title: 'Munin', description: 'Base de connaissances scientifiques', path: '/munin', type: 'page', icon: BookOpen },
     { id: '2', title: 'Hugin', description: 'Outils de laboratoire', path: '/hugin', type: 'page', icon: FlaskConical },
-    { id: '3', title: 'Messagerie', description: 'Messages et communications', path: '/hugin/messaging', type: 'module', icon: FlaskConical },
+    { id: '3', title: 'Messagerie', description: 'Messages et communications', path: '/hugin/chat', type: 'module', icon: FlaskConical },
     { id: '4', title: 'Planning', description: 'Gestion du temps', path: '/hugin/planning', type: 'module', icon: FlaskConical },
     { id: '5', title: 'Documents', description: 'Fichiers et archives', path: '/hugin/documents', type: 'module', icon: FlaskConical },
     { id: '6', title: 'Inventaire', description: 'Gestion des stocks', path: '/hugin/inventory', type: 'module', icon: FlaskConical },

@@ -145,7 +145,7 @@ const MobileHome = () => {
       <div className="mobile-content">
         {/* Quick Stats */}
         <div className="mobile-grid" style={{ marginBottom: '1.5rem' }}>
-          <div className="mobile-card" onClick={() => navigate('/hugin/messaging')} style={{ textAlign: 'center' }}>
+          <div className="mobile-card" onClick={() => navigate('/hugin')} style={{ textAlign: 'center' }}> {/* MESSAGING DISABLED */}
             <div className="mobile-icon mobile-icon-primary" style={{ margin: '0 auto 0.75rem' }}>
               <Mail size={24} />
             </div>

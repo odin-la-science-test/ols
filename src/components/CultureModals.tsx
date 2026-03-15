@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Save, Beaker, Calendar, Clock, Thermometer, Snowflake, FileText, History as HistoryIcon, Activity } from 'lucide-react';
+import { X, Save, Beaker, Calendar, Clock, Thermometer, Snowflake, FileText, History as LucideHistory, Activity, Plus, Edit } from 'lucide-react';
 import type { Culture, Milieu } from '../pages/hugin/CultureCells';
 
 interface CultureModalProps {
@@ -435,7 +435,7 @@ export const MilieuModal = ({ show, onClose, onSave, theme }: MilieuModalProps) 
                     zIndex: 10
                 }}>
                     <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        🧪 Nouveau milieu
+                        <Activity size={24} /> Nouveau milieu
                     </h2>
                     <button onClick={onClose} style={{
                         background: 'none',
@@ -909,12 +909,12 @@ export const HistoryModal = ({ show, onClose, culture, theme }: HistoryModalProp
 
     const getHistoryIcon = (type: string) => {
         switch (type) {
-            case 'creation': return '🆕';
-            case 'repiquage': return '🔄';
-            case 'cryo': return '❄️';
-            case 'reprise': return '🔥';
-            case 'modification': return '✏️';
-            default: return '📝';
+            case 'creation': return <Plus size={16} />;
+            case 'repiquage': return <Activity size={16} />;
+            case 'cryo': return <Snowflake size={16} />;
+            case 'reprise': return <Clock size={16} />;
+            case 'modification': return <Edit size={16} />;
+            default: return <LucideHistory size={16} />;
         }
     };
 
@@ -965,7 +965,7 @@ export const HistoryModal = ({ show, onClose, culture, theme }: HistoryModalProp
                 }}>
                     <div>
                         <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <HistoryIcon size={24} />
+                            <LucideHistory size={24} />
                             Historique
                         </h2>
                         <p style={{ margin: '0.5rem 0 0 0', color: c.textSecondary, fontSize: '0.9rem' }}>
@@ -1072,8 +1072,8 @@ export const HistoryModal = ({ show, onClose, culture, theme }: HistoryModalProp
                                                     )}
                                                     {event.type === 'cryo' && (
                                                         <div>
-                                                            {event.details.cryoLocation && <div>📍 {event.details.cryoLocation}</div>}
-                                                            {event.details.cryoAgent && <div>🧪 {event.details.cryoAgent}</div>}
+                                                            {event.details.cryoLocation && <div>Emplacement: {event.details.cryoLocation}</div>}
+                                                            {event.details.cryoAgent && <div>Agent: {event.details.cryoAgent}</div>}
                                                         </div>
                                                     )}
                                                     {event.type === 'creation' && event.details.nom && (

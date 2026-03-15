@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import MobileBottomNav from '../../components/MobileBottomNav';
 import Avatar from '../../components/Avatar';
 import { refreshCache } from '../../utils/cacheRefresh';
+import { ThemeSettings } from '../../components/ThemeSettings';
 import '../../styles/mobile-app.css';
 
 const MobileSettings = () => {
@@ -162,6 +163,11 @@ const MobileSettings = () => {
         <h2 style={{ fontSize: '1.1rem', fontWeight: 700, margin: '2rem 0 1rem' }}>
           Paramètres
         </h2>
+
+        {/* Theme Settings */}
+        <div className="mobile-card" style={{ marginBottom: '1.5rem' }}>
+          <ThemeSettings />
+        </div>
 
         {settingsItems.map((item, index) => {
           const Icon = item.icon;

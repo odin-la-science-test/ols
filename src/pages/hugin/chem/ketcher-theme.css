@@ -1,0 +1,27 @@
+/* Ketcher Theme Overrides */
+/* Ketcher Theme Overrides */
+.ketcher-container {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  background-color: #ffffff !important;
+}
+
+.ketcher-container > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Because our app is in Dark Mode globally, some inherited CSS might break Ketcher's native light UI.
+   We explicitly reset the text color to black inside Ketcher so its menus and buttons remain readable. */
+.ketcher-container * {
+  color: #333333;
+}
+
+/* Let Ketcher's SVGs keep their intended colors */
+.ketcher-container svg path, 
+.ketcher-container svg rect, 
+.ketcher-container svg circle {
+  color: unset;
+}

@@ -282,16 +282,18 @@ const CultureTracking = () => {
     };
 
     const scheduleCalendarEvent = async (culture: any, nextDateStr: string) => {
-        const currentUser = localStorage.getItem('currentUser') || 'Lars Volkov';
         const eventData = {
-            id: Date.now(),
+            id: Date.now().toString(),
             title: `Repiquage : ${culture.nom}`,
             resource: 'Salle de Culture A',
             time: '09:00',
             date: nextDateStr,
-            user: currentUser,
             module: 'Suivi de Culture',
-            reminder: true
+            reminder: true,
+            priority: 'importante',
+            objective: `Passage de la lignée ${culture.nom}. Intervalle de ${culture.intervalle} jours.`,
+            safetyChecked: false,
+            archived: false
         };
 
         try {
@@ -547,198 +549,143 @@ const CultureTracking = () => {
 
 
     return (
-        <div className={`culture-manager-root ${theme}`} style={{ minHeight: '100vh', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+        <div style={{ 
+            minHeight: '100vh', 
+            background: 'var(--bg-primary)', 
+            color: 'var(--text-primary)', 
+            fontFamily: 'var(--font-family)',
+            paddingTop: '80px'
+        }}>
             <style>{`
-                :root {
-                    --cosmic-bg-primary: #0f0f23;
-                    --cosmic-bg-secondary: #1a1a2e;
-                    --cosmic-bg-card: #16213e;
-                    --cosmic-text-primary: #ffffff;
-                    --cosmic-text-secondary: #b8b8d1;
-                    --cosmic-border: #2d2d44;
-                    --cosmic-accent: #667eea;
-                    --cosmic-accent-2: #764ba2;
-                    --cosmic-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-                    --cosmic-success: #10b981;
-                    --cosmic-danger: #ef4444;
-                }
-
-                .culture-manager-root {
-                    background: var(--cosmic-bg-primary);
-                    color: var(--cosmic-text-primary);
-                    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-                    min-height: 100vh;
-                    padding-top: 100px;
-                    transition: all 0.5s ease;
-                }
-
-                .header-fixed {
-                    background: rgba(26, 26, 46, 0.8);
-                    backdrop-filter: blur(15px);
-                    padding: 20px 40px;
-                    border-bottom: 2px solid var(--cosmic-border);
-                    position: fixed;
-                    top: 0; left: 0; right: 0;
-                    z-index: 1000;
-                    box-shadow: var(--cosmic-shadow);
-                    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                }
-
-                .header-hidden { transform: translateY(-100%); }
-
                 .panel-card {
-                    background: var(--cosmic-bg-secondary);
-                    border-radius: 20px;
-                    padding: 25px;
-                    border: 2px solid var(--cosmic-border);
-                    box-shadow: var(--cosmic-shadow);
+                    background: var(--card-bg);
+                    border-radius: 12px;
+                    padding: 2rem;
+                    border: 1px solid var(--border-color);
+                    backdrop-filter: blur(10px);
                     transition: all 0.3s ease;
                 }
 
-                .panel-card:hover {
-                    border-color: var(--cosmic-accent);
-                }
-
                 .panel-title {
-                    font-size: 1.3em;
-                    font-weight: 700;
-                    margin-bottom: 20px;
-                    background: linear-gradient(135deg, var(--cosmic-accent), var(--cosmic-accent-2));
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
+                    font-size: 1.1rem;
+                    font-weight: 800;
+                    margin-bottom: 1.5rem;
+                    color: var(--text-primary);
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
                     display: flex;
                     align-items: center;
                     gap: 10px;
                 }
 
-                .text-gradient {
-                    background: linear-gradient(135deg, var(--cosmic-accent), var(--cosmic-accent-2));
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
-                }
-
                 .btn-action {
-                    padding: 10px 20px;
-                    border-radius: 10px;
-                    font-weight: 600;
-                    transition: all 0.3s ease;
+                    padding: 0.6rem 1.2rem;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    transition: all 0.2s ease;
                     display: inline-flex;
                     align-items: center;
                     gap: 8px;
                     border: none;
                     cursor: pointer;
-                    font-size: 0.9em;
+                    font-size: 0.85rem;
                 }
 
                 .btn-primary { 
-                    background: linear-gradient(135deg, var(--cosmic-accent), var(--cosmic-accent-2)); 
-                    color: white; 
-                    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+                    background: var(--accent-primary); 
+                    color: #ffffff; 
                 }
-                .btn-primary:hover { 
-                    transform: translateY(-2px); 
-                    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5); 
-                }
+                .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
 
                 .btn-secondary { 
-                    background: var(--cosmic-bg-card); 
-                    color: var(--cosmic-text-primary); 
-                    border: 2px solid var(--cosmic-border); 
+                    background: var(--bg-tertiary); 
+                    color: var(--text-primary); 
+                    border: 1px solid var(--border-color); 
                 }
-                .btn-secondary:hover { 
-                    border-color: var(--cosmic-accent); 
-                    transform: translateY(-2px); 
-                }
+                .btn-secondary:hover { background: var(--bg-secondary); }
                 .btn-secondary.active {
-                    background: var(--cosmic-accent);
-                    color: white;
-                    border-color: var(--cosmic-accent);
+                    background: var(--accent-primary);
+                    color: #ffffff;
+                    border-color: var(--accent-primary);
                 }
 
                 .input-field {
                     width: 100%;
-                    padding: 12px 15px;
-                    background: var(--cosmic-bg-card);
-                    border: 2px solid var(--cosmic-border);
-                    border-radius: 10px;
-                    color: var(--cosmic-text-primary);
-                    font-size: 1em;
-                    transition: all 0.3s ease;
+                    padding: 0.75rem;
+                    background: var(--bg-secondary);
+                    border: 1px solid var(--border-color);
+                    border-radius: 8px;
+                    color: var(--text-primary);
+                    font-size: 0.9rem;
                     outline: none;
                 }
 
-                .input-field:focus {
-                    border-color: var(--cosmic-accent);
-                    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
-                }
-
                 .stat-card {
-                    background: var(--cosmic-bg-card);
-                    padding: 25px;
-                    border-radius: 15px;
-                    border: 2px solid var(--cosmic-border);
+                    background: var(--card-bg);
+                    padding: 1.5rem;
+                    border-radius: 12px;
+                    border: 1px solid var(--border-color);
                     text-align: center;
-                    transition: all 0.3s ease;
-                }
-
-                .stat-card:hover {
-                    transform: translateY(-5px);
-                    border-color: var(--cosmic-accent);
-                    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
                 }
 
                 .stat-value {
-                    font-size: 2em;
-                    font-weight: 700;
-                    background: linear-gradient(135deg, var(--cosmic-accent), var(--cosmic-accent-2));
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
-                    margin-bottom: 5px;
-                }
-
-                .simulation-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 30px;
-                    margin-top: 30px;
-                }
-
-                .chart-container {
-                    background: var(--cosmic-bg-card);
-                    border-radius: 15px;
-                    padding: 10px;
-                    border: 2px solid var(--cosmic-border);
-                    min-height: 500px;
-                }
-
-                .badge {
-                    padding: 4px 12px;
-                    border-radius: 20px;
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    background: rgba(102, 126, 234, 0.1);
-                    color: var(--cosmic-accent);
-                    border: 1px solid var(--cosmic-accent);
+                    font-size: 1.8rem;
+                    font-weight: 900;
+                    color: var(--accent-primary);
+                    margin-bottom: 0.25rem;
                 }
 
                 .culture-item {
-                    background: var(--cosmic-bg-card);
-                    padding: 15px;
-                    border-radius: 12px;
-                    margin-bottom: 12px;
-                    border: 1px solid var(--cosmic-border);
+                    background: var(--bg-secondary);
+                    padding: 1rem 1.5rem;
+                    border-radius: 10px;
+                    margin-bottom: 0.75rem;
+                    border: 1px solid var(--border-color);
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    transition: all 0.3s ease;
+                    transition: all 0.2s;
                 }
 
                 .culture-item:hover {
-                    border-color: var(--cosmic-accent);
-                    transform: translateX(5px);
+                    border-color: var(--accent-primary);
+                    transform: translateX(4px);
+                }
+
+                .modal-overlay {
+                    position: fixed;
+                    top: 0; left: 0; right: 0; bottom: 0;
+                    background: rgba(15, 23, 42, 0.7);
+                    backdrop-filter: blur(8px);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 2000;
+                    padding: 2rem;
+                }
+
+                .modal-content-panel {
+                    background: var(--bg-primary);
+                    border: 1px solid var(--border-color);
+                    box-shadow: var(--shadow-xl);
+                    animation: modalScale 0.3s ease-out;
+                }
+
+                @keyframes modalScale {
+                    from { opacity: 0; transform: scale(0.95); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+
+                .badge {
+                    padding: 0.2rem 0.6rem;
+                    border-radius: 4px;
+                    font-size: 0.7rem;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    background: var(--bg-tertiary);
+                    border: 1px solid var(--border-color);
+                    color: var(--text-secondary);
                 }
             `}</style>
 
@@ -747,73 +694,82 @@ const CultureTracking = () => {
 
 
             {/* Fixed Header */}
-            <header className={`header-fixed ${!visibleHeader ? 'header-hidden' : ''}`}>
-                <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <button onClick={() => navigate('/hugin')} style={{ background: 'none', border: 'none', color: 'var(--cosmic-text-secondary)', cursor: 'pointer' }}>
-                            <ChevronRight size={20} style={{ transform: 'rotate(180deg)' }} />
-                        </button>
-                        <h1 className="text-gradient" style={{ fontSize: '1.4rem', fontWeight: 800 }}>🦠 BactSim Scientifique</h1>
+            <header style={{ 
+                background: 'var(--bg-primary)', 
+                backdropFilter: 'blur(15px)', 
+                padding: '1.25rem 2.5rem', 
+                borderBottom: '1px solid var(--border-color)', 
+                position: 'fixed', 
+                top: 0, left: 0, right: 0, 
+                zIndex: 1000,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                boxShadow: 'var(--shadow-lg)',
+                visibility: visibleHeader ? 'visible' : 'hidden',
+                transform: visibleHeader ? 'translateY(0)' : 'translateY(-100%)',
+                transition: 'all 0.3s ease'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    <button onClick={() => navigate('/hugin')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                        <ChevronRight size={20} style={{ transform: 'rotate(180deg)' }} />
+                    </button>
+                    <div>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Hugin Lab Research</p>
+                        <h1 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#ffffff', margin: 0 }}>Suivi de Cultures Cellulaires</h1>
                     </div>
+                </div>
 
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <div className="panel-card" style={{ display: 'flex', padding: '4px', borderRadius: '12px', gap: '5px' }}>
-                            <button className={`btn-action btn-secondary ${activeSection === 'cultures' ? 'active' : ''}`} onClick={() => setActiveSection('cultures')}>🔬 Cultures</button>
-                            <button className={`btn-action btn-secondary ${activeSection === 'milieux' ? 'active' : ''}`} onClick={() => setActiveSection('milieux')}>🧪 Milieux</button>
-                            <button className={`btn-action btn-secondary ${activeSection === 'cryo' ? 'active' : ''}`} onClick={() => setActiveSection('cryo')}>❄️ Cryo</button>
-                        </div>
-                        <div className="panel-card" style={{ display: 'flex', padding: '4px', borderRadius: '12px', gap: '5px' }}>
-                            <button className="btn-action btn-primary" onClick={() => openCultureModal()}>➕ Souche</button>
-                            <button className="btn-action btn-secondary" onClick={() => openMilieuModal()}>➕ Milieu</button>
-                        </div>
-                        <div className="panel-card" style={{ display: 'flex', padding: '4px', borderRadius: '12px', gap: '5px' }}>
-                            <button className="btn-action btn-secondary" onClick={exportData} title="Exporter"><Download size={18} /></button>
-                            <button className="btn-action btn-secondary" onClick={() => fileInputRef.current?.click()} title="Importer"><Upload size={18} /></button>
-                        </div>
-                        <input type="file" ref={fileInputRef} onChange={importData} style={{ display: 'none' }} accept=".json" />
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <div style={{ background: 'var(--bg-secondary)', padding: '0.25rem', borderRadius: '8px', display: 'flex', gap: '4px', border: '1px solid var(--border-color)' }}>
+                        <button className={`btn-action btn-secondary ${activeSection === 'cultures' ? 'active' : ''}`} onClick={() => setActiveSection('cultures')}>Cultures</button>
+                        <button className={`btn-action btn-secondary ${activeSection === 'milieux' ? 'active' : ''}`} onClick={() => setActiveSection('milieux')}>Milieux</button>
+                        <button className={`btn-action btn-secondary ${activeSection === 'cryo' ? 'active' : ''}`} onClick={() => setActiveSection('cryo')}>Cryo</button>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button className="btn-action btn-primary" onClick={() => openCultureModal()}>Souche</button>
+                        <button className="btn-action btn-secondary" onClick={() => openMilieuModal()}>Milieu</button>
                     </div>
                 </div>
             </header>
 
             <main className="container" style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 20px' }}>
-
                 {activeSection === 'cultures' && (
                     <>
-                        {/* Simulation Dashboard */}
                         <div className="simulation-grid">
                             <div className="panel-card">
                                 <h3 className="panel-title"><Beaker size={20} /> Paramètres d'Environnement</h3>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                                     <div>
-                                        <label style={{ fontSize: '0.8em', color: 'var(--cosmic-text-secondary)' }}>Type de Culture</label>
+                                        <label style={{ fontSize: '0.8em', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase' }}>Mode de Culture</label>
                                         <select className="input-field" value={envParams.type} onChange={e => setEnvParams({ ...envParams, type: e.target.value })}>
-                                            <option value="batch">Batch (Fermé)</option>
-                                            <option value="fed-batch">Fed-Batch</option>
-                                            <option value="chemostat">Chémostat</option>
+                                            <option value="batch">Batch (Système Fermé)</option>
+                                            <option value="fed-batch">Fed-Batch (Semi-ouvert)</option>
+                                            <option value="chemostat">Chémostat (Continu)</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.8em', color: 'var(--cosmic-text-secondary)' }}>Modèle Mathématique</label>
+                                        <label style={{ fontSize: '0.8em', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase' }}>Modèle de Cinétique</label>
                                         <select className="input-field" value={envParams.modelType} onChange={e => setEnvParams({ ...envParams, modelType: e.target.value })}>
-                                            <option value="monod">Monod (Standard)</option>
-                                            <option value="logistic">Logistique (Verhulst)</option>
+                                            <option value="monod">Modèle de Monod</option>
+                                            <option value="logistic">Modèle Logistique (Verhulst)</option>
                                             <option value="lotka-volterra">Lotka-Volterra (Compétition)</option>
                                             <option value="pkpd">PK/PD (Antibiotiques)</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.8em', color: 'var(--cosmic-text-secondary)' }}>Substrat Initial (g/L)</label>
+                                        <label style={{ fontSize: '0.8em', color: 'var(--text-secondary)' }}>Substrat Initial (g/L)</label>
                                         <input type="number" className="input-field" value={envParams.substrate} onChange={e => setEnvParams({ ...envParams, substrate: parseFloat(e.target.value) })} />
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: '0.8em', color: 'var(--cosmic-text-secondary)' }}>Durée (h)</label>
+                                        <label style={{ fontSize: '0.8em', color: 'var(--text-secondary)' }}>Durée (h)</label>
                                         <input type="number" className="input-field" value={envParams.duration} onChange={e => setEnvParams({ ...envParams, duration: parseFloat(e.target.value) })} />
                                     </div>
                                 </div>
 
-                                <div style={{ marginTop: '20px', padding: '15px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--cosmic-border)' }}>
+                                <div style={{ marginTop: '20px', padding: '15px', background: 'var(--bg-tertiary)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                        <h4 style={{ margin: 0, fontSize: '0.9em' }}>Effet Antibiotique</h4>
+                                        <h4 style={{ margin: 0, fontSize: '0.9em', fontWeight: 700 }}>Effet Antibiotique</h4>
                                         <input type="checkbox" checked={antibioParams.enabled} onChange={e => setAntibioParams({ ...antibioParams, enabled: e.target.checked })} />
                                     </div>
                                     {antibioParams.enabled && (
@@ -876,93 +832,93 @@ const CultureTracking = () => {
                                             paper_bgcolor: 'transparent',
                                             plot_bgcolor: 'transparent',
                                             showlegend: true,
-                                            legend: { font: { color: '#b8b8d1' } },
+                                            legend: { font: { color: 'var(--text-secondary)' } },
                                             margin: { t: 30, b: 40, l: 60, r: 60 },
                                             xaxis: {
-                                                title: { text: 'Temps (heures)', font: { color: '#b8b8d1' } },
-                                                gridcolor: 'rgba(255,255,255,0.05)',
-                                                tickfont: { color: '#b8b8d1' }
+                                                title: { text: 'Temps (heures)', font: { color: 'var(--text-secondary)' } },
+                                                gridcolor: 'var(--border-color)',
+                                                tickfont: { color: 'var(--text-secondary)' },
+                                                zerolinecolor: 'var(--border-color)'
                                             },
                                             yaxis: {
-                                                title: { text: 'Population (CFU)', font: { color: '#b8b8d1' } },
-                                                gridcolor: 'rgba(255,255,255,0.05)',
-                                                tickfont: { color: '#b8b8d1' },
-                                                type: 'log'
+                                                title: { text: 'Population (CFU)', font: { color: 'var(--text-secondary)' } },
+                                                gridcolor: 'var(--border-color)',
+                                                tickfont: { color: 'var(--text-secondary)' },
+                                                type: 'log',
+                                                zerolinecolor: 'var(--border-color)'
                                             },
                                             yaxis2: {
-                                                title: { text: 'Substrat', font: { color: '#fbbf24' } },
+                                                title: { text: 'Substrat', font: { color: 'var(--accent-primary)' } },
                                                 overlaying: 'y',
                                                 side: 'right',
                                                 showgrid: false,
-                                                tickfont: { color: '#fbbf24' }
+                                                tickfont: { color: 'var(--accent-primary)' }
                                             }
                                         }}
                                         config={{ responsive: true, displayModeBar: false }}
                                         style={{ width: '100%', height: '400px' }}
                                     />
                                 ) : (
-                                    <div style={{ height: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--cosmic-text-secondary)', gap: '15px' }}>
+                                    <div style={{ height: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', gap: '15px' }}>
                                         <Activity size={48} style={{ opacity: 0.2 }} />
                                         <p>En attente des paramètres pour générer la courbe...</p>
                                     </div>
                                 )}
                                 {simulationResults && (
-                                    <div style={{ marginTop: '15px', padding: '15px', borderRadius: '10px', background: 'rgba(102, 126, 234, 0.05)', border: '1px solid rgba(102, 126, 234, 0.2)' }}>
-                                        <p style={{ margin: 0, fontSize: '0.9em' }}>
-                                            <strong>Interprétation Algorithmique :</strong> {interpretResults(simulationResults)}
+                                    <div style={{ marginTop: '15px', padding: '15px', borderRadius: '10px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)' }}>
+                                        <p style={{ margin: 0, fontSize: '0.9em', color: 'var(--text-primary)' }}>
+                                            <strong style={{ color: 'var(--accent-primary)' }}>Analyse Prédictive :</strong> {interpretResults(simulationResults)}
                                         </p>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        {/* Species & Culture List */}
                         <div style={{ marginTop: '40px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                                <h3 className="panel-title" style={{ marginBottom: 0 }}><Activity size={20} /> Souches en Culture</h3>
+                                <h3 className="panel-title" style={{ marginBottom: 0 }}><Activity size={20} /> Inventaire des Souches Actives</h3>
                                 <div style={{ position: 'relative', width: '300px' }}>
-                                    <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--cosmic-accent)' }} />
+                                    <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--accent-primary)' }} />
                                     <input
                                         type="text"
                                         className="input-field"
                                         style={{ paddingLeft: '40px' }}
-                                        placeholder="Filtrer souches..."
+                                        placeholder="Rechercher une souche..."
                                         value={searchQueries.cultures}
                                         onChange={e => setSearchQueries({ ...searchQueries, cultures: e.target.value })}
                                     />
                                 </div>
                             </div>
-
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
                                 {cultures.filter(c => c.statut === 'active' && c.nom.toLowerCase().includes(searchQueries.cultures.toLowerCase())).map(culture => (
-                                    <div key={culture.id} className="panel-card" style={{ borderLeft: `5px solid ${culture.color || 'var(--cosmic-accent)'}` }}>
+                                    <div key={culture.id} className="panel-card" style={{ borderLeft: `4px solid ${culture.color || 'var(--accent-primary)'}`, padding: '1.5rem' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                             <div>
-                                                <h4 style={{ margin: '0 0 5px 0' }}>{culture.nom}</h4>
-                                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                                    <span className="badge">Passage {culture.passage}</span>
-                                                    <span className="badge" style={{ color: '#10b981', borderColor: '#10b981' }}>{culture.muMax || 0.8} µMax</span>
+                                                <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 800 }}>{culture.nom}</h4>
+                                                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                                    <span className="badge">P{culture.passage}</span>
+                                                    <span className="badge" style={{ color: 'var(--accent-primary)', borderColor: 'var(--accent-primary)' }}>{culture.muMax || 0.8} µMax</span>
                                                 </div>
                                             </div>
-                                            <div style={{ display: 'flex', gap: '5px' }}>
-                                                <button className="btn-action btn-secondary" style={{ padding: '5px' }} onClick={() => openCultureModal(culture)}><History size={16} /></button>
-                                                <button className="btn-action btn-secondary" style={{ padding: '5px', color: 'var(--cosmic-danger)' }} onClick={() => handleDeleteCulture(culture.id)}><Trash2 size={16} /></button>
+                                            <div style={{ display: 'flex', gap: '0.25rem' }}>
+                                                <button className="btn-action btn-secondary" style={{ padding: '0.4rem' }} onClick={() => openCultureModal(culture)}><History size={14} /></button>
+                                                <button className="btn-action btn-secondary" style={{ padding: '0.4rem', color: 'var(--error-color, #ef4444)' }} onClick={() => handleDeleteCulture(culture.id)}><Trash2 size={14} /></button>
                                             </div>
                                         </div>
-                                        <div style={{ marginTop: '15px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.85em' }}>
-                                            <div style={{ color: 'var(--cosmic-text-secondary)' }}>Pop. Initiale:</div>
-                                            <div>{formatNumber(culture.initialPop || 1000000)} CFU</div>
-                                            <div style={{ color: 'var(--cosmic-text-secondary)' }}>Intervalle:</div>
-                                            <div>{culture.intervalle} jours</div>
+                                        <div style={{ marginTop: '1.25rem', padding: '1rem', background: 'var(--bg-tertiary)', borderRadius: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.8rem' }}>
+                                            <div style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Pop. Initiale:</div>
+                                            <div style={{ textAlign: 'right', fontWeight: 700 }}>{formatNumber(culture.initialPop || 1000000)}</div>
+                                            <div style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Intervalle:</div>
+                                            <div style={{ textAlign: 'right', fontWeight: 700 }}>{culture.intervalle} jours</div>
                                         </div>
-                                        <button className="btn-action btn-secondary" style={{ width: '100%', marginTop: '15px', justifyContent: 'center' }} onClick={() => handleMarquerRepiquage(culture.id)}>
-                                            <RotateCcw size={16} /> Marquer Repiquage
+                                        <button className="btn-action btn-primary" style={{ width: '100%', marginTop: '1.25rem', justifyContent: 'center' }} onClick={() => handleMarquerRepiquage(culture.id)}>
+                                            <RotateCcw size={16} /> Planifier Nouveau Passage
                                         </button>
                                     </div>
                                 ))}
                                 <div className="panel-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed', cursor: 'pointer', minHeight: '150px' }} onClick={() => openCultureModal()}>
-                                    <div style={{ padding: '15px', borderRadius: '50%', background: 'rgba(102, 126, 234, 0.1)', color: 'var(--cosmic-accent)', marginBottom: '10px' }}>
-                                        <Play size={24} />
+                                    <div style={{ padding: '15px', borderRadius: '50%', background: 'rgba(102, 126, 234, 0.1)', color: 'var(--accent-primary)', marginBottom: '10px' }}>
+                                        <Plus size={24} />
                                     </div>
                                     <span style={{ fontWeight: 600 }}>Ajouter une Souche</span>
                                 </div>
@@ -975,35 +931,42 @@ const CultureTracking = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                         {milieux.filter(m => m.nom.toLowerCase().includes(searchQueries.milieux.toLowerCase())).map(milieu => (
                             <div key={milieu.id} className="panel-card">
-                                <h4 style={{ margin: '0 0 10px 0' }}>{milieu.nom}</h4>
-                                <p style={{ fontSize: '0.9em', color: 'var(--cosmic-text-secondary)', marginBottom: '15px' }}>{milieu.type}</p>
+                                <h4 style={{ margin: '0 0 10px 0', fontSize: '1.1rem', fontWeight: 800 }}>{milieu.nom}</h4>
+                                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', fontWeight: 600 }}>{milieu.type}</p>
                                 <div style={{ display: 'flex', gap: '10px' }}>
-                                    <button className="btn-action btn-secondary" onClick={() => openMilieuModal(milieu)}>Modifier</button>
-                                    <button className="btn-action btn-secondary" style={{ color: 'var(--cosmic-danger)' }} onClick={() => handleDeleteMilieu(milieu.id)}>Supprimer</button>
+                                    <button className="btn-action btn-secondary" onClick={() => openMilieuModal(milieu)}>Éditer</button>
+                                    <button className="btn-action btn-secondary" style={{ color: 'var(--error-color, #ef4444)' }} onClick={() => handleDeleteMilieu(milieu.id)}>Supprimer</button>
                                 </div>
                             </div>
                         ))}
+                        <div className="panel-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderStyle: 'dashed', cursor: 'pointer', minHeight: '100px' }} onClick={() => openMilieuModal()}>
+                            <Plus size={20} style={{ marginBottom: '5px', color: 'var(--accent-primary)' }} />
+                            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Nouveau Milieu</span>
+                        </div>
                     </div>
                 )}
 
                 {activeSection === 'cryo' && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
                         {cultures.filter(c => c.statut === 'cryoconservée' && c.nom.toLowerCase().includes(searchQueries.cryo.toLowerCase())).map(culture => {
                             const milieu = milieux.find(m => m.id === culture.milieuId);
                             return (
-                                <div key={culture.id} className="panel-card">
-                                    <h4 style={{ margin: '0 0 10px 0' }}>{culture.nom}</h4>
-                                    <p style={{ fontSize: '0.9em', color: 'var(--cosmic-text-secondary)', marginBottom: '5px' }}>
-                                        Milieu: {milieu?.nom || 'N/A'}
-                                    </p>
-                                    <p style={{ fontSize: '0.9em', color: 'var(--cosmic-text-secondary)', marginBottom: '15px' }}>
-                                        Date: {culture.date}
-                                    </p>
-                                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                                        <button className="btn-action btn-secondary" onClick={() => { setEditingCulture(culture); setShowCultureModal(true); }}>Modifier</button>
-                                        <button className="btn-action btn-secondary" onClick={() => handleRemettreEnCulture(culture.id)}>Reprendre</button>
+                                <div key={culture.id} className="panel-card" style={{ borderLeft: '4px solid var(--border-color)' }}>
+                                    <h4 style={{ margin: '0 0 10px 0', fontSize: '1.1rem', fontWeight: 800 }}>{culture.nom}</h4>
+                                    <div style={{ padding: '0.75rem', background: 'var(--bg-tertiary)', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                            <span style={{ color: 'var(--text-secondary)' }}>Milieu :</span>
+                                            <span style={{ fontWeight: 700 }}>{milieu?.nom || 'Non spécifié'}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ color: 'var(--text-secondary)' }}>Congélation :</span>
+                                            <span style={{ fontWeight: 700 }}>{culture.cryoDate || culture.date}</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                        <button className="btn-action btn-primary" onClick={() => handleRemettreEnCulture(culture.id)}>Reprise</button>
                                         <button className="btn-action btn-secondary" onClick={() => { setHistoryCulture(culture); setShowHistoryModal(true); }}>Historique</button>
-                                        <button className="btn-action btn-secondary" style={{ color: 'var(--cosmic-danger)' }} onClick={() => handleDeleteCulture(culture.id)}>Supprimer</button>
+                                        <button className="btn-action btn-secondary" style={{ color: 'var(--error-color, #ef4444)' }} onClick={() => handleDeleteCulture(culture.id)}><Trash2 size={16} /></button>
                                     </div>
                                 </div>
                             );
@@ -1063,7 +1026,7 @@ const CultureTracking = () => {
                     <div className="modal-overlay">
                         <form className="modal-content-panel" onSubmit={handleSaveMilieu}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '15px', marginBottom: '20px' }}>
-                                <h2 className="text-gradient">{editingMilieu ? '✏️ Modifier Milieu' : '➕ Nouveau Milieu'}</h2>
+                                <h2 className="text-gradient">{editingMilieu ? 'Modifier Milieu' : 'Nouveau Milieu'}</h2>
                                 <X size={24} className="cursor-pointer" onClick={() => setShowMilieuModal(false)} />
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
@@ -1107,18 +1070,18 @@ const CultureTracking = () => {
                     <div className="modal-overlay">
                         <div className="modal-content-panel">
                             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '15px', marginBottom: '20px' }}>
-                                <h2 className="text-gradient">📜 Historique : {historyCulture.nom}</h2>
+                                <h2 className="text-gradient">Historique : {historyCulture.nom}</h2>
                                 <X size={24} className="cursor-pointer" onClick={() => setShowHistoryModal(false)} />
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                {(historyCulture.history || []).map(entry => (
+                                {(historyCulture.history || []).map((entry: any) => (
                                     <div key={entry.id} className="timeline-item">
                                         <div style={{ fontSize: '0.8em', color: 'var(--text-secondary)' }}>{new Date(entry.date).toLocaleString()}</div>
                                         <div style={{ fontWeight: 700, margin: '5px 0' }}>{
-                                            entry.type === 'creation' ? '🎉 Création' :
-                                                entry.type === 'repiquage' ? '🔄 Repiquage' :
-                                                    entry.type === 'cryo' ? '❄️ Cryoconservation' :
-                                                        entry.type === 'reprise' ? '🔥 Remise en culture' : '✏️ Modification'
+                                            entry.type === 'creation' ? 'Création' :
+                                                entry.type === 'repiquage' ? 'Repiquage' :
+                                                    entry.type === 'cryo' ? 'Cryoconservation' :
+                                                        entry.type === 'reprise' ? 'Remise en culture' : 'Modification'
                                         }</div>
                                         <div style={{ fontSize: '0.9em' }}>{JSON.stringify(entry.details, null, 2)}</div>
                                     </div>
@@ -1135,7 +1098,7 @@ const CultureTracking = () => {
                     <div className="modal-overlay">
                         <form className="modal-content-panel" onSubmit={handleSaveCryo}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '15px', marginBottom: '20px' }}>
-                                <h2 className="text-gradient">❄️ Cryoconservation : {cryoSource.nom}</h2>
+                                <h2 className="text-gradient">Cryoconservation : {cryoSource.nom}</h2>
                                 <X size={24} className="cursor-pointer" onClick={() => setShowCryoModal(false)} />
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
@@ -1159,7 +1122,7 @@ const CultureTracking = () => {
                             <textarea name="notes" className="input-field" placeholder="Notes additionnelles..." style={{ marginTop: '20px' }} rows={3} />
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '30px' }}>
                                 <button type="button" className="btn-action btn-secondary" onClick={() => setShowCryoModal(false)}>Annuler</button>
-                                <button type="submit" className="btn-action btn-primary" style={{ background: 'var(--info-gradient)' }}>❄️ Cryoconserver</button>
+                                <button type="submit" className="btn-action btn-primary" style={{ background: 'var(--info-gradient)' }}>Cryoconserver</button>
                             </div>
                         </form>
                     </div>

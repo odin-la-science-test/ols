@@ -4,6 +4,8 @@ import { BookOpen, FlaskConical, TrendingUp, Clock, Star, Zap, Award, Target, Be
 import Navbar from '../components/Navbar';
 import OnboardingMissions from '../components/OnboardingMissions';
 import ParticleBackground from '../components/ParticleBackground';
+import { SnakeGame } from '../components/SnakeGame';
+import { PongGame } from '../components/PongGame';
 import { useTheme } from '../components/ThemeContext';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import GlobalSearch from '../components/GlobalSearch';
@@ -20,6 +22,8 @@ const Home = () => {
     const { isMobile } = useDeviceDetection();
     const c = theme.colors;
     const [showOnboarding, setShowOnboarding] = useState(false);
+    const [showSnake, setShowSnake] = useState(false);
+    const [showPong, setShowPong] = useState(false);
     
     // Détecter le mode étudiant
     const userEmail = localStorage.getItem('currentUser') || '';
@@ -39,11 +43,67 @@ const Home = () => {
         // Charger les favoris
         setFavorites(getFavorites());
         
-        // Écouter Ctrl+K pour ouvrir la recherche
+        // Codes secrets pour les jeux
+        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        const tetrisCode = ['t', 'e', 't', 'r', 'i', 's'];
+        const pongCode = ['p', 'o', 'n', 'g'];
+        
+        let konamiIndex = 0;
+        let tetrisIndex = 0;
+        let pongIndex = 0;
+        
+        // Écouter les touches
         const handleKeyDown = (e: KeyboardEvent) => {
+            // Ctrl+K pour ouvrir la recherche
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
                 e.preventDefault();
                 setIsSearchOpen(true);
+                return;
+            }
+            
+            const key = e.key.toLowerCase();
+            
+            // Code Konami pour Snake: ↑ ↑ ↓ ↓ ← → ← → B A
+            if (key === konamiCode[konamiIndex] || e.key === konamiCode[konamiIndex]) {
+                konamiIndex++;
+                console.log(`🐍 Snake progress: ${konamiIndex}/${konamiCode.length}`);
+                
+                if (konamiIndex === konamiCode.length) {
+                    console.log('🎉 SNAKE CODE ACTIVATED!');
+                    setShowSnake(true);
+                    konamiIndex = 0;
+                }
+            } else {
+                konamiIndex = 0;
+            }
+            
+            // Code Tetris: T E T R I S
+            if (key === tetrisCode[tetrisIndex]) {
+                tetrisIndex++;
+                console.log(`🎮 Tetris progress: ${tetrisIndex}/${tetrisCode.length}`);
+                
+                if (tetrisIndex === tetrisCode.length) {
+                    console.log('🎉 TETRIS CODE ACTIVATED!');
+                    navigate('/hugin/tetris');
+                    tetrisIndex = 0;
+                }
+            } else {
+                tetrisIndex = 0;
+            }
+            
+            
+            // Code Pong: P O N G
+            if (key === pongCode[pongIndex]) {
+                pongIndex++;
+                console.log(`🏓 Pong progress: ${pongIndex}/${pongCode.length}`);
+                
+                if (pongIndex === pongCode.length) {
+                    console.log('🎉 PONG CODE ACTIVATED!');
+                    setShowPong(true);
+                    pongIndex = 0;
+                }
+            } else {
+                pongIndex = 0;
             }
         };
         
@@ -237,7 +297,7 @@ const Home = () => {
                                     key={i} 
                                     onClick={() => {
                                         if (stat.label === 'Messages non lus') {
-                                            navigate('/hugin/messaging');
+                                            navigate('/hugin'); // MESSAGING DISABLED
                                         }
                                     }}
                                     style={{
@@ -711,6 +771,10 @@ const Home = () => {
                     }
                 }
             `}</style>
+            
+            {/* Easter Eggs: Jeux cachés */}
+            {showSnake && <SnakeGame onClose={() => setShowSnake(false)} />}
+            {showPong && <PongGame onClose={() => setShowPong(false)} />}
         </div>
     );
 };

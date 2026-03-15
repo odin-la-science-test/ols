@@ -3,39 +3,8 @@ import { FileText, Plus, Save, Download, Copy, Trash2, Clock, Thermometer, Alert
 import { showToast } from '../../components/ToastNotification';
 import { RichTextEditor } from '../../components/RichTextEditor';
 import { useAutoSave } from '../../hooks/useAutoSave';
-
-interface ProtocolStep {
-  id: string;
-  title: string;
-  description: string;
-  duration?: string;
-  temperature?: string;
-  notes?: string;
-  warnings?: string[];
-  criticalPoint?: boolean;
-  images?: string[];
-}
-
-interface Protocol {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  steps: ProtocolStep[];
-  materials: string[];
-  equipment: string[];
-  safety: string[];
-  estimatedTime?: string;
-  difficulty?: 'Facile' | 'Moyen' | 'Difficile';
-  author?: string;
-  version?: number;
-  lastModified?: string;
-  tags?: string[];
-  validated?: boolean;
-  validatedBy?: string;
-  validatedAt?: string;
-  validationSignature?: string;
-}
+import type { ProtocolStep, Protocol } from './protocols/types';
+import { useProtocolStore } from './protocols/useProtocolStore';
 
 const templates: Protocol[] = [
   {
@@ -83,7 +52,7 @@ const templates: Protocol[] = [
 ];
 
 export const ProtocolBuilder: React.FC = () => {
-  const [protocols, setProtocols] = useState<Protocol[]>([]);
+  const { protocols, setProtocols: saveProtocols } = useProtocolStore();
   const [currentProtocol, setCurrentProtocol] = useState<Protocol | null>(null);
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
   const [searchTerm, setSearchTerm] = useState('');
@@ -91,21 +60,9 @@ export const ProtocolBuilder: React.FC = () => {
   const [showTemplates, setShowTemplates] = useState(false);
   const [expandedStep, setExpandedStep] = useState<string | null>(null);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('protocols');
-    if (saved) {
-      setProtocols(JSON.parse(saved));
-    }
-  }, []);
-
-  const saveProtocols = (newProtocols: Protocol[]) => {
-    localStorage.setItem('protocols', JSON.stringify(newProtocols));
-    setProtocols(newProtocols);
-  };
-
   useAutoSave({
     data: protocols,
-    onSave: (data) => localStorage.setItem('protocols', JSON.stringify(data)),
+    onSave: (data) => saveProtocols(data),
     interval: 30000
   });
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Bell, CheckCircle, AlertCircle, Info, Clock } from 'lucide-react';
+import { Bell, CheckCircle, AlertCircle, Info, Clock, MessageSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Notification {
     id: string;
@@ -11,8 +12,10 @@ interface Notification {
 }
 
 const NotificationCenter = () => {
+    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
     useEffect(() => {
         const loadNotifications = () => {
@@ -31,7 +34,36 @@ const NotificationCenter = () => {
         return () => clearInterval(interval);
     }, []);
 
+    // Charger le nombre de messages non lus depuis la messagerie
+    useEffect(() => {
+        const loadUnreadMessages = async () => {
+            try {
+                const authToken = localStorage.getItem('authToken');
+                if (!authToken) return;
+
+                const response = await fetch('/api/messaging/unread-count', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setUnreadMessagesCount(data.count || 0);
+                }
+            } catch (error) {
+                // Silently fail - messaging system might not be running
+                console.debug('Could not load unread messages count');
+            }
+        };
+
+        loadUnreadMessages();
+        const interval = setInterval(loadUnreadMessages, 10000); // Refresh every 10s
+        return () => clearInterval(interval);
+    }, []);
+
     const unreadCount = notifications.filter(n => !n.read).length;
+    const totalUnread = unreadCount + unreadMessagesCount;
 
     const markAsRead = (id: string) => {
         const updated = notifications.map(n => 
@@ -87,7 +119,7 @@ const NotificationCenter = () => {
                 }}
             >
                 <Bell size={20} />
-                {unreadCount > 0 && (
+                {totalUnread > 0 && (
                     <span style={{
                         position: 'absolute',
                         top: '-5px',
@@ -103,7 +135,7 @@ const NotificationCenter = () => {
                         fontSize: '0.7rem',
                         fontWeight: 700
                     }}>
-                        {unreadCount > 9 ? '9+' : unreadCount}
+                        {totalUnread > 9 ? '9+' : totalUnread}
                     </span>
                 )}
             </button>
@@ -144,7 +176,7 @@ const NotificationCenter = () => {
                             background: '#0f172a'
                         }}>
                             <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0, color: '#f1f5f9' }}>
-                                Notifications {unreadCount > 0 && `(${unreadCount})`}
+                                Notifications {totalUnread > 0 && `(${totalUnread})`}
                             </h3>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
                                 {notifications.length > 0 && (
@@ -181,6 +213,59 @@ const NotificationCenter = () => {
                                 )}
                             </div>
                         </div>
+
+                        {/* Lien vers la messagerie si des messages non lus */}
+                        {unreadMessagesCount > 0 && (
+                            <div
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    navigate('/hugin'); // MESSAGING DISABLED
+                                }}
+                                style={{
+                                    padding: '1rem 1.5rem',
+                                    borderBottom: '1px solid #334155',
+                                    cursor: 'pointer',
+                                    background: 'rgba(99, 102, 241, 0.1)',
+                                    transition: 'background 0.2s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '1rem'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(99, 102, 241, 0.2)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(99, 102, 241, 0.1)';
+                                }}
+                            >
+                                <div style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '50%',
+                                    background: 'var(--accent-hugin)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white'
+                                }}>
+                                    <MessageSquare size={20} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <h4 style={{ fontSize: '0.9rem', fontWeight: 600, margin: 0, color: '#f1f5f9' }}>
+                                        Nouveaux messages
+                                    </h4>
+                                    <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: '0.25rem 0 0 0' }}>
+                                        {unreadMessagesCount} message{unreadMessagesCount > 1 ? 's' : ''} non lu{unreadMessagesCount > 1 ? 's' : ''}
+                                    </p>
+                                </div>
+                                <div style={{
+                                    width: '8px',
+                                    height: '8px',
+                                    borderRadius: '50%',
+                                    background: '#6366f1'
+                                }} />
+                            </div>
+                        )}
 
                         <div style={{ flex: 1, overflowY: 'auto', background: '#1e293b' }}>
                             {notifications.length === 0 ? (

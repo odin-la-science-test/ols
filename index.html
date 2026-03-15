@@ -6,6 +6,12 @@
   <link rel="icon" type="image/png" href="/logoprincipal.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Odin la Science</title>
+  <!-- Polyfill for global object required by ketcher-react / draft-js in Vite -->
+  <script>
+    if (typeof global === 'undefined') {
+      window.global = window;
+    }
+  </script>
 </head>
 
 <body>

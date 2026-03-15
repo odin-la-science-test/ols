@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Animation Login - Final</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            overflow: hidden;
+        }
+
+        /* Background Orbs */
+        .bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float-orb 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #667eea 0%, transparent 70%);
+            top: -10%;
+            left: -10%;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #764ba2 0%, transparent 70%);
+            bottom: -10%;
+            right: -10%;
+            animation-delay: -10s;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #10b981 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            animation-delay: -5s;
+        }
+
+        @keyframes float-orb {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        /* Container */
+        .login-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            width: 100%;
+            background: #0a0a0f;
+            overflow: hidden;
+        }
+
+        /* Blue Panel - ALWAYS ON RIGHT */
+        .blue-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 50%;
+            z-index: 2;
+        }
+
+        .logo {
+            width: 180px;
+            margin-bottom: 2rem;
+            filter: brightness(0) invert(1);
+        }
+
+        .panel-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .panel-subtitle {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2rem;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        /* Form Side - ALWAYS ON LEFT */
+        .form-side {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem 2rem;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 50%;
+            z-index: 1;
+            background: #0a0a0f;
+        }
+
+        .form-wrapper {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .form-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .form-subtitle {
+            color: #9ca3af;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 0.875rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #374151;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            background: #1f2937;
+            color: #ffffff;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .code-input {
+            text-align: center;
+            font-size: 2rem;
+            letter-spacing: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #374151;
+            color: #9ca3af;
+            box-shadow: none;
+            margin-top: 1rem;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #374151;
+            transition: all 0.4s;
+        }
+
+        .step-dot.active {
+            width: 24px;
+            border-radius: 4px;
+            background: #667eea;
+            box-shadow: 0 0 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .code-helper {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        .layout-info {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            z-index: 1000;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Orbs -->
+    <div class="bg-canvas">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <!-- Login Container -->
+    <div class="login-container">
+        <!-- Form Side - ALWAYS LEFT -->
+        <div class="form-side">
+            <div class="form-wrapper">
+                <!-- Step Indicator -->
+                <div class="step-indicator">
+                    <div class="step-dot active" id="step1Dot"></div>
+                    <div class="step-dot" id="step2Dot"></div>
+                </div>
+
+                <!-- Step 1: Credentials -->
+                <div id="credentialsForm">
+                    <h2 class="form-title">Bienvenue</h2>
+                    <p class="form-subtitle">Connectez-vous à votre compte</p>
+                    
+                    <div class="form-group">
+                        <label for="email">Email ou identifiant</label>
+                        <input type="text" id="email" placeholder="email@ols.com" value="ethan@ols.com" autofocus>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Mot de passe</label>
+                        <input type="password" id="password" placeholder="••••••••" value="ethan123">
+                    </div>
+                    
+                    <div class="form-group">
+                        <button onclick="goToSecurityStep()">Continuer</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Security Code -->
+                <div id="securityForm" class="hidden">
+                    <h2 class="form-title">Vérification</h2>
+                    <p class="form-subtitle">Entrez votre code de sécurité</p>
+                    
+                    <div class="form-group">
+                        <label for="code">Code de sécurité</label>
+                        <input type="text" id="code" class="code-input" placeholder="0000" maxlength="4">
+                        <p class="code-helper">Codes: 1234, 5678, 9012, 0000</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button onclick="login()">Se connecter</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button class="btn-secondary" onclick="goBackToCredentials()">Retour</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blue Panel - ALWAYS RIGHT -->
+        <div class="blue-panel">
+            <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="40" fill="white"/>
+                <text x="50" y="65" font-size="40" font-weight="bold" text-anchor="middle" fill="#667eea">O</text>
+            </svg>
+            <h1 class="panel-title">Odin La Science</h1>
+            <p class="panel-subtitle">Votre plateforme scientifique tout-en-un</p>
+        </div>
+    </div>
+
+    <!-- Layout Info -->
+    <div class="layout-info" id="layoutInfo">
+        <strong>Étape 1:</strong> Formulaire identifiants à GAUCHE | Panneau bleu à DROITE
+    </div>
+
+    <script>
+        function goToSecurityStep() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                alert('Veuillez remplir tous les champs');
+                return;
+            }
+
+            // Hide credentials form
+            document.getElementById('credentialsForm').classList.add('hidden');
+            
+            // Show security form
+            document.getElementById('securityForm').classList.remove('hidden');
+            
+            // Update step indicator
+            document.getElementById('step1Dot').classList.remove('active');
+            document.getElementById('step2Dot').classList.add('active');
+            
+            // Update layout info
+            document.getElementById('layoutInfo').innerHTML = '<strong>Étape 2:</strong> Formulaire code à GAUCHE | Panneau bleu à DROITE';
+            
+            // Focus on code input
+            setTimeout(() => {
+                document.getElementById('code').focus();
+            }, 100);
+        }
+
+        function goBackToCredentials() {
+            // Show credentials form
+            document.getElementById('credentialsForm').classList.remove('hidden');
+            
+            // Hide security form
+            document.getElementById('securityForm').classList.add('hidden');
+            
+            // Update step indicator
+            document.getElementById('step1Dot').classList.add('active');
+            document.getElementById('step2Dot').classList.remove('active');
+            
+            // Update layout info
+            document.getElementById('layoutInfo').innerHTML = '<strong>Étape 1:</strong> Formulaire identifiants à GAUCHE | Panneau bleu à DROITE';
+            
+            // Clear code
+            document.getElementById('code').value = '';
+        }
+
+        function login() {
+            const code = document.getElementById('code').value;
+
+            if (code.length !== 4) {
+                alert('Le code doit contenir 4 chiffres');
+                return;
+            }
+
+            alert('✅ Connexion réussie! Code: ' + code);
+        }
+
+        // Enter key handlers
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') goToSecurityStep();
+        });
+
+        document.getElementById('code').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') login();
+        });
+
+        // Only numbers in code
+        document.getElementById('code').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').slice(0, 4);
+        });
+    </script>
+</body>
+</html>

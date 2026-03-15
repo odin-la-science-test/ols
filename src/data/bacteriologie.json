@@ -320,6 +320,165 @@
         "Profil biochimique": "Lactose+, Urée+, Citrate+, VP+",
         "Tests clés": "Immobile, capsule épaisse"
       }
+    },
+  {
+    "id": "enterococcus-faecalis",
+    "name": "Enterococcus faecalis",
+    "category": "Cocci Gram+",
+    "overview": "Cocci Gram+ du tube digestif, responsable d'infections urinaires et d'endocardites. Important en milieu hospitalier pour ses résistances.",
+    "properties": {
+      "GRAM": "+",
+      "CAT": "-",
+      "OXY": "-",
+      "Forme": "Cocci en chaînettes courtes"
+    },
+    "taxonomy": {
+      "Règne": "Bacteria",
+      "Embranchement": "Firmicutes",
+      "Classe": "Bacilli",
+      "Ordre": "Lactobacillales",
+      "Famille": "Enterococcaceae",
+      "Genre": "Enterococcus",
+      "Espèce": "E. faecalis"
+    },
+    "genomics": {
+      "Taille génome": "3.2 Mb",
+      "GC%": "37.5%",
+      "Gènes": "~3,100",
+      "Plasmides": "Fréquents",
+      "Séquençage": "Complet"
+    },
+    "culture": {
+      "Milieu primaire": "Gélose au sang",
+      "Milieu sélectif": "BEA (bile-esculine-azide)",
+      "Température": "37°C",
+      "Atmosphère": "Anaérobie facultatif",
+      "Temps croissance": "18-24h",
+      "Aspect colonies": "Petites, γ-hémolytiques"
+    },
+    "pathology": {
+      "Infections": ["Infections urinaires", "Endocardite", "Infections intra-abdominales"],
+      "Facteurs virulence": ["Adhésines", "Biofilm", "Substances d'agrégation"],
+      "Toxines": ["Cytolysine"],
+      "Transmission": "Endogène, manuportée"
+    },
+    "resistance": {
+      "Type": "ERV (entérocoques résistants à la vancomycine)",
+      "Mécanisme": "Gènes vanA, vanB",
+      "Antibiotiques": "Résistance glycopeptides possible",
+      "Traitement": "Ampicilline, Vancomycine (si sensible), Linezolide"
+    },
+    "api": {
+      "Code API 20 Strep": "5140004",
+      "Profil biochimique": "Esculine+, NaCl 6.5%+, PYR+",
+      "Tests clés": "Hydrolyse bile-esculine"
     }
+  },
+  {
+    "id": "salmonella-enterica",
+    "name": "Salmonella enterica",
+    "category": "Bacille Gram-",
+    "overview": "Entérobactérie pathogène responsable de gastro-entérites et fièvres typhoïdes selon les sérovars.",
+    "properties": {
+      "GRAM": "-",
+      "CAT": "+",
+      "OXY": "-",
+      "Forme": "Bacille mobile"
+    },
+    "taxonomy": {
+      "Règne": "Bacteria",
+      "Embranchement": "Proteobacteria",
+      "Classe": "Gammaproteobacteria",
+      "Ordre": "Enterobacterales",
+      "Famille": "Enterobacteriaceae",
+      "Genre": "Salmonella",
+      "Espèce": "S. enterica"
+    },
+    "genomics": {
+      "Taille génome": "4.8 Mb",
+      "GC%": "52%",
+      "Gènes": "~4,600",
+      "Plasmides": "Variables",
+      "Séquençage": "Complet"
+    },
+    "culture": {
+      "Milieu primaire": "Gélose Hektoen",
+      "Milieu sélectif": "SS, XLD",
+      "Température": "37°C",
+      "Atmosphère": "Anaérobie facultatif",
+      "Temps croissance": "18-24h",
+      "Aspect colonies": "Non lactose+, H2S+ (centre noir)"
+    },
+    "pathology": {
+      "Infections": ["Gastro-entérite", "Fièvre typhoïde", "Septicémie"],
+      "Facteurs virulence": ["Systèmes de sécrétion type III", "Capsule (Vi)"],
+      "Toxines": ["Endotoxine LPS"],
+      "Transmission": "Alimentaire (œufs, volailles)"
+    },
+    "resistance": {
+      "Type": "Résistances acquises",
+      "Mécanisme": "BLSE, mutations gyrA",
+      "Antibiotiques": "Résistance fluoroquinolones possible",
+      "Traitement": "Ceftriaxone, Azithromycine"
+    },
+    "api": {
+      "Code API 20E": "6704552",
+      "Profil biochimique": "Glucose+, H2S+, Urée-",
+      "Tests clés": "Production H2S, mobilité"
+    }
+  },
+  {
+    "id": "neisseria-meningitidis",
+    "name": "Neisseria meningitidis",
+    "category": "Diplocoque Gram-",
+    "overview": "Diplocoque Gram- responsable de méningites et septicémies fulminantes. Transmission interhumaine par gouttelettes.",
+    "properties": {
+      "GRAM": "-",
+      "CAT": "+",
+      "OXY": "+",
+      "Forme": "Diplocoques en grain de café"
+    },
+    "taxonomy": {
+      "Règne": "Bacteria",
+      "Embranchement": "Proteobacteria",
+      "Classe": "Betaproteobacteria",
+      "Ordre": "Neisseriales",
+      "Famille": "Neisseriaceae",
+      "Genre": "Neisseria",
+      "Espèce": "N. meningitidis"
+    },
+    "genomics": {
+      "Taille génome": "2.2 Mb",
+      "GC%": "51.7%",
+      "Gènes": "~2,000",
+      "Plasmides": "Rares",
+      "Séquençage": "Complet"
+    },
+    "culture": {
+      "Milieu primaire": "Gélose chocolat",
+      "Milieu sélectif": "Thayer-Martin",
+      "Température": "37°C",
+      "Atmosphère": "5% CO2",
+      "Temps croissance": "24-48h",
+      "Aspect colonies": "Petites, translucides"
+    },
+    "pathology": {
+      "Infections": ["Méningite", "Méningococcémie"],
+      "Facteurs virulence": ["Capsule polysaccharidique", "Pili", "IgA protéase"],
+      "Toxines": ["Endotoxine LOS"],
+      "Transmission": "Gouttelettes respiratoires"
+    },
+    "resistance": {
+      "Type": "Résistance rare",
+      "Mécanisme": "Altérations PBP",
+      "Antibiotiques": "Sensible céphalosporines 3G",
+      "Traitement": "Ceftriaxone, Rifampicine (prophylaxie)"
+    },
+    "api": {
+      "Code API NH": "Non standard",
+      "Profil biochimique": "Oxydase+, Glucose+, Maltose+",
+      "Tests clés": "Capsule (groupage sérologique)"
+    }
+  }
   ]
 }

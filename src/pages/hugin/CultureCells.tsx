@@ -5,10 +5,30 @@ import { useToast } from '../../components/ToastContext';
 import { 
     ChevronLeft, Plus, Download, Upload,
     Beaker, Search, Grid as GridIcon, List,
-    Edit, Trash2, History, Snowflake, Flame, Calendar,
-    AlertCircle
+    Edit, Trash2, History as LucideHistory, Snowflake, Flame, Calendar,
+    AlertCircle, Activity, Clock
 } from 'lucide-react';
 import { CultureModal, MilieuModal, CryoModal, HistoryModal } from '../../components/CultureModals';
+import { fetchModuleData, saveModuleItem, deleteModuleItem } from '../../utils/persistence';
+
+export interface HistoryEntry {
+    id: string;
+    date: string;
+    type: 'creation' | 'repiquage' | 'cryo' | 'reprise' | 'modification';
+    details: any;
+}
+
+export interface Milieu {
+    id: string;
+    nom: string;
+    type: string;
+    fournisseur: string;
+    dateAjout: string;
+    composition: string;
+    proprietes: string;
+    stockage: string;
+    notes: string;
+}
 
 export interface Culture {
     id: string;
@@ -27,25 +47,6 @@ export interface Culture {
     cryoAgent?: string;
     cryoNotes?: string;
     history: HistoryEntry[];
-}
-
-export interface Milieu {
-    id: string;
-    nom: string;
-    type: string;
-    fournisseur: string;
-    dateAjout: string;
-    composition: string;
-    proprietes: string;
-    stockage: string;
-    notes: string;
-}
-
-export interface HistoryEntry {
-    id: string;
-    date: string;
-    type: 'creation' | 'repiquage' | 'cryo' | 'reprise' | 'modification';
-    details: any;
 }
 
 const CultureCells = () => {
@@ -71,100 +72,69 @@ const CultureCells = () => {
     
     const c = theme.colors;
 
-    // Charger les données depuis IndexedDB
     useEffect(() => {
         loadData();
     }, []);
 
     const loadData = async () => {
         try {
-            const db = await openDB();
-            const culturesTx = db.transaction('cultures', 'readonly');
-            const milieuxTx = db.transaction('milieux', 'readonly');
-            
-            const culturesRequest = culturesTx.objectStore('cultures').getAll();
-            const milieuxRequest = milieuxTx.objectStore('milieux').getAll();
-            
-            culturesRequest.onsuccess = () => setCultures(culturesRequest.result);
-            milieuxRequest.onsuccess = () => setMilieux(milieuxRequest.result);
+            const culturesData = await fetchModuleData('cultures');
+            const milieuxData = await fetchModuleData('milieux');
+            if (culturesData) setCultures(culturesData);
+            if (milieuxData) setMilieux(milieuxData);
         } catch (error) {
             console.error('Erreur chargement:', error);
             showToast('Erreur lors du chargement des données', 'error');
         }
     };
 
-    const saveData = async () => {
+    const schedulePlanningEvent = async (culture: Culture, nextDateStr: string) => {
+        const eventData = {
+            id: Date.now().toString(),
+            title: `Repiquage : ${culture.nom}`,
+            resource: 'Salle de Culture A',
+            time: '09:00',
+            date: nextDateStr,
+            module: 'Cultures Cellulaires',
+            reminder: true,
+            priority: 'importante',
+            objective: `Passage de la lignée ${culture.nom}. Passage P${culture.passage}.`,
+            safetyChecked: false,
+            archived: false
+        };
+
         try {
-            const db = await openDB();
-            const tx = db.transaction(['cultures', 'milieux'], 'readwrite');
-            
-            const culturesStore = tx.objectStore('cultures');
-            const milieuxStore = tx.objectStore('milieux');
-            
-            await culturesStore.clear();
-            await milieuxStore.clear();
-            
-            for (const culture of cultures) {
-                await culturesStore.add(culture);
-            }
-            for (const milieu of milieux) {
-                await milieuxStore.add(milieu);
-            }
-            
-            showToast('Données sauvegardées', 'success');
+            await saveModuleItem('planning', eventData);
         } catch (error) {
-            console.error('Erreur sauvegarde:', error);
-            showToast('Erreur lors de la sauvegarde', 'error');
+            console.error('Error scheduling planning event:', error);
         }
     };
 
-    // IndexedDB
-    const openDB = (): Promise<IDBDatabase> => {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open('CultureCellsDB', 1);
-            
-            request.onerror = () => reject(request.error);
-            request.onsuccess = () => resolve(request.result);
-            
-            request.onupgradeneeded = (event) => {
-                const db = (event.target as IDBOpenDBRequest).result;
-                
-                if (!db.objectStoreNames.contains('cultures')) {
-                    db.createObjectStore('cultures', { keyPath: 'id' });
-                }
-                if (!db.objectStoreNames.contains('milieux')) {
-                    db.createObjectStore('milieux', { keyPath: 'id' });
-                }
-            };
-        });
-    };
-
     // CRUD Cultures
-    const addCulture = async (culture: Omit<Culture, 'id' | 'history'>) => {
+    const addCulture = async (data: any) => {
         const newCulture: Culture = {
-            ...culture,
+            ...data,
             id: Date.now().toString(),
             history: [{
                 id: Date.now().toString(),
                 date: new Date().toISOString(),
                 type: 'creation',
-                details: { nom: culture.nom }
+                details: { nom: data.nom }
             }]
         };
         
         setCultures(prev => [...prev, newCulture]);
         showToast('Culture ajoutée', 'success');
         
-        try {
-            const db = await openDB();
-            await db.transaction('cultures', 'readwrite').objectStore('cultures').add(newCulture);
-        } catch (error) {
-            console.error('Erreur ajout:', error);
-        }
+        const nextDate = new Date(newCulture.date);
+        nextDate.setDate(nextDate.getDate() + (newCulture.intervalle || 3));
+        await schedulePlanningEvent(newCulture, nextDate.toISOString().split('T')[0]);
+        
+        await saveModuleItem('cultures', newCulture);
     };
 
     const updateCulture = async (id: string, updates: Partial<Culture>) => {
-        setCultures(prev => prev.map(c => {
+        const updatedCultures = cultures.map(c => {
             if (c.id === id) {
                 const updated = { ...c, ...updates };
                 updated.history = [...c.history, {
@@ -176,18 +146,14 @@ const CultureCells = () => {
                 return updated;
             }
             return c;
-        }));
+        });
         
+        setCultures(updatedCultures);
         showToast('Culture mise à jour', 'success');
         
-        try {
-            const db = await openDB();
-            const culture = cultures.find(c => c.id === id);
-            if (culture) {
-                await db.transaction('cultures', 'readwrite').objectStore('cultures').put({ ...culture, ...updates });
-            }
-        } catch (error) {
-            console.error('Erreur mise à jour:', error);
+        const updated = updatedCultures.find(c => c.id === id);
+        if (updated) {
+            await saveModuleItem('cultures', updated);
         }
     };
 
@@ -196,27 +162,25 @@ const CultureCells = () => {
         
         setCultures(prev => prev.filter(c => c.id !== id));
         showToast('Culture supprimée', 'success');
-        
-        try {
-            const db = await openDB();
-            await db.transaction('cultures', 'readwrite').objectStore('cultures').delete(id);
-        } catch (error) {
-            console.error('Erreur suppression:', error);
-        }
+        await deleteModuleItem('cultures', id);
     };
 
     const repiquerCulture = async (id: string) => {
         const culture = cultures.find(c => c.id === id);
         if (!culture) return;
         
-        const updates = {
-            lastRepiquage: new Date().toISOString(),
-            passage: culture.passage + 1
-        };
-        
-        setCultures(prev => prev.map(c => {
+        const today = new Date().toISOString().split('T')[0];
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + culture.intervalle);
+        const nextDateStr = nextDate.toISOString().split('T')[0];
+
+        const updatedCultures = cultures.map(c => {
             if (c.id === id) {
-                const updated = { ...c, ...updates };
+                const updated = { 
+                    ...c, 
+                    lastRepiquage: today,
+                    passage: c.passage + 1
+                };
                 updated.history = [...c.history, {
                     id: Date.now().toString(),
                     date: new Date().toISOString(),
@@ -226,32 +190,27 @@ const CultureCells = () => {
                 return updated;
             }
             return c;
-        }));
+        });
         
-        showToast(`Culture repiquée (P${updates.passage})`, 'success');
+        setCultures(updatedCultures);
+        showToast(`Culture repiquée (P${culture.passage + 1})`, 'success');
+        await schedulePlanningEvent(culture, nextDateStr);
         
-        try {
-            const db = await openDB();
-            const updatedCulture = { ...culture, ...updates };
-            await db.transaction('cultures', 'readwrite').objectStore('cultures').put(updatedCulture);
-        } catch (error) {
-            console.error('Erreur repiquage:', error);
+        const updated = updatedCultures.find(c => c.id === id);
+        if (updated) {
+            await saveModuleItem('cultures', updated);
         }
     };
 
     const cryopreserverCulture = async (cultureId: string, cryoData: any) => {
-        const culture = cultures.find(c => c.id === cultureId);
-        if (!culture) return;
-        
-        const updates = {
-            statut: 'cryoconservée' as const,
-            cryoDate: new Date().toISOString(),
-            ...cryoData
-        };
-        
-        setCultures(prev => prev.map(c => {
+        const updatedCultures = cultures.map(c => {
             if (c.id === cultureId) {
-                const updated = { ...c, ...updates };
+                const updated = { 
+                    ...c, 
+                    statut: 'cryoconservée' as const,
+                    cryoDate: new Date().toISOString(),
+                    ...cryoData
+                };
                 updated.history = [...c.history, {
                     id: Date.now().toString(),
                     date: new Date().toISOString(),
@@ -261,21 +220,19 @@ const CultureCells = () => {
                 return updated;
             }
             return c;
-        }));
+        });
         
+        setCultures(updatedCultures);
         showToast('Culture cryoconservée', 'success');
         
-        try {
-            const db = await openDB();
-            const updatedCulture = { ...culture, ...updates };
-            await db.transaction('cultures', 'readwrite').objectStore('cultures').put(updatedCulture);
-        } catch (error) {
-            console.error('Erreur cryo:', error);
+        const updated = updatedCultures.find(c => c.id === cultureId);
+        if (updated) {
+            await saveModuleItem('cultures', updated);
         }
     };
 
     const reprendreCulture = async (id: string) => {
-        setCultures(prev => prev.map(c => {
+        const updatedCultures = cultures.map(c => {
             if (c.id === id) {
                 const updated = { ...c, statut: 'active' as const };
                 updated.history = [...c.history, {
@@ -287,27 +244,28 @@ const CultureCells = () => {
                 return updated;
             }
             return c;
-        }));
+        });
         
+        setCultures(updatedCultures);
         showToast('Culture reprise', 'success');
+        
+        const updated = updatedCultures.find(c => c.id === id);
+        if (updated) {
+            await saveModuleItem('cultures', updated);
+        }
     };
 
     // CRUD Milieux
-    const addMilieu = async (milieu: Omit<Milieu, 'id'>) => {
+    const addMilieu = async (data: any) => {
         const newMilieu: Milieu = {
-            ...milieu,
-            id: Date.now().toString()
+            ...data,
+            id: Date.now().toString(),
+            dateAjout: new Date().toISOString()
         };
         
         setMilieux(prev => [...prev, newMilieu]);
         showToast('Milieu ajouté', 'success');
-        
-        try {
-            const db = await openDB();
-            await db.transaction('milieux', 'readwrite').objectStore('milieux').add(newMilieu);
-        } catch (error) {
-            console.error('Erreur ajout milieu:', error);
-        }
+        await saveModuleItem('milieux', newMilieu);
     };
 
     const deleteMilieu = async (id: string) => {
@@ -315,13 +273,7 @@ const CultureCells = () => {
         
         setMilieux(prev => prev.filter(m => m.id !== id));
         showToast('Milieu supprimé', 'success');
-        
-        try {
-            const db = await openDB();
-            await db.transaction('milieux', 'readwrite').objectStore('milieux').delete(id);
-        } catch (error) {
-            console.error('Erreur suppression milieu:', error);
-        }
+        await deleteModuleItem('milieux', id);
     };
 
     // Export/Import
@@ -348,7 +300,6 @@ const CultureCells = () => {
                 if (data.cultures && data.milieux) {
                     setCultures(data.cultures);
                     setMilieux(data.milieux);
-                    await saveData();
                     showToast('Données importées', 'success');
                 }
             } catch (error) {
@@ -358,7 +309,7 @@ const CultureCells = () => {
         reader.readAsText(file);
     };
 
-    // Calculer les statistiques
+    // Stats
     const stats = {
         total: cultures.length,
         active: cultures.filter(c => c.statut === 'active').length,
@@ -372,14 +323,9 @@ const CultureCells = () => {
         }).length
     };
 
-    // Filtrer les cultures
     const filteredCultures = cultures.filter(culture => {
-        // Filtre par recherche
-        if (searchQuery && !culture.nom.toLowerCase().includes(searchQuery.toLowerCase())) {
-            return false;
-        }
+        if (searchQuery && !culture.nom.toLowerCase().includes(searchQuery.toLowerCase())) return false;
         
-        // Filtre par mode
         if (filterMode === 'active' && culture.statut !== 'active') return false;
         if (filterMode === 'repiquage') {
             if (culture.statut !== 'active') return false;
@@ -389,21 +335,18 @@ const CultureCells = () => {
             if (daysSince < culture.intervalle) return false;
         }
         
-        // Filtre par onglet
         if (activeTab === 'cryo' && culture.statut !== 'cryoconservée') return false;
         if (activeTab === 'cultures' && culture.statut === 'cryoconservée') return false;
         
         return true;
     });
 
-    // Calculer les jours depuis dernier repiquage
     const getDaysSinceRepiquage = (culture: Culture) => {
         const referenceDate = new Date(culture.lastRepiquage || culture.date);
         const today = new Date();
         return Math.floor((today.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24));
     };
 
-    // Obtenir le statut de repiquage
     const getRepiquageStatus = (culture: Culture) => {
         if (culture.statut !== 'active') return 'none';
         const days = getDaysSinceRepiquage(culture);
@@ -417,7 +360,8 @@ const CultureCells = () => {
             minHeight: '100vh', 
             background: c.bgPrimary, 
             color: c.textPrimary,
-            paddingTop: '80px'
+            paddingTop: '80px',
+            fontFamily: 'var(--font-family)'
         }}>
             {/* Header */}
             <header style={{
@@ -466,11 +410,11 @@ const CultureCells = () => {
                                 <Beaker size={24} />
                             </div>
                             <div>
-                                <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
+                                <h1 style={{ fontSize: '1.25rem', fontWeight: 900, margin: 0, color: '#ffffff' }}>
                                     Gestionnaire de Cultures Cellulaires
                                 </h1>
-                                <p style={{ margin: 0, fontSize: '0.8rem', color: c.textSecondary }}>
-                                    Suivi et gestion des cultures
+                                <p style={{ margin: 0, fontSize: '0.8rem', color: c.textSecondary, fontWeight: 600 }}>
+                                    SUIVI ET GESTION SCIENTIFIQUE
                                 </p>
                             </div>
                         </div>
@@ -487,7 +431,6 @@ const CultureCells = () => {
                         }}>
                             <button
                                 onClick={() => setActiveTab('cultures')}
-                                className="btn"
                                 style={{
                                     background: activeTab === 'cultures' ? c.accentPrimary : 'transparent',
                                     color: activeTab === 'cultures' ? 'white' : c.textPrimary,
@@ -496,14 +439,16 @@ const CultureCells = () => {
                                     borderRadius: '0.5rem',
                                     cursor: 'pointer',
                                     fontSize: '0.85rem',
-                                    fontWeight: 600
+                                    fontWeight: 700,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
                                 }}
                             >
-                                🔬 Cultures
+                                <Beaker size={16} /> Cultures
                             </button>
                             <button
                                 onClick={() => setActiveTab('milieux')}
-                                className="btn"
                                 style={{
                                     background: activeTab === 'milieux' ? c.accentPrimary : 'transparent',
                                     color: activeTab === 'milieux' ? 'white' : c.textPrimary,
@@ -512,14 +457,17 @@ const CultureCells = () => {
                                     borderRadius: '0.5rem',
                                     cursor: 'pointer',
                                     fontSize: '0.85rem',
-                                    fontWeight: 600
+                                    fontWeight: 700,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
                                 }}
                             >
-                                🧪 Milieux
+                                <Activity size={16} /> Milieux
                             </button>
                         </div>
 
-                        <button className="btn" style={{
+                        <button style={{
                             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                             color: 'white',
                             border: 'none',
@@ -527,7 +475,7 @@ const CultureCells = () => {
                             borderRadius: '0.75rem',
                             cursor: 'pointer',
                             fontSize: '0.85rem',
-                            fontWeight: 600,
+                            fontWeight: 700,
                             display: 'flex',
                             alignItems: 'center',
                             gap: '0.5rem'
@@ -537,10 +485,10 @@ const CultureCells = () => {
                             setShowCultureModal(true);
                         }}
                         >
-                            <Plus size={18} /> Culture
+                            <Plus size={18} /> Souche
                         </button>
 
-                        <button className="btn" style={{
+                        <button style={{
                             background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
                             color: 'white',
                             border: 'none',
@@ -548,7 +496,7 @@ const CultureCells = () => {
                             borderRadius: '0.75rem',
                             cursor: 'pointer',
                             fontSize: '0.85rem',
-                            fontWeight: 600,
+                            fontWeight: 700,
                             display: 'flex',
                             alignItems: 'center',
                             gap: '0.5rem'
@@ -561,7 +509,7 @@ const CultureCells = () => {
                             <Plus size={18} /> Milieu
                         </button>
 
-                        <button className="btn" style={{
+                        <button style={{
                             background: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
                             color: 'white',
                             border: 'none',
@@ -569,7 +517,7 @@ const CultureCells = () => {
                             borderRadius: '0.75rem',
                             cursor: 'pointer',
                             fontSize: '0.85rem',
-                            fontWeight: 600,
+                            fontWeight: 700,
                             display: 'flex',
                             alignItems: 'center',
                             gap: '0.5rem'
@@ -579,7 +527,7 @@ const CultureCells = () => {
                             <Snowflake size={18} /> Cryo
                         </button>
 
-                        <button className="btn" style={{
+                        <button style={{
                             background: c.cardBg,
                             color: c.textPrimary,
                             border: `1px solid ${c.borderColor}`,
@@ -587,7 +535,7 @@ const CultureCells = () => {
                             borderRadius: '0.75rem',
                             cursor: 'pointer',
                             fontSize: '0.85rem',
-                            fontWeight: 600,
+                            fontWeight: 700,
                             display: 'flex',
                             alignItems: 'center',
                             gap: '0.5rem'
@@ -605,7 +553,7 @@ const CultureCells = () => {
                             borderRadius: '0.75rem',
                             cursor: 'pointer',
                             fontSize: '0.85rem',
-                            fontWeight: 600,
+                            fontWeight: 700,
                             display: 'flex',
                             alignItems: 'center',
                             gap: '0.5rem'
@@ -622,8 +570,7 @@ const CultureCells = () => {
                 </div>
             </header>
 
-            {/* Container */}
-            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem' }}>
+            <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem' }}>
                 {/* Stats Bar */}
                 <div style={{
                     display: 'grid',
@@ -647,18 +594,8 @@ const CultureCells = () => {
                             border: `2px solid ${filterMode === 'all' ? c.accentPrimary : 'transparent'}`
                         }}
                     >
-                        <div style={{
-                            fontSize: '2rem',
-                            fontWeight: 700,
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
-                        }}>
-                            {stats.total}
-                        </div>
-                        <div style={{ color: c.textSecondary, fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                            Cultures totales
-                        </div>
+                        <div style={{ fontSize: '2rem', fontWeight: 900, color: c.accentPrimary }}>{stats.total}</div>
+                        <div style={{ color: c.textSecondary, fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 800, textTransform: 'uppercase' }}>Cultures totales</div>
                     </div>
 
                     <div 
@@ -673,18 +610,8 @@ const CultureCells = () => {
                             border: `2px solid ${filterMode === 'active' ? c.accentPrimary : 'transparent'}`
                         }}
                     >
-                        <div style={{
-                            fontSize: '2rem',
-                            fontWeight: 700,
-                            background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
-                        }}>
-                            {stats.active}
-                        </div>
-                        <div style={{ color: c.textSecondary, fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                            Cultures actives
-                        </div>
+                        <div style={{ fontSize: '2rem', fontWeight: 900, color: '#38ef7d' }}>{stats.active}</div>
+                        <div style={{ color: c.textSecondary, fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 800, textTransform: 'uppercase' }}>Cultures actives</div>
                     </div>
 
                     <div 
@@ -698,18 +625,8 @@ const CultureCells = () => {
                             transition: 'all 0.3s'
                         }}
                     >
-                        <div style={{
-                            fontSize: '2rem',
-                            fontWeight: 700,
-                            background: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
-                        }}>
-                            {stats.cryo}
-                        </div>
-                        <div style={{ color: c.textSecondary, fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                            Souches cryoconservées
-                        </div>
+                        <div style={{ fontSize: '2rem', fontWeight: 900, color: '#60a5fa' }}>{stats.cryo}</div>
+                        <div style={{ color: c.textSecondary, fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 800, textTransform: 'uppercase' }}>Cryoconservées</div>
                     </div>
 
                     <div 
@@ -724,18 +641,8 @@ const CultureCells = () => {
                             border: `2px solid ${filterMode === 'repiquage' ? c.accentPrimary : 'transparent'}`
                         }}
                     >
-                        <div style={{
-                            fontSize: '2rem',
-                            fontWeight: 700,
-                            background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent'
-                        }}>
-                            {stats.repiquage}
-                        </div>
-                        <div style={{ color: c.textSecondary, fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                            À repiquer
-                        </div>
+                        <div style={{ fontSize: '2rem', fontWeight: 900, color: '#f59e0b' }}>{stats.repiquage}</div>
+                        <div style={{ color: c.textSecondary, fontSize: '0.8rem', marginTop: '0.5rem', fontWeight: 800, textTransform: 'uppercase' }}>À repiquer</div>
                     </div>
                 </div>
 
@@ -753,19 +660,10 @@ const CultureCells = () => {
                     border: `1px solid ${c.borderColor}`
                 }}>
                     <div style={{ flex: 1, minWidth: '250px', maxWidth: '400px', position: 'relative' }}>
-                        <Search 
-                            size={20} 
-                            style={{ 
-                                position: 'absolute', 
-                                left: '1rem', 
-                                top: '50%', 
-                                transform: 'translateY(-50%)',
-                                color: c.textSecondary
-                            }} 
-                        />
+                        <Search size={20} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: c.accentPrimary }} />
                         <input
                             type="text"
-                            placeholder="🔍 Rechercher..."
+                            placeholder="Rechercher une souche..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             style={{
@@ -775,408 +673,214 @@ const CultureCells = () => {
                                 border: `1px solid ${c.borderColor}`,
                                 background: c.cardBg,
                                 color: c.textPrimary,
-                                fontSize: '0.9rem'
+                                fontSize: '0.9rem',
+                                outline: 'none'
                             }}
                         />
                     </div>
 
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <span style={{ color: c.textSecondary, fontSize: '0.9rem', fontWeight: 600 }}>
-                            Affichage:
-                        </span>
+                    <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                             onClick={() => setViewMode('grid')}
                             style={{
-                                padding: '0.5rem 1rem',
+                                padding: '0.5rem',
                                 borderRadius: '0.5rem',
-                                border: `2px solid ${viewMode === 'grid' ? c.accentPrimary : c.borderColor}`,
                                 background: viewMode === 'grid' ? c.accentPrimary : c.cardBg,
                                 color: viewMode === 'grid' ? 'white' : c.textPrimary,
-                                cursor: 'pointer',
-                                fontSize: '0.85rem',
-                                fontWeight: 600,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem'
+                                border: `1px solid ${c.borderColor}`,
+                                cursor: 'pointer'
                             }}
                         >
-                            <GridIcon size={16} /> Carte
+                            <GridIcon size={20} />
                         </button>
                         <button
                             onClick={() => setViewMode('list')}
                             style={{
-                                padding: '0.5rem 1rem',
+                                padding: '0.5rem',
                                 borderRadius: '0.5rem',
-                                border: `2px solid ${viewMode === 'list' ? c.accentPrimary : c.borderColor}`,
                                 background: viewMode === 'list' ? c.accentPrimary : c.cardBg,
                                 color: viewMode === 'list' ? 'white' : c.textPrimary,
-                                cursor: 'pointer',
-                                fontSize: '0.85rem',
-                                fontWeight: 600,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem'
+                                border: `1px solid ${c.borderColor}`,
+                                cursor: 'pointer'
                             }}
                         >
-                            <List size={16} /> Liste
+                            <List size={20} />
                         </button>
                     </div>
                 </div>
 
                 {/* Content */}
-                {activeTab === 'milieux' ? (
-                    // Vue Milieux
-                    <div>
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                            gap: '1.5rem'
-                        }}>
-                            {milieux.map(milieu => (
-                                <div key={milieu.id} style={{
-                                    background: c.cardBg,
-                                    border: `1px solid ${c.borderColor}`,
-                                    borderRadius: '1rem',
-                                    padding: '1.5rem',
-                                    transition: 'all 0.3s'
-                                }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
-                                        <div>
-                                            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
-                                                {milieu.nom}
-                                            </h3>
-                                            <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: c.textSecondary }}>
-                                                {milieu.type}
-                                            </p>
-                                        </div>
-                                        <button
-                                            onClick={() => deleteMilieu(milieu.id)}
-                                            style={{
-                                                background: 'rgba(239, 68, 68, 0.1)',
-                                                border: 'none',
-                                                color: '#ef4444',
-                                                padding: '0.5rem',
-                                                borderRadius: '0.5rem',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                    <div style={{ fontSize: '0.85rem', color: c.textSecondary }}>
-                                        <p><strong>Fournisseur:</strong> {milieu.fournisseur}</p>
-                                        <p><strong>Stockage:</strong> {milieu.stockage}</p>
-                                        {milieu.notes && <p><strong>Notes:</strong> {milieu.notes}</p>}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        {milieux.length === 0 && (
-                            <div style={{
-                                textAlign: 'center',
-                                padding: '4rem 2rem',
-                                background: c.bgSecondary,
-                                borderRadius: '1rem',
-                                border: `1px solid ${c.borderColor}`
-                            }}>
-                                <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🧪</div>
-                                <h3 style={{ marginBottom: '0.5rem' }}>Aucun milieu enregistré</h3>
-                                <p style={{ color: c.textSecondary }}>
-                                    Utilisez le bouton "➕ Milieu" pour en ajouter un
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                ) : filteredCultures.length === 0 ? (
-                    <div style={{
-                        textAlign: 'center',
-                        padding: '4rem 2rem',
-                        background: c.bgSecondary,
-                        borderRadius: '1rem',
-                        border: `1px solid ${c.borderColor}`
-                    }}>
-                        <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🧫</div>
-                        <h3 style={{ marginBottom: '0.5rem' }}>Aucune culture trouvée</h3>
-                        <p style={{ color: c.textSecondary }}>
-                            {cultures.length === 0 
-                                ? 'Utilisez le bouton "➕ Culture" pour en ajouter une'
-                                : 'Aucune culture ne correspond aux filtres sélectionnés'
-                            }
-                        </p>
-                    </div>
-                ) : (
+                {activeTab === 'cultures' && (
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: viewMode === 'grid' 
-                            ? 'repeat(auto-fill, minmax(320px, 1fr))' 
-                            : '1fr',
+                        gridTemplateColumns: viewMode === 'grid' ? 'repeat(auto-fill, minmax(350px, 1fr))' : '1fr',
                         gap: '1.5rem'
                     }}>
                         {filteredCultures.map(culture => {
-                            const repiquageStatus = getRepiquageStatus(culture);
-                            const daysSince = getDaysSinceRepiquage(culture);
+                            const status = getRepiquageStatus(culture);
                             const milieu = milieux.find(m => m.id === culture.milieuId);
                             
                             return (
                                 <div key={culture.id} style={{
-                                    background: c.cardBg,
-                                    border: `2px solid ${
-                                        repiquageStatus === 'urgent' ? '#ef4444' :
-                                        repiquageStatus === 'warning' ? '#f59e0b' :
-                                        c.borderColor
-                                    }`,
+                                    background: c.bgSecondary,
                                     borderRadius: '1rem',
                                     padding: '1.5rem',
-                                    transition: 'all 0.3s',
+                                    border: `1px solid ${c.borderColor}`,
                                     position: 'relative',
                                     overflow: 'hidden'
                                 }}>
-                                    {/* Badge statut */}
                                     <div style={{
                                         position: 'absolute',
-                                        top: '1rem',
-                                        right: '1rem',
-                                        padding: '0.25rem 0.75rem',
-                                        borderRadius: '1rem',
-                                        fontSize: '0.75rem',
-                                        fontWeight: 600,
-                                        background: culture.statut === 'active' ? 'rgba(16, 185, 129, 0.2)' :
-                                                   culture.statut === 'cryoconservée' ? 'rgba(59, 130, 246, 0.2)' :
-                                                   'rgba(156, 163, 175, 0.2)',
-                                        color: culture.statut === 'active' ? '#10b981' :
-                                              culture.statut === 'cryoconservée' ? '#3b82f6' :
-                                              '#9ca3af'
-                                    }}>
-                                        {culture.statut === 'active' ? '🟢 Active' :
-                                         culture.statut === 'cryoconservée' ? '❄️ Cryo' :
-                                         '⚫ Terminée'}
-                                    </div>
+                                        top: 0,
+                                        left: 0,
+                                        width: '4px',
+                                        height: '100%',
+                                        background: status === 'urgent' ? '#ef4444' : status === 'warning' ? '#f59e0b' : c.accentPrimary
+                                    }} />
 
-                                    {/* Header */}
-                                    <div style={{ marginBottom: '1rem', paddingRight: '5rem' }}>
-                                        <h3 style={{ 
-                                            margin: 0, 
-                                            fontSize: '1.2rem', 
-                                            fontWeight: 700,
-                                            marginBottom: '0.5rem'
-                                        }}>
-                                            {culture.nom}
-                                        </h3>
-                                        <div style={{ 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            gap: '0.5rem',
-                                            fontSize: '0.85rem',
-                                            color: c.textSecondary
-                                        }}>
-                                            <Calendar size={14} />
-                                            <span>Passage {culture.passage}</span>
-                                            <span>•</span>
-                                            <span>{milieu?.nom || 'Milieu inconnu'}</span>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                        <div>
+                                            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>{culture.nom}</h3>
+                                            <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem', color: c.textSecondary, fontWeight: 700 }}>
+                                                PASSAGE P{culture.passage}
+                                            </p>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button 
+                                                onClick={() => { setSelectedCulture(culture); setShowHistoryModal(true); }}
+                                                style={{ background: 'none', border: 'none', color: c.textSecondary, cursor: 'pointer' }}
+                                            >
+                                                <LucideHistory size={18} />
+                                            </button>
+                                            <button 
+                                                onClick={() => { setEditingCulture(culture); setShowCultureModal(true); }}
+                                                style={{ background: 'none', border: 'none', color: c.textSecondary, cursor: 'pointer' }}
+                                            >
+                                                <Edit size={18} />
+                                            </button>
+                                            <button 
+                                                onClick={() => deleteCulture(culture.id)}
+                                                style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
                                         </div>
                                     </div>
 
-                                    {/* Alerte repiquage */}
-                                    {repiquageStatus !== 'none' && repiquageStatus !== 'ok' && (
-                                        <div style={{
-                                            background: repiquageStatus === 'urgent' 
-                                                ? 'rgba(239, 68, 68, 0.1)' 
-                                                : 'rgba(245, 158, 11, 0.1)',
-                                            border: `1px solid ${repiquageStatus === 'urgent' ? '#ef4444' : '#f59e0b'}`,
-                                            borderRadius: '0.5rem',
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                            <Activity size={16} style={{ color: c.accentPrimary }} />
+                                            <span>Milieu: <strong>{milieu?.nom || 'Non spécifié'}</strong></span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                            <Calendar size={16} style={{ color: c.accentPrimary }} />
+                                            <span>Dernier passage: {new Date(culture.lastRepiquage || culture.date).toLocaleDateString()}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                                            <Clock size={16} style={{ color: c.accentPrimary }} />
+                                            <span>Age: {getDaysSinceRepiquage(culture)} jours / {culture.intervalle} j</span>
+                                        </div>
+                                    </div>
+
+                                    <button 
+                                        onClick={() => repiquerCulture(culture.id)}
+                                        style={{
+                                            width: '100%',
                                             padding: '0.75rem',
-                                            marginBottom: '1rem',
+                                            borderRadius: '0.75rem',
+                                            background: status === 'urgent' ? '#ef4444' : c.accentPrimary,
+                                            color: 'white',
+                                            border: 'none',
+                                            fontWeight: 800,
+                                            cursor: 'pointer',
                                             display: 'flex',
                                             alignItems: 'center',
+                                            justifyContent: 'center',
                                             gap: '0.5rem',
-                                            fontSize: '0.85rem',
-                                            color: repiquageStatus === 'urgent' ? '#ef4444' : '#f59e0b'
-                                        }}>
-                                            <AlertCircle size={16} />
-                                            <span>
-                                                {repiquageStatus === 'urgent' 
-                                                    ? `⚠️ Repiquage urgent (${daysSince}j/${culture.intervalle}j)`
-                                                    : `⏰ Repiquage bientôt (${daysSince}j/${culture.intervalle}j)`
-                                                }
-                                            </span>
-                                        </div>
-                                    )}
-
-                                    {/* Info cryo */}
-                                    {culture.statut === 'cryoconservée' && culture.cryoDate && (
-                                        <div style={{
-                                            background: 'rgba(59, 130, 246, 0.1)',
-                                            border: '1px solid #3b82f6',
-                                            borderRadius: '0.5rem',
-                                            padding: '0.75rem',
-                                            marginBottom: '1rem',
-                                            fontSize: '0.85rem'
-                                        }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                                                <Snowflake size={14} />
-                                                <strong>Cryoconservée</strong>
-                                            </div>
-                                            <div style={{ color: c.textSecondary, fontSize: '0.8rem' }}>
-                                                {new Date(culture.cryoDate).toLocaleDateString()}
-                                                {culture.cryoLocation && ` • ${culture.cryoLocation}`}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Conditions */}
-                                    {culture.conditions && culture.conditions.length > 0 && (
-                                        <div style={{ marginBottom: '1rem' }}>
-                                            <div style={{ 
-                                                display: 'flex', 
-                                                flexWrap: 'wrap', 
-                                                gap: '0.5rem',
-                                                fontSize: '0.8rem'
-                                            }}>
-                                                {culture.conditions.map((cond, idx) => (
-                                                    <span key={idx} style={{
-                                                        background: c.bgSecondary,
-                                                        padding: '0.25rem 0.75rem',
-                                                        borderRadius: '0.5rem',
-                                                        border: `1px solid ${c.borderColor}`
-                                                    }}>
-                                                        {cond}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Notes */}
-                                    {culture.notes && (
-                                        <div style={{
-                                            fontSize: '0.85rem',
-                                            color: c.textSecondary,
-                                            marginBottom: '1rem',
-                                            fontStyle: 'italic'
-                                        }}>
-                                            "{culture.notes}"
-                                        </div>
-                                    )}
-
-                                    {/* Actions */}
-                                    <div style={{ 
-                                        display: 'flex', 
-                                        gap: '0.5rem', 
-                                        flexWrap: 'wrap',
-                                        marginTop: '1rem',
-                                        paddingTop: '1rem',
-                                        borderTop: `1px solid ${c.borderColor}`
-                                    }}>
-                                        {culture.statut === 'active' && (
-                                            <button
-                                                onClick={() => repiquerCulture(culture.id)}
-                                                style={{
-                                                    flex: 1,
-                                                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    padding: '0.5rem 1rem',
-                                                    borderRadius: '0.5rem',
-                                                    cursor: 'pointer',
-                                                    fontSize: '0.85rem',
-                                                    fontWeight: 600,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    gap: '0.5rem'
-                                                }}
-                                            >
-                                                <Flame size={16} /> Repiquer
-                                            </button>
-                                        )}
-                                        
-                                        {culture.statut === 'cryoconservée' && (
-                                            <button
-                                                onClick={() => reprendreCulture(culture.id)}
-                                                style={{
-                                                    flex: 1,
-                                                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    padding: '0.5rem 1rem',
-                                                    borderRadius: '0.5rem',
-                                                    cursor: 'pointer',
-                                                    fontSize: '0.85rem',
-                                                    fontWeight: 600,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    gap: '0.5rem'
-                                                }}
-                                            >
-                                                <Flame size={16} /> Reprendre
-                                            </button>
-                                        )}
-                                        
-                                        <button
-                                            onClick={() => {
-                                                setSelectedCulture(culture);
-                                                setShowHistoryModal(true);
-                                            }}
-                                            style={{
-                                                background: c.cardBg,
-                                                border: `1px solid ${c.borderColor}`,
-                                                color: c.textPrimary,
-                                                padding: '0.5rem',
-                                                borderRadius: '0.5rem',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                        >
-                                            <History size={16} />
-                                        </button>
-                                        
-                                        <button
-                                            onClick={() => {
-                                                setEditingCulture(culture);
-                                                setShowCultureModal(true);
-                                            }}
-                                            style={{
-                                                background: c.cardBg,
-                                                border: `1px solid ${c.borderColor}`,
-                                                color: c.textPrimary,
-                                                padding: '0.5rem',
-                                                borderRadius: '0.5rem',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                        >
-                                            <Edit size={16} />
-                                        </button>
-                                        
-                                        <button
-                                            onClick={() => deleteCulture(culture.id)}
-                                            style={{
-                                                background: 'rgba(239, 68, 68, 0.1)',
-                                                border: 'none',
-                                                color: '#ef4444',
-                                                padding: '0.5rem',
-                                                borderRadius: '0.5rem',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em'
+                                        }}
+                                    >
+                                        <Flame size={18} /> Marquer passage
+                                    </button>
                                 </div>
                             );
                         })}
                     </div>
                 )}
 
-            </div>
+                {activeTab === 'milieux' && (
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                        gap: '1.5rem'
+                    }}>
+                        {milieux.map(milieu => (
+                            <div key={milieu.id} style={{
+                                background: c.bgSecondary,
+                                borderRadius: '1rem',
+                                padding: '1.5rem',
+                                border: `1px solid ${c.borderColor}`
+                            }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>{milieu.nom}</h3>
+                                    <button 
+                                        onClick={() => deleteMilieu(milieu.id)}
+                                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                                <p style={{ fontSize: '0.85rem', color: c.textSecondary, marginBottom: '0.5rem' }}>Type: {milieu.type}</p>
+                                <p style={{ fontSize: '0.85rem', color: c.textSecondary }}>Fournisseur: {milieu.fournisseur}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {activeTab === 'cryo' && (
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+                        gap: '1.5rem'
+                    }}>
+                        {filteredCultures.map(culture => (
+                            <div key={culture.id} style={{
+                                background: c.bgSecondary,
+                                borderRadius: '1rem',
+                                padding: '1.5rem',
+                                border: `1px solid ${c.borderColor}`,
+                                borderLeft: `4px solid #60a5fa`
+                            }}>
+                                <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem', fontWeight: 800 }}>{culture.nom}</h3>
+                                <div style={{ fontSize: '0.85rem', color: c.textSecondary, marginBottom: '1.5rem' }}>
+                                    <p style={{ margin: '0 0 0.5rem 0' }}>Emplacement: {culture.cryoLocation}</p>
+                                    <p style={{ margin: '0' }}>Date: {new Date(culture.cryoDate || '').toLocaleDateString()}</p>
+                                </div>
+                                <button 
+                                    onClick={() => reprendreCulture(culture.id)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.75rem',
+                                        borderRadius: '0.75rem',
+                                        background: '#60a5fa',
+                                        color: 'white',
+                                        border: 'none',
+                                        fontWeight: 800,
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '0.5rem'
+                                    }}
+                                >
+                                    <Snowflake size={18} /> Reprendre culture
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </main>
 
             {/* Modals */}
             <CultureModal
@@ -1185,14 +889,9 @@ const CultureCells = () => {
                     setShowCultureModal(false);
                     setEditingCulture(null);
                 }}
-                onSave={(data) => {
-                    if (editingCulture) {
-                        updateCulture(editingCulture.id, data);
-                    } else {
-                        addCulture(data);
-                    }
-                    setShowCultureModal(false);
-                    setEditingCulture(null);
+                onSave={(data: any) => {
+                    if (editingCulture) updateCulture(editingCulture.id, data);
+                    else addCulture(data);
                 }}
                 editing={editingCulture}
                 milieux={milieux}
@@ -1202,20 +901,14 @@ const CultureCells = () => {
             <MilieuModal
                 show={showMilieuModal}
                 onClose={() => setShowMilieuModal(false)}
-                onSave={(data) => {
-                    addMilieu(data);
-                    setShowMilieuModal(false);
-                }}
+                onSave={addMilieu}
                 theme={theme}
             />
 
             <CryoModal
                 show={showCryoModal}
                 onClose={() => setShowCryoModal(false)}
-                onSave={(cultureId, cryoData) => {
-                    cryopreserverCulture(cultureId, cryoData);
-                    setShowCryoModal(false);
-                }}
+                onSave={cryopreserverCulture}
                 cultures={cultures}
                 theme={theme}
             />

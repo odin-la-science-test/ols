@@ -17,7 +17,7 @@ const DesktopHugin = () => {
 
     const modules = [
         // Core
-        { id: 'messaging', name: 'Messagerie', desc: 'Gestion des messages et communications', icon: <Mail size={24} />, category: 'Core', path: '/hugin/messaging' },
+        { id: 'messaging', name: 'Messagerie', desc: 'Gestion des messages et communications', icon: <Mail size={24} />, category: 'Core', path: '/hugin/chat' },
         { id: 'planning', name: 'Planning', desc: 'Planification et calendrier', icon: <Calendar size={24} />, category: 'Core', path: '/hugin/planning' },
         { id: 'documents', name: 'Documents', desc: 'Gestion documentaire', icon: <HardDrive size={24} />, category: 'Core', path: '/hugin/documents' },
         { id: 'inventory', name: 'Inventaire', desc: 'Gestion de l\'inventaire', icon: <Beaker size={24} />, category: 'Core', path: '/hugin/inventory' },

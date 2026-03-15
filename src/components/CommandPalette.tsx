@@ -73,7 +73,7 @@ const CommandPalette = () => {
 
     const allPages: PageItem[] = [
         // Hugin Core
-        { id: 'messaging', label: 'Messaging & Chat', category: 'Communication', path: '/hugin/messaging', icon: <Mail size={18} />, moduleId: 'messaging' },
+        // MESSAGING DISABLED: { id: 'messaging', label: 'Messaging & Chat', category: 'Communication', path: '/hugin/messaging', icon: <Mail size={18} />, moduleId: 'messaging' },
         { id: 'planning', label: 'Lab Planning', category: 'Management', path: '/hugin/planning', icon: <Calendar size={18} />, moduleId: 'planning' },
         { id: 'projects', label: 'Project Mind', category: 'Management', path: '/hugin/projects', icon: <Layers size={18} />, moduleId: 'projects' },
         { id: 'inventory', label: 'LIMS Inventory', category: 'Management', path: '/hugin/inventory', icon: <Package size={18} />, moduleId: 'inventory' },
@@ -88,7 +88,9 @@ const CommandPalette = () => {
         { id: 'bibliography', label: 'Bibliography', category: 'Research', path: '/hugin/bibliography', icon: <Quote size={18} />, moduleId: 'bibliography' },
         { id: 'notebook', label: 'Lab Notebook', category: 'Research', path: '/hugin/notebook', icon: <BookOpen size={18} />, moduleId: 'notebook' },
         { id: 'stock', label: 'Reagent Stock', category: 'Management', path: '/hugin/stock', icon: <Package size={18} />, moduleId: 'stock' },
+        { id: 'chem-editor', label: 'Éditeur Chimique', category: 'Research', path: '/hugin/molecule-editor', icon: <Beaker size={18} />, moduleId: 'notebook' },
         { id: 'cryo', label: 'CryoKeeper', category: 'Management', path: '/hugin/cryo', icon: <Snowflake size={18} />, moduleId: 'cryo' },
+        { id: 'cryo3d', label: 'CryoKeeper 3D', category: 'Management', path: '/hugin/cryo3d', icon: <Snowflake size={18} />, moduleId: 'cryo' },
         { id: 'equip', label: 'EquipFlow', category: 'Management', path: '/hugin/equip', icon: <Activity size={18} />, moduleId: 'equip' },
         { id: 'budget', label: 'Grant Budget', category: 'Management', path: '/hugin/budget', icon: <Wallet size={18} />, moduleId: 'budget' },
         { id: 'sop', label: 'SOP Library', category: 'Management', path: '/hugin/sop', icon: <BookOpen size={18} />, moduleId: 'sop' },

@@ -24,7 +24,9 @@ const MODULE_TABLE_MAP: Record<string, string> = {
     'cultures': 'culture_tracking',
     'documents': 'documents',
     'it_archives': 'it_archives',
-    'meeting_signals': 'meeting_signals'
+    'meeting_signals': 'meeting_signals',
+    'cryo3d_freezers': 'cryo3d_freezers',
+    'cryo3d_boxes': 'cryo3d_boxes'
 };
 
 // Obtenir le nom de la table pour un module

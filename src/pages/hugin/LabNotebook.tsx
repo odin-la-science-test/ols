@@ -6,6 +6,10 @@ import { RichTextEditor } from '../../components/RichTextEditor';
 import { sanitizeHTML } from '../../utils/encryption';
 import { TableOfContents } from '../../components/TableOfContents';
 import '../../styles/rich-text-editor.css';
+import type { ExecutedProtocol } from './protocols/types';
+import { ProtocolSelectorModal } from './protocols/ProtocolSelectorModal';
+import { ExecutedProtocolBlock } from './protocols/ExecutedProtocolBlock';
+import { useProtocolStore } from './protocols/useProtocolStore';
 
 interface NotebookEntry {
   id: string;
@@ -20,6 +24,7 @@ interface NotebookEntry {
   collaborators?: string[];
   version?: number;
   lastModified?: string;
+  executedProtocols?: ExecutedProtocol[];
 }
 
 export const LabNotebook: React.FC = () => {
@@ -33,6 +38,10 @@ export const LabNotebook: React.FC = () => {
   const [filterSigned, setFilterSigned] = useState<'all' | 'signed' | 'unsigned'>('all');
   const [showTOC, setShowTOC] = useState(true);
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
+  const [showProtocolSelector, setShowProtocolSelector] = useState(false);
+  
+  const { protocols } = useProtocolStore();
+  const activeProtocols = protocols.filter(p => p.validated);
 
   useEffect(() => {
     const saved = localStorage.getItem('lab_notebook_entries');
@@ -67,7 +76,8 @@ export const LabNotebook: React.FC = () => {
       author: currentUser,
       collaborators: [],
       version: 1,
-      lastModified: new Date().toISOString()
+      lastModified: new Date().toISOString(),
+      executedProtocols: []
     };
     setCurrentEntry(newEntry);
   };
@@ -107,7 +117,8 @@ export const LabNotebook: React.FC = () => {
       signed: false,
       signature: undefined,
       version: 1,
-      lastModified: new Date().toISOString()
+      lastModified: new Date().toISOString(),
+      executedProtocols: currentEntry.executedProtocols ? JSON.parse(JSON.stringify(currentEntry.executedProtocols)) : []
     };
 
     const newEntries = [duplicate, ...entries];
@@ -155,6 +166,44 @@ export const LabNotebook: React.FC = () => {
       ...currentEntry,
       tags: currentEntry.tags.filter(t => t !== tag)
     });
+  };
+
+  const handleInsertProtocol = (protocol: any) => {
+    if (!currentEntry) return;
+    const executedProtocol: ExecutedProtocol = {
+      id: Date.now().toString(),
+      baseProtocolId: protocol.id,
+      baseProtocolName: protocol.name,
+      baseProtocolVersion: protocol.version || 1,
+      executedAt: new Date().toISOString(),
+      executedBy: localStorage.getItem('currentUser') || 'Utilisateur',
+      steps: protocol.steps.map((s: any) => ({ ...s, completed: false, deviationNote: '' })),
+      materials: protocol.materials.map((m: string) => ({ name: m, used: false, deviationNote: '' }))
+    };
+    
+    setCurrentEntry({
+      ...currentEntry,
+      executedProtocols: [...(currentEntry.executedProtocols || []), executedProtocol]
+    });
+    setShowProtocolSelector(false);
+    showToast('success', "Protocole inséré dans l'expérience");
+  };
+
+  const handleUpdateExecutedProtocol = (updatedProtocol: ExecutedProtocol) => {
+    if (!currentEntry) return;
+    const updatedProtocols = (currentEntry.executedProtocols || []).map(p => 
+      p.id === updatedProtocol.id ? updatedProtocol : p
+    );
+    setCurrentEntry({ ...currentEntry, executedProtocols: updatedProtocols });
+  };
+
+  const handleRemoveExecutedProtocol = (protocolId: string) => {
+    if (!currentEntry) return;
+    if (confirm("Retirer ce protocole de l'expérience ?")) {
+      const updatedProtocols = (currentEntry.executedProtocols || []).filter(p => p.id !== protocolId);
+      setCurrentEntry({ ...currentEntry, executedProtocols: updatedProtocols });
+      showToast('success', 'Protocole retiré');
+    }
   };
 
   const signEntry = () => {
@@ -463,6 +512,26 @@ ${currentEntry.signed ? '\n\n[DOCUMENT SIGNÉ - NE PAS MODIFIER]' : ''}
                         <List size={16} />
                         Table des matières
                       </button>
+                      <button
+                        onClick={() => setShowProtocolSelector(true)}
+                        disabled={currentEntry.signed}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.5rem',
+                          padding: '0.5rem 1rem',
+                          backgroundColor: currentEntry.signed ? 'rgba(16, 185, 129, 0.05)' : 'rgba(16, 185, 129, 0.1)',
+                          color: currentEntry.signed ? '#64748b' : '#10b981',
+                          border: `1px solid ${currentEntry.signed ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.3)'}`,
+                          borderRadius: '6px',
+                          cursor: currentEntry.signed ? 'not-allowed' : 'pointer',
+                          fontSize: '0.85rem',
+                          fontWeight: '600'
+                        }}
+                      >
+                        <FileText size={16} />
+                        Insérer un Protocole
+                      </button>
                     </div>
 
                     {showTOC && <TableOfContents content={currentEntry.content} />}
@@ -495,6 +564,25 @@ ${currentEntry.signed ? '\n\n[DOCUMENT SIGNÉ - NE PAS MODIFIER]' : ''}
                       }}
                       className="preview-content"
                     />
+                  </div>
+                )}
+
+                {/* Executed Protocols */}
+                {currentEntry.executedProtocols && currentEntry.executedProtocols.length > 0 && (
+                  <div style={{ marginTop: '2rem' }}>
+                    <h3 style={{ color: '#f8fafc', fontSize: '1.2rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <FileText size={20} color="#3b82f6" />
+                      Protocoles Exécutés ({currentEntry.executedProtocols.length})
+                    </h3>
+                    {currentEntry.executedProtocols.map(ep => (
+                      <ExecutedProtocolBlock
+                        key={ep.id}
+                        protocol={ep}
+                        readOnly={!!currentEntry.signed || viewMode === 'preview'}
+                        onChange={handleUpdateExecutedProtocol}
+                        onRemove={() => handleRemoveExecutedProtocol(ep.id)}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
@@ -719,6 +807,14 @@ ${currentEntry.signed ? '\n\n[DOCUMENT SIGNÉ - NE PAS MODIFIER]' : ''}
           )}
         </div>
       </div>
+
+      {showProtocolSelector && (
+        <ProtocolSelectorModal
+          protocols={activeProtocols}
+          onSelect={handleInsertProtocol}
+          onClose={() => setShowProtocolSelector(false)}
+        />
+      )}
 
       <style>{`
         .preview-content img {

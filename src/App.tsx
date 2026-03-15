@@ -43,8 +43,9 @@ const MobileEntityDetail = lazy(() => import('./pages/mobile/EntityDetail'));
 const PropertyDetail = lazy(() => import('./pages/PropertyDetail'));
 const CompareEntities = lazy(() => import('./pages/CompareEntities'));
 const Hugin = lazy(() => import('./pages/Hugin'));
-const Messaging = lazy(() => import('./pages/hugin/Messaging'));
-const Inventory = lazy(() => import('./pages/hugin/InventoryV2'));
+// NEW ROUTE - Renamed to bypass browser cache
+const InternalChat = lazy(() => import('./pages/hugin/InternalChat'));
+const Inventory = lazy(() => import('./pages/hugin/LabInventoryPro').then(module => ({ default: module.LabInventoryPro })));
 const Planning = lazy(() => import('./pages/hugin/Planning'));
 const Documents = lazy(() => import('./pages/hugin/Documents'));
 const CultureTracking = lazy(() => import('./pages/hugin/CultureTracking'));
@@ -56,7 +57,8 @@ const TableurLab = lazy(() => import('./pages/hugin/TableurLab'));
 const Bibliography = lazy(() => import('./pages/hugin/Bibliography'));
 const LabNotebook = lazy(() => import('./pages/hugin/LabNotebook').then(module => ({ default: module.LabNotebook })));
 const CryoKeeper = lazy(() => import('./pages/hugin/CryoKeeper'));
-const EquipFlow = lazy(() => import('./pages/hugin/EquipFlow'));
+const CryoKeeper3D = lazy(() => import('./pages/hugin/cryo/CryoKeeper3D'));
+// const EquipFlow = lazy(() => import('./pages/hugin/EquipFlow')); // Replaced by ReservationSystem
 const GrantBudget = lazy(() => import('./pages/hugin/GrantBudget'));
 const SOPLibrary = lazy(() => import('./pages/hugin/SOPLibrary'));
 const BioTools = lazy(() => import('./pages/hugin/BioTools'));
@@ -97,6 +99,7 @@ const ProteinCalculator = lazy(() => import('./pages/hugin/ProteinCalculator'));
 const RestrictionMapper = lazy(() => import('./pages/hugin/RestrictionMapper'));
 const CloningAssistant = lazy(() => import('./pages/hugin/CloningAssistant'));
 const BacterialGrowthPredictor = lazy(() => import('./pages/hugin/BacterialGrowthPredictor'));
+const ReservationSystem = lazy(() => import('./pages/hugin/university/ReservationSystem'));
 const ResistancePhenotypes = lazy(() => import('./pages/hugin/ResistancePhenotypes'));
 const LabEquipment = lazy(() => import('./pages/hugin/LabEquipment'));
 const QCMMultiDisciplines = lazy(() => import('./pages/hugin/university/ExamsProfessional'));
@@ -140,6 +143,8 @@ const AccessibilitySupport = lazy(() => import('./pages/hugin/university/Accessi
 const CampusServices = lazy(() => import('./pages/hugin/university/CampusServices'));
 const VAEAssessment = lazy(() => import('./pages/hugin/university/VAEAssessment'));
 const InnovativePedagogy = lazy(() => import('./pages/hugin/university/InnovativePedagogy'));
+const BioRender = lazy(() => import('./pages/hugin/BioRender'));
+const Tetris = lazy(() => import('./pages/hugin/Tetris'));
 
 const WhyOdin = lazy(() => import('./pages/WhyOdin'));
 const Enterprise = lazy(() => import('./pages/Enterprise'));
@@ -168,7 +173,10 @@ const BetaLabNotebook = lazy(() => import('./pages/beta/BetaLabNotebook'));
 const BetaProtocolBuilder = lazy(() => import('./pages/beta/BetaProtocolBuilder'));
 const BetaChemicalInventory = lazy(() => import('./pages/beta/BetaChemicalInventory'));
 const BetaBackupManager = lazy(() => import('./pages/beta/BetaBackupManager'));
+const ChemicalEditor = lazy(() => import('./pages/hugin/chem/ChemicalEditor'));
 const BetaEquipmentBooking = lazy(() => import('./pages/beta/BetaEquipmentBooking'));
+
+// Analytics component
 const BetaExperimentPlanner = lazy(() => import('./pages/beta/BetaExperimentPlanner'));
 const BetaGelSimulator = lazy(() => import('./pages/beta/BetaGelSimulator'));
 
@@ -179,7 +187,8 @@ const MobileHugin = lazy(() => import('./pages/mobile/Hugin'));
 const MobileSettings = lazy(() => import('./pages/mobile/Settings'));
 const MobileDiscipline = lazy(() => import('./pages/mobile/Discipline'));
 const MobilePlanning = lazy(() => import('./pages/mobile/hugin/Planning'));
-const MobileMessaging = lazy(() => import('./pages/mobile/hugin/Messaging'));
+// NEW ROUTE - Renamed to bypass browser cache
+const MobileInternalChat = lazy(() => import('./pages/mobile/hugin/InternalChat'));
 const MobileSafetyHub = lazy(() => import('./pages/mobile/hugin/SafetyHub'));
 const MobileLandingPage = lazy(() => import('./pages/mobile/LandingPage'));
 const MobileAccount = lazy(() => import('./pages/mobile/AccountWrapper'));
@@ -588,11 +597,11 @@ function App() {
                     />
                   </ProtectedRoute>
                 } />
-                <Route path="/hugin/messaging" element={
+                <Route path="/hugin/chat" element={
                   <ProtectedRoute module="hugin_core">
                     <ResponsiveRoute
-                      desktop={<Messaging />}
-                      mobile={<MobileMessaging />}
+                      desktop={<InternalChat />}
+                      mobile={<MobileInternalChat />}
                     />
                   </ProtectedRoute>
                 } />
@@ -660,9 +669,14 @@ function App() {
                     <CryoKeeper />
                   </ProtectedRoute>
                 } />
+                <Route path="/hugin/cryo3d" element={
+                  <ProtectedRoute module="hugin_lab">
+                    <CryoKeeper3D />
+                  </ProtectedRoute>
+                } />
                 <Route path="/hugin/equip" element={
                   <ProtectedRoute module="hugin_lab">
-                    <EquipFlow />
+                    <ReservationSystem />
                   </ProtectedRoute>
                 } />
                 <Route path="/hugin/budget" element={
@@ -784,9 +798,24 @@ function App() {
                     <Artemis />
                   </ProtectedRoute>
                 } />
+                <Route path="/hugin/biorender" element={
+                  <ProtectedRoute module="hugin_analysis">
+                    <BioRender />
+                  </ProtectedRoute>
+                } />
                 <Route path="/hugin/qiime2" element={
                   <ProtectedRoute>
                     <Qiime2 />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/biorender" element={
+                  <ProtectedRoute>
+                    <BioRender />
+                  </ProtectedRoute>
+                } />
+                <Route path="/hugin/tetris" element={
+                  <ProtectedRoute>
+                    <Tetris />
                   </ProtectedRoute>
                 } />
                 <Route path="/hugin/whonet" element={
@@ -1111,12 +1140,17 @@ function App() {
                     <BetaLabNotebook />
                   </ProtectedRoute>
                 } />
-                <Route path="/beta/protocol-builder" element={
-                  <ProtectedRoute>
-                    <BetaProtocolBuilder />
-                  </ProtectedRoute>
-                } />
-                <Route path="/beta/chemical-inventory" element={
+                  <Route path="/beta/protocol-builder" element={
+                    <ProtectedRoute>
+                      <BetaProtocolBuilder />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/hugin/molecule-editor" element={
+                    <ProtectedRoute>
+                      <ChemicalEditor />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/beta/chemical-inventory" element={
                   <ProtectedRoute>
                     <BetaChemicalInventory />
                   </ProtectedRoute>

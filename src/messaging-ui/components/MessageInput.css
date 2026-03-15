@@ -1,0 +1,140 @@
+.message-input-container {
+  padding: 1rem;
+  background: var(--bg-secondary, #2a2a2a);
+  border-top: 1px solid var(--border-color, #3a3a3a);
+}
+
+.message-input-wrapper {
+  background: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid var(--border-color, #3a3a3a);
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.message-input-wrapper:focus-within {
+  border-color: var(--accent-hugin, #6366f1);
+}
+
+.message-input-wrapper.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.message-input-textarea {
+  width: 100%;
+  min-height: 44px;
+  max-height: 200px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary, #ffffff);
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+}
+
+.message-input-textarea::placeholder {
+  color: var(--text-secondary, #888888);
+}
+
+.message-input-textarea:disabled {
+  cursor: not-allowed;
+}
+
+.message-input-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border-color, #3a3a3a);
+}
+
+.message-input-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.message-input-char-count {
+  font-size: 12px;
+  color: var(--text-secondary, #888888);
+}
+
+.message-input-char-count.warning {
+  color: var(--warning-color, #f59e0b);
+}
+
+.message-input-status {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.message-input-status.sending {
+  color: var(--info-color, #3b82f6);
+}
+
+.message-input-status.sent {
+  color: var(--success-color, #10b981);
+}
+
+.message-input-status.failed {
+  color: var(--error-color, #ef4444);
+}
+
+.message-input-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.message-input-send-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: var(--accent-hugin, #6366f1);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.message-input-send-button:hover:not(:disabled) {
+  background: var(--accent-hugin-hover, #4f46e5);
+  transform: scale(1.05);
+}
+
+.message-input-send-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.message-input-send-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.message-input-hint {
+  margin-top: 8px;
+  text-align: center;
+}
+
+.message-input-hint-text {
+  font-size: 11px;
+  color: var(--text-tertiary, #666666);
+}
+
+.message-input-hint-text kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--bg-tertiary, #1a1a1a);
+  border: 1px solid var(--border-color, #3a3a3a);
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 10px;
+}

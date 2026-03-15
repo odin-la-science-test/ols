@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animation Splash</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #0b1120;
+            overflow: hidden;
+        }
+
+        #container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 1s ease-out, opacity 1s ease-out;
+        }
+
+        #container.expand {
+            transform: scale(20);
+            opacity: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #00f5ff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00f5ff;
+            transition: all 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .particle.wave {
+            animation: wave 1.5s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+            50% {
+                transform: scale(1.6);
+                opacity: 1;
+                box-shadow: 0 0 20px #00f5ff;
+            }
+        }
+
+        #logo {
+            position: absolute;
+            font-size: 120px;
+            font-weight: 900;
+            color: #00f5ff;
+            text-shadow: 0 0 40px #00f5ff;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        #logo.show {
+            opacity: 1;
+        }
+
+        #logo.pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; text-shadow: 0 0 60px #00f5ff; }
+        }
+
+        #home {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            background: #0b1120;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        #home.show { display: flex; }
+
+        button {
+            padding: 1rem 2rem;
+            background: #00f5ff;
+            color: #0b1120;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="logo">O</div>
+    </div>
+
+    <div id="home">
+        <h1 style="font-size: 3rem;">✅ Animation terminée</h1>
+        <button onclick="location.reload()">🔄 Rejouer</button>
+    </div>
+
+    <script>
+        const container = document.getElementById('container');
+        const logo = document.getElementById('logo');
+        const home = document.getElementById('home');
+
+        // Points hexagone (centré à 0,0)
+        const hex = [
+            [0, -220],
+            [190, -110],
+            [190, 110],
+            [0, 220],
+            [-190, 110],
+            [-190, -110]
+        ];
+
+        // Créer particules
+        const particles = [];
+        const perSide = 12;
+
+        for (let i = 0; i < 6; i++) {
+            for (let j = 0; j < perSide; j++) {
+                const t = j / perSide;
+                const x = hex[i][0] + (hex[(i+1)%6][0] - hex[i][0]) * t;
+                const y = hex[i][1] + (hex[(i+1)%6][1] - hex[i][1]) * t;
+                
+                const p = document.createElement('div');
+                p.className = 'particle';
+                
+                // Position de départ aléatoire
+                const startX = (Math.random() - 0.5) * window.innerWidth;
+                const startY = (Math.random() - 0.5) * window.innerHeight;
+                p.style.left = `calc(50% + ${startX}px)`;
+                p.style.top = `calc(50% + ${startY}px)`;
+                
+                p.dataset.targetX = x;
+                p.dataset.targetY = y;
+                p.dataset.delay = (i * perSide + j) * 20;
+                
+                container.appendChild(p);
+                particles.push(p);
+            }
+        }
+
+        // PHASE 1: Formation (0-2s)
+        setTimeout(() => {
+            particles.forEach(p => {
+                setTimeout(() => {
+                    p.style.left = `calc(50% + ${p.dataset.targetX}px)`;
+                    p.style.top = `calc(50% + ${p.dataset.targetY}px)`;
+                }, p.dataset.delay);
+            });
+            
+            setTimeout(() => {
+                logo.classList.add('show');
+            }, 800);
+        }, 100);
+
+        // PHASE 2: Ondulation (2-4s)
+        setTimeout(() => {
+            particles.forEach(p => {
+                setTimeout(() => {
+                    p.classList.add('wave');
+                }, p.dataset.delay / 2);
+            });
+            logo.classList.add('pulse');
+        }, 2000);
+
+        // PHASE 3: Expansion (4-5s)
+        setTimeout(() => {
+            container.classList.add('expand');
+        }, 4000);
+
+        // PHASE 4: Home (5s)
+        setTimeout(() => {
+            container.style.display = 'none';
+            home.classList.add('show');
+        }, 5000);
+    </script>
+</body>
+</html>

@@ -33,8 +33,9 @@ const MimirFloatingButton = () => {
   const isUserScrollingRef = useRef(false);
   const lastScrollTopRef = useRef(0);
 
-  // Cacher le popup sur la page AI Assistant
+  // Cacher le popup sur certaines pages
   const isOnAIAssistantPage = location.pathname === '/hugin/ai-assistant';
+  const isOnMoleculeEditorPage = location.pathname === '/hugin/molecule-editor';
 
   useEffect(() => {
     // Détecter mobile
@@ -51,7 +52,17 @@ const MimirFloatingButton = () => {
     };
     checkApiKey();
 
-    return () => window.removeEventListener('resize', checkMobile);
+    // Écouter l'événement personnalisé pour ouvrir Mímir à distance
+    const handleToggleMimir = () => {
+      setIsOpen(true);
+      setIsMinimized(false);
+    };
+    window.addEventListener('toggle-mimir', handleToggleMimir);
+
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('toggle-mimir', handleToggleMimir);
+    };
   }, []);
 
   // Gestion intelligente du scroll
@@ -265,8 +276,8 @@ Réponds toujours en français, sauf si on te demande explicitement de traduire.
       ? { top: '2rem', left: '2rem', width: '350px', height: '60px' }
       : { bottom: '2rem', left: '2rem', width: '450px', height: '650px' };
 
-  // Ne pas afficher le bouton sur la page AI Assistant
-  if (isOnAIAssistantPage) {
+  // Ne pas afficher le bouton sur certaines pages
+  if (isOnAIAssistantPage || isOnMoleculeEditorPage) {
     return null;
   }
 

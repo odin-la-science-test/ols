@@ -25,6 +25,9 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "@fortune-sheet/react": "^1.0.4",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "@supabase/supabase-js": "^2.99.0",
     "@types/dompurify": "^3.0.5",
     "@types/three": "^0.183.1",
@@ -37,6 +40,9 @@
     "dompurify": "^3.3.1",
     "express": "^5.2.1",
     "jspreadsheet-ce": "^5.0.4",
+    "ketcher-react": "^3.12.0",
+    "ketcher-standalone": "^3.12.0",
+    "konva": "^10.2.0",
     "lucide-react": "^0.563.0",
     "plotly.js": "^3.3.1",
     "react": "^19.2.0",
@@ -44,12 +50,17 @@
     "react-confetti": "^6.4.0",
     "react-data-grid": "^7.0.0-beta.59",
     "react-dom": "^19.2.0",
+    "react-konva": "^19.2.3",
     "react-plotly.js": "^2.6.0",
     "react-router-dom": "^7.13.0",
     "recharts": "^3.7.0",
+    "socket.io-client": "^4.8.3",
     "sqlite3": "^5.1.7",
-    "three": "^0.183.1",
-    "x-data-spreadsheet": "^1.1.9"
+    "three": "^0.183.2",
+    "use-image": "^1.1.4",
+    "x-data-spreadsheet": "^1.1.9",
+    "yjs": "^13.6.29",
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
