@@ -13,7 +13,7 @@ import { webSocketManager } from '../messaging-core/WebSocketManager';
 import { messageService } from '../messaging-core/MessageService';
 import { notificationService } from '../messaging-core/NotificationService';
 import { rateLimiter } from '../messaging-core/RateLimiter';
-import { 
+import type { 
   WebSocketMessage, 
   MessageSendPayload, 
   TypingPayload, 

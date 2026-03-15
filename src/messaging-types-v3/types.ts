@@ -99,11 +99,14 @@ export type ClientEventType =
   | 'presence:update';
 
 export type ServerEventType =
+  | 'connection:established'
   | 'message:new'
+  | 'message:sent'
   | 'message:deleted'
   | 'typing:indicator'
   | 'presence:changed'
-  | 'notification:new';
+  | 'notification:new'
+  | 'error';
 
 export interface MessageSendPayload {
   channelId?: string;
