@@ -335,7 +335,7 @@ const CryoScene3D: React.FC<CryoScene3DProps> = ({
       // Box hover pulse (subtle scale)
       state.boxMeshes.forEach(mesh => {
         const t = Date.now() / 1000;
-        mesh.scale.y = 1 + Math.sin(t * 2 + mesh.id) * 0.02;
+        mesh.scale.y = 1 + Math.sin(t * 2 + mesh.uuid.length) * 0.02;
       });
 
       state.renderer.render(state.scene, state.camera);

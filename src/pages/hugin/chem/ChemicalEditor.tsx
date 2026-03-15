@@ -9,6 +9,12 @@ import { showToast } from '../../../components/ToastNotification';
 
 const structServiceProvider = new StandaloneStructServiceProvider();
 
+declare global {
+  interface Window {
+    ketcher: any;
+  }
+}
+
 export default function ChemicalEditor() {
   const navigate = useNavigate();
   const [ketcher, setKetcher] = useState<any>(null);
@@ -173,6 +179,7 @@ export default function ChemicalEditor() {
             staticResourcesUrl={import.meta.env?.BASE_URL || ''}
             structServiceProvider={structServiceProvider}
             onInit={handleInit}
+            errorHandler={(err: any) => console.error('Ketcher Error:', err)}
           />
         </div>
       </div>

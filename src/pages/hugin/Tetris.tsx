@@ -1,5 +1,5 @@
-import { useRef, useEffect } from 'react';
-import { Gamepad2, ArrowLeft } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Gamepad2, ArrowLeft, Trophy, Gauge, Play, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import './Tetris.css';
@@ -14,6 +14,20 @@ const COLS = 10;
 const ROWS = 20;
 const BLOCK_SIZE = 25;
 const CENTER_X = Math.floor(COLS / 2);
+
+const INITIAL_SPEED = 800;
+const MIN_SPEED = 100;
+const SPEED_INCREMENT = 50;
+
+const TETROMINOES: Record<PieceType, { shape: number[][], color: string }> = {
+    'I': { shape: [[1, 1, 1, 1]], color: '#00f0f0' },
+    'J': { shape: [[1, 0, 0], [1, 1, 1]], color: '#0000f0' },
+    'L': { shape: [[0, 0, 1], [1, 1, 1]], color: '#f0a000' },
+    'O': { shape: [[1, 1], [1, 1]], color: '#f0f000' },
+    'S': { shape: [[0, 1, 1], [1, 1, 0]], color: '#00f000' },
+    'T': { shape: [[0, 1, 0], [1, 1, 1]], color: '#a000f0' },
+    'Z': { shape: [[1, 1, 0], [0, 1, 1]], color: '#f00000' }
+};
 
 // Frame rate
 const FRAME_RATE = 1000 / 20;
@@ -271,8 +285,8 @@ const Tetris = () => {
                 {/* Main Board */}
                 <div style={{ position: 'relative' }}>
                     <div className="tetris-board">
-                        {grid.map((row, y) => (
-                            row.map((cell, x) => {
+                        {grid.map((row: string[], y: number) => (
+                            row.map((cell: string, x: number) => {
                                 // Draw active piece
                                 let color = cell;
                                 if (activePiece) {
@@ -324,8 +338,8 @@ const Tetris = () => {
                     <div className="tetris-info-panel">
                         <div className="info-label">Suivant</div>
                         <div className="preview-grid">
-                            {TETROMINOES[nextPieceType].shape.map((row, y) => (
-                                row.map((cell, x) => (
+                            {TETROMINOES[nextPieceType].shape.map((row: number[], y: number) => (
+                                row.map((cell: number, x: number) => (
                                     <div 
                                         key={`next-${y}-${x}`}
                                         className={`preview-cell ${cell ? 'filled' : ''}`}

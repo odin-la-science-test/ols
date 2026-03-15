@@ -53,6 +53,7 @@ export interface CryoBox3D {
   rows: number;
   cols: number;
   color: string; // hex color for 3D model
+  position?: { x: number; y: number };
   tubes: Record<string, CryoTube3D>; // "row-col" -> CryoTube3D
 }
 
