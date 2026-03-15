@@ -28,11 +28,11 @@ export class PermissionService implements IPermissionService {
    */
   async assignRole(userId: string, role: Role): Promise<void> {
     // Vérifier qu'on ne retire pas le dernier admin
-    if (role !== Role.ADMIN) {
+    if (role !== 'admin') {
       const adminCount = await this.getAdminCount();
       const currentRole = await this.getUserRole(userId);
       
-      if (currentRole === Role.ADMIN && adminCount <= 1) {
+      if (currentRole === 'admin' && adminCount <= 1) {
         throw new Error('Cannot remove the last admin user');
       }
     }
@@ -87,7 +87,7 @@ export class PermissionService implements IPermissionService {
     const role = await this.getUserRole(userId);
     
     // Les admins et modérateurs peuvent supprimer n'importe quel message
-    if (role === Role.ADMIN || role === Role.MODERATOR) {
+    if (role === 'admin' || role === 'moderator') {
       return true;
     }
     
@@ -105,7 +105,7 @@ export class PermissionService implements IPermissionService {
   private async getAdminCount(): Promise<number> {
     const db = getDatabase();
     const stmt = db.prepare(`SELECT COUNT(*) as count FROM messaging_users WHERE role = ?`);
-    const result = stmt.get(Role.ADMIN) as { count: number };
+    const result = stmt.get('admin') as { count: number };
     return result.count;
   }
 }
